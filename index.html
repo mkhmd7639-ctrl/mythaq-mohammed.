@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>قالب الكشوفات الرسمية المطور</title>
+    <title>قالب الكشوفات الرسمية المطور - حفظ تلقائي</title>
     <!-- استيراد مكتبة خطوط عربية ضخمة (أكثر من 60 خطاً عريضاً وواضحاً ومنوعاً) -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
     
@@ -64,6 +64,8 @@
         .btn-amber:hover { background: #b45309; }
         .btn-whatsapp { background: #25d366; color: #fff; }
         .btn-whatsapp:hover { background: #1ebe57; }
+        .btn-save { background: #7b1fa2; color: #fff; }
+        .btn-save:hover { background: #4a148c; }
         
         .control-group {
             display: flex;
@@ -211,9 +213,11 @@
     <div class="control-panel">
         <button class="btn" onclick="window.print()">🖨️ طباعة / PDF</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+        <button class="btn btn-save" onclick="saveBackupFile()">💾 تحميل نسخة احتياطية</button>
+        <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;" title="حذف كل البيانات وبدء صفحة جديدة نظيفة">🗑️ مسح الكل</button>
         
-        <!-- زر التواصل مع المطور عبر واتساب بالرقم الصحيح -->
-        <a href="https://wa.me/967784327056?text=مرحباً، أود التواصل معك بخصوص قالب الكشوفات الرسمية." target="_blank" class="btn btn-whatsapp">
+        <!-- زر التواصل مع المطور عبر واتساب مع النص المطلوب -->
+        <a href="https://wa.me/967784327056?text=مرحبا%20ميثاق%20محمد%20تواصلت%20بك" target="_blank" class="btn btn-whatsapp">
             💬 التواصل مع المطور
         </a>
         
@@ -244,7 +248,7 @@
 
         <!-- قائمة الخطوط الضخمة (اكثر من 60 خط عريض وواضح ومنوع) -->
         <div class="control-group">
-            <span>✨ قائمة الخطوط (60+ خط):</span>
+            <span>✨ الخطوط:</span>
             <select id="fontSelector" onchange="changeFontFamily(this.value)">
                 <optgroup label="⭐ الخطوط الأكثر طلباً والبارزة">
                     <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900) - الافتراضي والموصى به</option>
@@ -308,7 +312,7 @@
 
     <!-- حاوية الصفحات -->
     <div id="pagesWrapper">
-        <!-- الصفحة الأولى -->
+        <!-- الصفحة الأولى (افتراضية إذا لم يوجد حفظ سابق) -->
         <div class="sheet-container" onclick="setActiveContext(this, event)">
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
@@ -320,27 +324,13 @@
                 <table class="dynamicTable">
                     <thead>
                         <tr>
-                            <th style="width: 35px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">م</span>
-                            </th>
-                            <th style="width: 160px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">الاسم الرباعي</span>
-                            </th>
-                            <th style="width: 80px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">نوع البطاقة</span>
-                            </th>
-                            <th style="width: 100px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">رقم البطاقة</span>
-                            </th>
-                            <th style="width: 90px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">رقم الاتصال</span>
-                            </th>
-                            <th style="width: 160px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">اسم الزوجة / الزوج</span>
-                            </th>
-                            <th style="width: 70px;" onclick="selectColumn(this, event)">
-                                <span contenteditable="true">الحالة</span>
-                            </th>
+                            <th style="width: 35px;" onclick="selectColumn(this, event)"><span contenteditable="true">م</span></th>
+                            <th style="width: 160px;" onclick="selectColumn(this, event)"><span contenteditable="true">الاسم الرباعي</span></th>
+                            <th style="width: 80px;" onclick="selectColumn(this, event)"><span contenteditable="true">نوع البطاقة</span></th>
+                            <th style="width: 100px;" onclick="selectColumn(this, event)"><span contenteditable="true">رقم البطاقة</span></th>
+                            <th style="width: 90px;" onclick="selectColumn(this, event)"><span contenteditable="true">رقم الاتصال</span></th>
+                            <th style="width: 160px;" onclick="selectColumn(this, event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
+                            <th style="width: 70px;" onclick="selectColumn(this, event)"><span contenteditable="true">الحالة</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -377,6 +367,30 @@
         let activeRowElement = null;
         let activeThElement = null;
         let activeCellElement = null;
+
+        // الحفظ التلقائي في ذاكرة المتصفح عند أي كتابة أو تعديل
+        document.addEventListener('input', function() {
+            saveDataLocally();
+        });
+
+        function saveDataLocally() {
+            let wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+            localStorage.setItem('toufan_sheets_data', wrapperHtml);
+        }
+
+        function loadSavedData() {
+            let savedHtml = localStorage.getItem('toufan_sheets_data');
+            if (savedHtml && savedHtml.trim() !== "") {
+                document.getElementById('pagesWrapper').innerHTML = savedHtml;
+            }
+        }
+
+        function resetAllData() {
+            if (confirm("هل أنت متأكد من مسح جميع البيانات والصفحات والبدء من جديد؟")) {
+                localStorage.removeItem('toufan_sheets_data');
+                location.reload();
+            }
+        }
 
         function setActiveContext(sheetContainer, event) {
             activeSheet = sheetContainer;
@@ -458,6 +472,7 @@
                 activeCellElement.style.textDecorationColor = '';
                 activeCellElement.style.textDecorationThickness = '';
             }
+            saveDataLocally();
         }
 
         function adjustActiveColWidth(amount) {
@@ -477,6 +492,7 @@
             activeThElement.style.width = newWidth + 'px';
             activeThElement.style.minWidth = newWidth + 'px';
             activeThElement.style.maxWidth = newWidth + 'px';
+            saveDataLocally();
         }
 
         function addRowToActiveTable() {
@@ -503,6 +519,7 @@
                 }
             }
             selectRow(newRow, { stopPropagation: () => {} });
+            saveDataLocally();
         }
 
         function addColumnToActiveTable() {
@@ -527,6 +544,7 @@
                 td.style.paddingRight = "5px";
             }
             selectColumn(th, { stopPropagation: () => {} });
+            saveDataLocally();
         }
 
         function deleteSelectedRow() {
@@ -541,6 +559,7 @@
                 Array.from(tbody.rows).forEach((row, idx) => {
                     if (row.cells[0]) row.cells[0].innerText = idx + 1;
                 });
+                saveDataLocally();
             } else {
                 alert("لا يمكنك حذف الصف الأخير المتبقي في الجدول!");
             }
@@ -559,6 +578,7 @@
                 }
                 activeColumnIndex = Math.max(0, activeColumnIndex - 1);
                 activeThElement = headerRow.cells[activeColumnIndex];
+                saveDataLocally();
             } else {
                 alert("لا يمكنك حذف العمود الوحيد المتبقي!");
             }
@@ -574,6 +594,7 @@
                 }
                 let remainingPages = document.querySelectorAll('.sheet-container');
                 setActiveContext(remainingPages[0], { target: remainingPages[0] });
+                saveDataLocally();
             } else {
                 alert("لا يمكنك حذف الصفحة الوحيدة المتبقية!");
             }
@@ -631,6 +652,7 @@
             setActiveContext(newPage, { target: newPage });
             let currentFont = document.getElementById('fontSelector').value;
             changeFontFamily(currentFont);
+            saveDataLocally();
         }
 
         function changeFontFamily(fontValue) {
@@ -647,7 +669,26 @@
             });
         }
 
+        function saveBackupFile() {
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+                if (el.innerText.trim() !== "") {
+                    el.setAttribute('textContent', el.innerText);
+                }
+            });
+
+            let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            let blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Al_Toufan_Backup.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
         window.onload = function() {
+            loadSavedData();
             let firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
                 setActiveContext(firstSheet, { target: firstSheet });
@@ -657,17 +698,4 @@
     </script>
 
 </body>
-</html>
-
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="./style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pen</title>
-  </head>
-  <body>
-
-    <script src="./script.js"></script>
-  </body>
 </html>
