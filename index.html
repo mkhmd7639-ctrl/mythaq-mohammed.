@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>قالب الكشوفات الرسمية المطور</title>
+    <!-- استيراد مكتبة خطوط عربية ضخمة (أكثر من 60 خطاً عريضاً وواضحاً ومنوعاً) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 5mm;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #000;
+            direction: rtl;
+            background-color: #eef2f5;
+        }
+        /* لوحة تحكم علوية متكاملة */
+        .control-panel {
+            text-align: center;
+            margin: 10px auto;
+            background: #ffffff;
+            padding: 10px 15px;
+            width: 95%;
+            max-width: 1350px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+        }
+        .btn {
+            background: #00695c;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            font-size: 9pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn:hover { background: #004d40; }
+        .btn-green { background: #2e7d32; }
+        .btn-green:hover { background: #1b5e20; }
+        .btn-blue { background: #1565c0; }
+        .btn-blue:hover { background: #0d47a1; }
+        .btn-red { background: #c62828; }
+        .btn-red:hover { background: #8e0000; }
+        .btn-amber { background: #d97706; color: #fff; }
+        .btn-amber:hover { background: #b45309; }
+        .btn-whatsapp { background: #25d366; color: #fff; }
+        .btn-whatsapp:hover { background: #1ebe57; }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        select, input[type="color"] {
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 9pt;
+            height: 30px;
+            background: #fff;
+        }
+        input[type="color"] {
+            width: 32px;
+            padding: 0;
+            border: none;
+            background: none;
+        }
+
+        .sheet-container {
+            width: 297mm;
+            height: 198mm;
+            padding: 5mm 8mm;
+            margin: 15px auto;
+            background: #fff;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            page-break-before: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 2px;
+            margin-bottom: 4px;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        .editable-header {
+            border: 1px dashed transparent;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .editable-header:hover {
+            border-color: #00695c;
+            background: #f9f9f9;
+        }
+        .editable-header:focus {
+            outline: 2px solid #00695c;
+            background: #fffde7;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 5px;
+            flex-grow: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            table-layout: fixed !important;
+        }
+        
+        th, td {
+            border: 1px solid #333;
+            padding: 4px 3px;
+            font-size: 9.5pt;
+            height: 22px;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #d1d8e0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color: #111;
+            font-weight: bold;
+            position: relative;
+            cursor: pointer;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        td[contenteditable="true"]:focus, th[contenteditable="true"]:focus {
+            background-color: #fffde7;
+            outline: 2px solid #00695c;
+        }
+
+        .active-column {
+            background-color: #e8f8f5 !important;
+        }
+        .active-row {
+            background-color: #fff3e0 !important;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8.5pt;
+            color: #444;
+            border-top: 1px solid #888;
+            padding-top: 2px;
+            margin-top: auto;
+        }
+
+        @media print {
+            body { background: #fff; }
+            .control-panel { display: none !important; }
+            .sheet-container { 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                width: 100% !important; 
+                height: 198mm !important; 
+                padding: 4mm !important; 
+                page-break-before: always; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- لوحة التحكم العلوية الشاملة -->
+    <div class="control-panel">
+        <button class="btn" onclick="window.print()">🖨️ طباعة / PDF</button>
+        <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+        
+        <!-- زر التواصل مع المطور عبر واتساب بالرقم الصحيح -->
+        <a href="https://wa.me/967784327056?text=مرحباً، أود التواصل معك بخصوص قالب الكشوفات الرسمية." target="_blank" class="btn btn-whatsapp">
+            💬 التواصل مع المطور
+        </a>
+        
+        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
+
+        <!-- أزرار تنسيق الأخطاء والتنبيهات المباشرة -->
+        <div class="control-group" title="تنسيق الخلية المحددة">
+            <span>التنبيهات:</span>
+            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt;" onclick="formatCell('color', '#c62828')">🔴 نص أحمر</button>
+            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt; background: #b71c1c;" onclick="formatCell('red-underline', '')">🛑 خط أحمر تحت الاسم</button>
+            <button class="btn" style="padding: 4px 8px; font-size: 8.5pt; background: #555;" onclick="formatCell('reset', '')">🔄 إزالة التنسيق</button>
+        </div>
+
+        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
+
+        <!-- أزرار التحكم بعرض العمود المحدد -->
+        <div class="control-group" title="تحكم بعرض العمود المحدّد حالياً">
+            <span>العمود:</span>
+            <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
+            <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
+        </div>
+
+        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ إضافة صف</button>
+        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ إضافة عمود</button>
+        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف الصف</button>
+        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
+        <button class="btn btn-red" onclick="deleteActivePage()" style="background: #b71c1c;">🗑️ حذف الصفحة</button>
+
+        <!-- قائمة الخطوط الضخمة (اكثر من 60 خط عريض وواضح ومنوع) -->
+        <div class="control-group">
+            <span>✨ قائمة الخطوط (60+ خط):</span>
+            <select id="fontSelector" onchange="changeFontFamily(this.value)">
+                <optgroup label="⭐ الخطوط الأكثر طلباً والبارزة">
+                    <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900) - الافتراضي والموصى به</option>
+                    <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
+                    <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
+                    <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
+                    <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
+                    <option value="'Zain', sans-serif">زين عريض (Zain Heavy)</option>
+                    <option value="'IBM Plex Sans Arabic', sans-serif">آي بي إم بلكس عربي ثقيل (IBM Plex Bold)</option>
+                </optgroup>
+                <optgroup label="💪 الخطوط العريضة والهندسية والحديثة">
+                    <option value="'Cairo', sans-serif">كايرو - سميك (Cairo Bold)</option>
+                    <option value="'Cairo', sans-serif">كايرو - أسود (Cairo Black)</option>
+                    <option value="'Alexandria', sans-serif">الإسكندرية - أسود (Alexandria Black)</option>
+                    <option value="'Tajawal', sans-serif">تجوال - عريض جداً (Tajawal ExtraBold)</option>
+                    <option value="'Almarai', sans-serif">المراعي - عريض (Almarai Bold)</option>
+                    <option value="'Changa', sans-serif">شانجا - عريض (Changa Bold)</option>
+                    <option value="'Zain', sans-serif">زين - عريض جداً (Zain ExtraBold)</option>
+                    <option value="'Mada', sans-serif">مدى - عريض (Mada Bold)</option>
+                    <option value="'Readex Pro', sans-serif">ريدكس برو - سميك (Readex Pro Bold)</option>
+                    <option value="'Noto Sans Arabic', sans-serif">نوتو سانس عربي - أسود (Noto Sans Black)</option>
+                    <option value="'Noto Kufi Arabic', sans-serif">نوتو كوفي عربي - عريض (Noto Kufi Bold)</option>
+                </optgroup>
+                <optgroup label="🏛️ الخطوط الكلاسيكية والتراثية والنسخية">
+                    <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
+                    <option value="'Amiri Quran', serif">أميري القرآن الكريم (Amiri Quran)</option>
+                    <option value="'Scheherazade New', serif">شهرزاد الجديدة - عريض (Scheherazade Bold)</option>
+                    <option value="'Noto Naskh Arabic', serif">نوتو نسخ عربي - عريض (Noto Naskh Bold)</option>
+                    <option value="'Harmattan', serif">هطّان - عريض (Harmattan Bold)</option>
+                    <option value="'Traditional Arabic', serif">ترافديشنال أرابيك (Traditional Arabic)</option>
+                    <option value="'Lateef', serif">لطيف رفيع وواضح (Lateef)</option>
+                </optgroup>
+                <optgroup label="📜 الخطوط الزخرفية والكوفية والرقعة">
+                    <option value="'El Messiri', sans-serif">المسيري - عريض (El Messiri Bold)</option>
+                    <option value="'Reem Kufi', sans-serif">ريم كوفي - عريض (Reem Kufi Bold)</option>
+                    <option value="'Aref Ruqaa', serif">عارف رقعة - عريض (Aref Ruqaa Bold)</option>
+                    <option value="'Rakkas', cursive">رقاص ديواني فخم (Rakkas)</option>
+                    <option value="'Katibeh', cursive">كاتبة مخطوطة تراثية (Katibeh)</option>
+                    <option value="'Marhey', cursive">مرهي حديث وبارز (Marhey Bold)</option>
+                    <option value="'Lalezar', cursive">لاله زار عناوين ضخمة (Lalezar)</option>
+                </optgroup>
+                <optgroup label="🎨 الخطوط الفنية والمنوعة">
+                    <option value="'Lemonada', cursive">ليمونادا عريض (Lemonada Bold)</option>
+                    <option value="'Mirza', cursive">ميرزا فارسي (Mirza Bold)</option>
+                    <option value="'Baloo Bhaijaan 2', cursive">بالو بايجان 2 عريض (Baloo Bold)</option>
+                    <option value="'Qahiri', sans-serif">قهيري مصري بارز (Qahiri)</option>
+                    <option value="'Athiti', sans-serif">أثيتي (Athiti Bold)</option>
+                    <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
+                    <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
+                    <option value="'Times New Roman', serif">تايمز نيو رومان (Times New Roman)</option>
+                    <option value="'Courier New', monospace">كوير رومان ثابت (Courier New Bold)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <span>اللون العام:</span>
+            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)" title="اختر لون الخط العام">
+        </div>
+    </div>
+
+    <!-- حاوية الصفحات -->
+    <div id="pagesWrapper">
+        <!-- الصفحة الأولى -->
+        <div class="sheet-container" onclick="setActiveContext(this, event)">
+            <div class="header-top">
+                <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
+                <div class="editable-header" contenteditable="true" style="font-size: 11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/09/22</div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="dynamicTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 35px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">م</span>
+                            </th>
+                            <th style="width: 160px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">الاسم الرباعي</span>
+                            </th>
+                            <th style="width: 80px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">نوع البطاقة</span>
+                            </th>
+                            <th style="width: 100px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">رقم البطاقة</span>
+                            </th>
+                            <th style="width: 90px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">رقم الاتصال</span>
+                            </th>
+                            <th style="width: 160px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">اسم الزوجة / الزوج</span>
+                            </th>
+                            <th style="width: 70px;" onclick="selectColumn(this, event)">
+                                <span contenteditable="true">الحالة</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <script>
+                            for (let i = 1; i <= 15; i++) {
+                                document.write(`
+                                    <tr onclick="selectRow(this, event)">
+                                        <td>${i}</td>
+                                        <td style="text-align: right; padding-right: 5px;" contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td style="text-align: right; padding-right: 5px;" contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+                                `);
+                            }
+                        </script>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="editable-header" contenteditable="true">البريد الإلكتروني / جهة الإصدار</div>
+                <div class="editable-header" contenteditable="true">الإصدار: 2026.09</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeSheet = null;
+        let activeTable = null;
+        let activeColumnIndex = 0;
+        let activeRowElement = null;
+        let activeThElement = null;
+        let activeCellElement = null;
+
+        function setActiveContext(sheetContainer, event) {
+            activeSheet = sheetContainer;
+            activeTable = sheetContainer.querySelector('table');
+            
+            if (event && event.target) {
+                let th = event.target.closest('th');
+                let td = event.target.closest('td');
+                let tr = event.target.closest('tr');
+                
+                if (th) {
+                    selectColumn(th, event);
+                } else if (td && tr && tr.parentElement.tagName === 'TBODY') {
+                    selectRow(tr, event);
+                    activeCellElement = td;
+                }
+            }
+        }
+
+        function selectColumn(thElement, event) {
+            if (event) event.stopPropagation();
+            let row = thElement.parentElement;
+            let colIdx = Array.from(row.children).indexOf(thElement);
+            let table = thElement.closest('table');
+            
+            activeTable = table;
+            activeColumnIndex = colIdx;
+            activeThElement = thElement;
+            
+            table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
+            let rows = table.querySelectorAll('tr');
+            rows.forEach(r => {
+                if (r.children[colIdx]) {
+                    r.children[colIdx].classList.add('active-column');
+                }
+            });
+        }
+
+        function selectRow(trElement, event) {
+            if (event) event.stopPropagation();
+            if (trElement.parentElement.tagName !== 'TBODY') return;
+            let table = trElement.closest('table');
+            activeTable = table;
+            
+            table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+            trElement.classList.add('active-row');
+            activeRowElement = trElement;
+
+            let td = event.target.closest('td');
+            if (td) {
+                activeCellElement = td;
+                let colIdx = Array.from(trElement.children).indexOf(td);
+                activeColumnIndex = colIdx;
+                activeThElement = table.querySelector('thead tr').children[colIdx];
+                table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
+                table.querySelectorAll('tr').forEach(r => {
+                    if (r.children[colIdx]) r.children[colIdx].classList.add('active-column');
+                });
+            }
+        }
+
+        function formatCell(action, value) {
+            if (!activeCellElement) {
+                alert("الرجاء النقر أولاً على الخلية أو الاسم الذي تريد تعديله!");
+                return;
+            }
+            if (action === 'color') {
+                activeCellElement.style.color = value;
+                activeCellElement.style.fontWeight = 'bold';
+            } else if (action === 'red-underline') {
+                activeCellElement.style.textDecoration = 'underline';
+                activeCellElement.style.textDecorationColor = '#e53935'; 
+                activeCellElement.style.textDecorationThickness = '3px';   
+                activeCellElement.style.fontWeight = 'bold';
+            } else if (action === 'reset') {
+                activeCellElement.style.color = '';
+                activeCellElement.style.fontWeight = '';
+                activeCellElement.style.textDecoration = '';
+                activeCellElement.style.textDecorationColor = '';
+                activeCellElement.style.textDecorationThickness = '';
+            }
+        }
+
+        function adjustActiveColWidth(amount) {
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeThElement) {
+                activeThElement = activeTable.querySelector('thead tr th');
+            }
+            if (!activeThElement) return;
+
+            let currentWidth = parseInt(activeThElement.style.width) || activeThElement.offsetWidth;
+            let newWidth = currentWidth + amount;
+            if (newWidth < 15) newWidth = 15;
+            
+            activeThElement.style.width = newWidth + 'px';
+            activeThElement.style.minWidth = newWidth + 'px';
+            activeThElement.style.maxWidth = newWidth + 'px';
+        }
+
+        function addRowToActiveTable() {
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeTable) return;
+
+            let tbody = activeTable.querySelector('tbody');
+            let headerRow = activeTable.querySelector('thead tr');
+            let colCount = headerRow.cells.length;
+            let newRow = tbody.insertRow();
+            newRow.setAttribute('onclick', 'selectRow(this, event)');
+            
+            for (let c = 0; c < colCount; c++) {
+                let newCell = newRow.insertCell();
+                newCell.contentEditable = "true";
+                if (c === 0) {
+                    newCell.innerText = tbody.rows.length; 
+                } else {
+                    newCell.style.textAlign = "right";
+                    newCell.style.paddingRight = "5px";
+                }
+            }
+            selectRow(newRow, { stopPropagation: () => {} });
+        }
+
+        function addColumnToActiveTable() {
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeTable) return;
+
+            let headerRow = activeTable.querySelector('thead tr');
+            let th = document.createElement('th');
+            th.style.width = "80px";
+            th.setAttribute('onclick', 'selectColumn(this, event)');
+            th.innerHTML = `<span contenteditable="true">جديد</span>`;
+            headerRow.appendChild(th);
+
+            let tbody = activeTable.querySelector('tbody');
+            for (let row of tbody.rows) {
+                let td = row.insertCell();
+                td.setAttribute("contenteditable", "true");
+                td.style.textAlign = "right";
+                td.style.paddingRight = "5px";
+            }
+            selectColumn(th, { stopPropagation: () => {} });
+        }
+
+        function deleteSelectedRow() {
+            if (!activeRowElement) {
+                alert("الرجاء النقر على الصف الذي تريد حذفه أولاً!");
+                return;
+            }
+            let tbody = activeRowElement.parentElement;
+            if (tbody.rows.length > 1) {
+                activeRowElement.remove();
+                activeRowElement = null;
+                Array.from(tbody.rows).forEach((row, idx) => {
+                    if (row.cells[0]) row.cells[0].innerText = idx + 1;
+                });
+            } else {
+                alert("لا يمكنك حذف الصف الأخير المتبقي في الجدول!");
+            }
+        }
+
+        function deleteSelectedColumn() {
+            if (!activeTable) return;
+            let headerRow = activeTable.querySelector('thead tr');
+            if (headerRow.cells.length > 1) {
+                headerRow.deleteCell(activeColumnIndex);
+                let tbody = activeTable.querySelector('tbody');
+                for (let row of tbody.rows) {
+                    if (row.cells.length > activeColumnIndex) {
+                        row.deleteCell(activeColumnIndex);
+                    }
+                }
+                activeColumnIndex = Math.max(0, activeColumnIndex - 1);
+                activeThElement = headerRow.cells[activeColumnIndex];
+            } else {
+                alert("لا يمكنك حذف العمود الوحيد المتبقي!");
+            }
+        }
+
+        function deleteActivePage() {
+            let pages = document.querySelectorAll('.sheet-container');
+            if (pages.length > 1) {
+                if (activeSheet) {
+                    activeSheet.remove();
+                } else {
+                    pages[pages.length - 1].remove();
+                }
+                let remainingPages = document.querySelectorAll('.sheet-container');
+                setActiveContext(remainingPages[0], { target: remainingPages[0] });
+            } else {
+                alert("لا يمكنك حذف الصفحة الوحيدة المتبقية!");
+            }
+        }
+
+        function addNewPage() {
+            let wrapper = document.getElementById('pagesWrapper');
+            let pageCount = wrapper.querySelectorAll('.sheet-container').length + 1;
+
+            let newPage = document.createElement('div');
+            newPage.className = 'sheet-container';
+            newPage.setAttribute('onclick', 'setActiveContext(this, event)');
+            newPage.innerHTML = `
+                <div class="header-top">
+                    <div class="editable-header" contenteditable="true">عنوان قابل للتعديل</div>
+                    <div class="editable-header" contenteditable="true" style="font-size: 11pt;">كشف إضافي (الصفحة ${pageCount})</div>
+                    <div class="editable-header" contenteditable="true">التاريخ: ---</div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="dynamicTable">
+                        <thead>
+                            <tr>
+                                ${Array.from({length: 7}, (_, i) => `
+                                    <th style="width: 90px;" onclick="selectColumn(this, event)">
+                                        <span contenteditable="true">العمود ${i+1}</span>
+                                    </th>
+                                `).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${
+                                Array.from({length: 12}, (_, rIdx) => `
+                                    <tr onclick="selectRow(this, event)">
+                                        <td contenteditable="true">${rIdx+1}</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+                                `).join('')
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="footer-bottom">
+                    <div class="editable-header" contenteditable="true">ملاحظات الصفحة</div>
+                    <div class="editable-header" contenteditable="true">توقيع المختص: --------</div>
+                </div>
+            `;
+            wrapper.appendChild(newPage);
+            setActiveContext(newPage, { target: newPage });
+            let currentFont = document.getElementById('fontSelector').value;
+            changeFontFamily(currentFont);
+        }
+
+        function changeFontFamily(fontValue) {
+            document.body.style.fontFamily = fontValue;
+            let btns = document.querySelectorAll('.btn, select');
+            btns.forEach(el => el.style.fontFamily = fontValue);
+        }
+
+        function changeTextColor(colorValue) {
+            document.body.style.color = colorValue;
+            let elements = document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header');
+            elements.forEach(el => {
+                el.style.color = colorValue;
+            });
+        }
+
+        window.onload = function() {
+            let firstSheet = document.querySelector('.sheet-container');
+            if (firstSheet) {
+                setActiveContext(firstSheet, { target: firstSheet });
+                activeThElement = firstSheet.querySelector('thead tr th');
+            }
+        };
+    </script>
+
+</body>
+</html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pen</title>
+  </head>
+  <body>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
