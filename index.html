@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>قالب الكشوفات الرسمية المطور - حفظ تلقائي</title>
-    <!-- استيراد مكتبة خطوط عربية ضخمة (أكثر من 60 خطاً عريضاً وواضحاً ومنوعاً) -->
+    <title>قالب الكشوفات الرسمية - حافظة الأعمال والأرشيف</title>
+    <!-- استيراد مكتبة خطوط عربية ضخمة -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
@@ -66,6 +66,8 @@
         .btn-whatsapp:hover { background: #1ebe57; }
         .btn-save { background: #7b1fa2; color: #fff; }
         .btn-save:hover { background: #4a148c; }
+        .btn-archive { background: #0277bd; color: #fff; }
+        .btn-archive:hover { background: #01579b; }
         
         .control-group {
             display: flex;
@@ -193,9 +195,50 @@
             margin-top: auto;
         }
 
+        /* نافذة الأرشيف والحافظة الداخلية */
+        #archiveModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .archive-content {
+            background: #fff;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            overflow-y: auto;
+        }
+        .archive-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .archive-item-info {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #333;
+        }
+
         @media print {
             body { background: #fff; }
-            .control-panel { display: none !important; }
+            .control-panel, #archiveModal { display: none !important; }
             .sheet-container { 
                 box-shadow: none !important; 
                 margin: 0 !important; 
@@ -213,28 +256,31 @@
     <div class="control-panel">
         <button class="btn" onclick="window.print()">🖨️ طباعة / PDF</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
-        <button class="btn btn-save" onclick="saveBackupFile()">💾 تحميل نسخة احتياطية</button>
-        <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;" title="حذف كل البيانات وبدء صفحة جديدة نظيفة">🗑️ مسح الكل</button>
         
-        <!-- زر التواصل مع المطور عبر واتساب مع النص المطلوب -->
+        <!-- زر الحفظ في الأرشيف -->
+        <button class="btn btn-save" onclick="saveToArchive()" title="حفظ نسخة من العمل الحالي في حافظة الأرشيف الداخلية">💾 حفظ في الأرشيف</button>
+        
+        <!-- زر فتح حافظة الأعمال والأرشيف -->
+        <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
+        
+        <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;">🗑️ مسح الكل</button>
+        
         <a href="https://wa.me/967784327056?text=مرحبا%20ميثاق%20محمد%20تواصلت%20بك" target="_blank" class="btn btn-whatsapp">
             💬 التواصل مع المطور
         </a>
         
         <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
 
-        <!-- أزرار تنسيق الأخطاء والتنبيهات المباشرة -->
         <div class="control-group" title="تنسيق الخلية المحددة">
             <span>التنبيهات:</span>
             <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt;" onclick="formatCell('color', '#c62828')">🔴 نص أحمر</button>
-            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt; background: #b71c1c;" onclick="formatCell('red-underline', '')">🛑 خط أحمر تحت الاسم</button>
-            <button class="btn" style="padding: 4px 8px; font-size: 8.5pt; background: #555;" onclick="formatCell('reset', '')">🔄 إزالة التنسيق</button>
+            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt; background: #b71c1c;" onclick="formatCell('red-underline', '')">🛑 خط أحمر</button>
+            <button class="btn" style="padding: 4px 8px; font-size: 8.5pt; background: #555;" onclick="formatCell('reset', '')">🔄 إزالة</button>
         </div>
 
         <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
 
-        <!-- أزرار التحكم بعرض العمود المحدد -->
-        <div class="control-group" title="تحكم بعرض العمود المحدّد حالياً">
+        <div class="control-group">
             <span>العمود:</span>
             <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
             <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
@@ -246,73 +292,44 @@
         <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
         <button class="btn btn-red" onclick="deleteActivePage()" style="background: #b71c1c;">🗑️ حذف الصفحة</button>
 
-        <!-- قائمة الخطوط الضخمة (اكثر من 60 خط عريض وواضح ومنوع) -->
+        <!-- قائمة الخطوط الضخمة -->
         <div class="control-group">
             <span>✨ الخطوط:</span>
             <select id="fontSelector" onchange="changeFontFamily(this.value)">
-                <optgroup label="⭐ الخطوط الأكثر طلباً والبارزة">
-                    <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900) - الافتراضي والموصى به</option>
-                    <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
-                    <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
-                    <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
-                    <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
-                    <option value="'Zain', sans-serif">زين عريض (Zain Heavy)</option>
-                    <option value="'IBM Plex Sans Arabic', sans-serif">آي بي إم بلكس عربي ثقيل (IBM Plex Bold)</option>
-                </optgroup>
-                <optgroup label="💪 الخطوط العريضة والهندسية والحديثة">
-                    <option value="'Cairo', sans-serif">كايرو - سميك (Cairo Bold)</option>
-                    <option value="'Cairo', sans-serif">كايرو - أسود (Cairo Black)</option>
-                    <option value="'Alexandria', sans-serif">الإسكندرية - أسود (Alexandria Black)</option>
-                    <option value="'Tajawal', sans-serif">تجوال - عريض جداً (Tajawal ExtraBold)</option>
-                    <option value="'Almarai', sans-serif">المراعي - عريض (Almarai Bold)</option>
-                    <option value="'Changa', sans-serif">شانجا - عريض (Changa Bold)</option>
-                    <option value="'Zain', sans-serif">زين - عريض جداً (Zain ExtraBold)</option>
-                    <option value="'Mada', sans-serif">مدى - عريض (Mada Bold)</option>
-                    <option value="'Readex Pro', sans-serif">ريدكس برو - سميك (Readex Pro Bold)</option>
-                    <option value="'Noto Sans Arabic', sans-serif">نوتو سانس عربي - أسود (Noto Sans Black)</option>
-                    <option value="'Noto Kufi Arabic', sans-serif">نوتو كوفي عربي - عريض (Noto Kufi Bold)</option>
-                </optgroup>
-                <optgroup label="🏛️ الخطوط الكلاسيكية والتراثية والنسخية">
-                    <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
-                    <option value="'Amiri Quran', serif">أميري القرآن الكريم (Amiri Quran)</option>
-                    <option value="'Scheherazade New', serif">شهرزاد الجديدة - عريض (Scheherazade Bold)</option>
-                    <option value="'Noto Naskh Arabic', serif">نوتو نسخ عربي - عريض (Noto Naskh Bold)</option>
-                    <option value="'Harmattan', serif">هطّان - عريض (Harmattan Bold)</option>
-                    <option value="'Traditional Arabic', serif">ترافديشنال أرابيك (Traditional Arabic)</option>
-                    <option value="'Lateef', serif">لطيف رفيع وواضح (Lateef)</option>
-                </optgroup>
-                <optgroup label="📜 الخطوط الزخرفية والكوفية والرقعة">
-                    <option value="'El Messiri', sans-serif">المسيري - عريض (El Messiri Bold)</option>
-                    <option value="'Reem Kufi', sans-serif">ريم كوفي - عريض (Reem Kufi Bold)</option>
-                    <option value="'Aref Ruqaa', serif">عارف رقعة - عريض (Aref Ruqaa Bold)</option>
-                    <option value="'Rakkas', cursive">رقاص ديواني فخم (Rakkas)</option>
-                    <option value="'Katibeh', cursive">كاتبة مخطوطة تراثية (Katibeh)</option>
-                    <option value="'Marhey', cursive">مرهي حديث وبارز (Marhey Bold)</option>
-                    <option value="'Lalezar', cursive">لاله زار عناوين ضخمة (Lalezar)</option>
-                </optgroup>
-                <optgroup label="🎨 الخطوط الفنية والمنوعة">
-                    <option value="'Lemonada', cursive">ليمونادا عريض (Lemonada Bold)</option>
-                    <option value="'Mirza', cursive">ميرزا فارسي (Mirza Bold)</option>
-                    <option value="'Baloo Bhaijaan 2', cursive">بالو بايجان 2 عريض (Baloo Bold)</option>
-                    <option value="'Qahiri', sans-serif">قهيري مصري بارز (Qahiri)</option>
-                    <option value="'Athiti', sans-serif">أثيتي (Athiti Bold)</option>
-                    <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
-                    <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
-                    <option value="'Times New Roman', serif">تايمز نيو رومان (Times New Roman)</option>
-                    <option value="'Courier New', monospace">كوير رومان ثابت (Courier New Bold)</option>
-                </optgroup>
+                <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900)</option>
+                <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
+                <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
+                <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
+                <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
+                <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
+                <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
+                <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
             </select>
         </div>
 
         <div class="control-group">
             <span>اللون العام:</span>
-            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)" title="اختر لون الخط العام">
+            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)">
+        </div>
+    </div>
+
+    <!-- نافذة حافظة الأعمال والأرشيف (مخفية وتظهر عند النقر على الزر) -->
+    <div id="archiveModal">
+        <div class="archive-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00695c; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #00695c;">📁 حافظة الأعمال والأرشيف المركزي</h3>
+                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق الحافظة</button>
+            </div>
+            <p style="font-size: 9pt; color: #666; margin-top: 0;">هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً. يمكنك استرجاع أي عمل لتعديله أو حذفه من الأرشيف.</p>
+            
+            <div id="archiveListContainer">
+                <!-- سيتم تعبئة الأرشيف هنا تلقائياً -->
+            </div>
         </div>
     </div>
 
     <!-- حاوية الصفحات -->
     <div id="pagesWrapper">
-        <!-- الصفحة الأولى (افتراضية إذا لم يوجد حفظ سابق) -->
         <div class="sheet-container" onclick="setActiveContext(this, event)">
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
@@ -368,26 +385,88 @@
         let activeThElement = null;
         let activeCellElement = null;
 
-        // الحفظ التلقائي في ذاكرة المتصفح عند أي كتابة أو تعديل
-        document.addEventListener('input', function() {
-            saveDataLocally();
-        });
+        // دالة حفظ العمل الحالي كنسخة جديدة داخل الأرشيف والحافظة
+        function saveToArchive() {
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                if (el.innerText.trim() !== "") {
+                    el.setAttribute('textContent', el.innerText);
+                }
+            });
 
-        function saveDataLocally() {
             let wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
-            localStorage.setItem('toufan_sheets_data', wrapperHtml);
+            let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            
+            let now = new Date();
+            let timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', {hour: '2-digit', minute:'2-digit'});
+            
+            archives.push({
+                id: Date.now(),
+                title: 'عمل محفوظ بتاريخ: ' + timeString,
+                html: wrapperHtml
+            });
+
+            localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
+            alert("✅ تم حفظ العمل بنجاح داخل [حافظة الأعمال والأرشيف المركزي] للموقع!");
         }
 
-        function loadSavedData() {
-            let savedHtml = localStorage.getItem('toufan_sheets_data');
-            if (savedHtml && savedHtml.trim() !== "") {
-                document.getElementById('pagesWrapper').innerHTML = savedHtml;
+        // فتح نافذة الأرشيف واستعراض المحفوظات
+        function openArchiveModal() {
+            let container = document.getElementById('archiveListContainer');
+            container.innerHTML = '';
+            
+            let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            
+            if (archives.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #888; padding: 20px;">لا توجد أعمال محفوظة في الأرشيف حتى الآن. اضغط على زر [حفظ في الأرشيف] لحفظ عملك الحالي.</p>`;
+            } else {
+                archives.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = 'archive-item';
+                    div.innerHTML = `
+                        <div class="archive-item-info">
+                            <span>📄 ${index + 1}. ${item.title}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-green" style="padding: 4px 10px; font-size: 8.5pt;" onclick="loadArchiveItem(${item.id})">📂 استرجاع وتعديل</button>
+                            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt;" onclick="deleteArchiveItem(${item.id})">🗑️ حذف</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            
+            document.getElementById('archiveModal').style.display = 'flex';
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archiveModal').style.display = 'none';
+        }
+
+        // استرجاع عمل من الأرشيف للتعديل عليه
+        function loadArchiveItem(id) {
+            let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            let found = archives.find(item => item.id === id);
+            if (found) {
+                document.getElementById('pagesWrapper').innerHTML = found.html;
+                closeArchiveModal();
+                alert("📂 تم استرجاع العمل بنجاح! يمكنك الآن التعديل عليه كما تريد.");
+                let firstSheet = document.querySelector('.sheet-container');
+                if (firstSheet) setActiveContext(firstSheet, { target: firstSheet });
+            }
+        }
+
+        // حذف عمل من الأرشيف
+        function deleteArchiveItem(id) {
+            if (confirm("هل أنت متأكد من حذف هذا العمل من الأرشيف؟")) {
+                let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+                archives = archives.filter(item => item.id !== id);
+                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
+                openArchiveModal();
             }
         }
 
         function resetAllData() {
-            if (confirm("هل أنت متأكد من مسح جميع البيانات والصفحات والبدء من جديد؟")) {
-                localStorage.removeItem('toufan_sheets_data');
+            if (confirm("هل أنت متأكد من مسح الصفحة الحالية والبدء من جديد؟")) {
                 location.reload();
             }
         }
@@ -469,10 +548,7 @@
                 activeCellElement.style.color = '';
                 activeCellElement.style.fontWeight = '';
                 activeCellElement.style.textDecoration = '';
-                activeCellElement.style.textDecorationColor = '';
-                activeCellElement.style.textDecorationThickness = '';
             }
-            saveDataLocally();
         }
 
         function adjustActiveColWidth(amount) {
@@ -492,7 +568,6 @@
             activeThElement.style.width = newWidth + 'px';
             activeThElement.style.minWidth = newWidth + 'px';
             activeThElement.style.maxWidth = newWidth + 'px';
-            saveDataLocally();
         }
 
         function addRowToActiveTable() {
@@ -519,7 +594,6 @@
                 }
             }
             selectRow(newRow, { stopPropagation: () => {} });
-            saveDataLocally();
         }
 
         function addColumnToActiveTable() {
@@ -544,7 +618,6 @@
                 td.style.paddingRight = "5px";
             }
             selectColumn(th, { stopPropagation: () => {} });
-            saveDataLocally();
         }
 
         function deleteSelectedRow() {
@@ -559,9 +632,8 @@
                 Array.from(tbody.rows).forEach((row, idx) => {
                     if (row.cells[0]) row.cells[0].innerText = idx + 1;
                 });
-                saveDataLocally();
             } else {
-                alert("لا يمكنك حذف الصف الأخير المتبقي في الجدول!");
+                alert("لا يمكنك حذف الصف الأخير المتبقي!");
             }
         }
 
@@ -578,7 +650,6 @@
                 }
                 activeColumnIndex = Math.max(0, activeColumnIndex - 1);
                 activeThElement = headerRow.cells[activeColumnIndex];
-                saveDataLocally();
             } else {
                 alert("لا يمكنك حذف العمود الوحيد المتبقي!");
             }
@@ -594,7 +665,6 @@
                 }
                 let remainingPages = document.querySelectorAll('.sheet-container');
                 setActiveContext(remainingPages[0], { target: remainingPages[0] });
-                saveDataLocally();
             } else {
                 alert("لا يمكنك حذف الصفحة الوحيدة المتبقية!");
             }
@@ -652,7 +722,6 @@
             setActiveContext(newPage, { target: newPage });
             let currentFont = document.getElementById('fontSelector').value;
             changeFontFamily(currentFont);
-            saveDataLocally();
         }
 
         function changeFontFamily(fontValue) {
@@ -669,26 +738,7 @@
             });
         }
 
-        function saveBackupFile() {
-            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                el.setAttribute('contenteditable', 'true');
-                if (el.innerText.trim() !== "") {
-                    el.setAttribute('textContent', el.innerText);
-                }
-            });
-
-            let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-            let blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-            let a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'Al_Toufan_Backup.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
         window.onload = function() {
-            loadSavedData();
             let firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
                 setActiveContext(firstSheet, { target: firstSheet });
