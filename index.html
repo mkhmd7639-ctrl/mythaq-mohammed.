@@ -79,7 +79,7 @@
             font-size: 9pt;
             font-weight: bold;
         }
-        select, input[type="color"] {
+        select, input[type="color"], input[type="text"] {
             padding: 4px 6px;
             border-radius: 4px;
             border: 1px solid #ccc;
@@ -89,12 +89,17 @@
             font-size: 9pt;
             height: 30px;
             background: #fff;
+            box-sizing: border-box;
         }
         input[type="color"] {
             width: 32px;
             padding: 0;
             border: none;
             background: none;
+        }
+        .search-input {
+            width: 180px;
+            cursor: text !important;
         }
 
         .sheet-container {
@@ -265,6 +270,12 @@
         
         <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;">🗑️ مسح الكل</button>
         
+        <!-- حقل البحث السريع في الجداول -->
+        <div class="control-group" style="background: #e0f2f1;">
+            <span>🔍 بحث:</span>
+            <input type="text" id="tableSearchInput" class="search-input" placeholder="ابحث (لا تفرق بين الهمزات)..." onkeyup="filterTableRows()">
+        </div>
+        
         <a href="https://wa.me/967784327056?text=مرحبا%20ميثاق%20محمد%20تواصلت%20بك" target="_blank" class="btn btn-whatsapp">
             💬 التواصل مع المطور
         </a>
@@ -313,7 +324,7 @@
         </div>
     </div>
 
-    <!-- نافذة حافظة الأعمال والأرشيف (مخفية وتظهر عند النقر على الزر) -->
+    <!-- نافذة حافظة الأعمال والأرشيف -->
     <div id="archiveModal">
         <div class="archive-content">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00695c; padding-bottom: 10px; margin-bottom: 15px;">
@@ -384,6 +395,46 @@
         let activeRowElement = null;
         let activeThElement = null;
         let activeCellElement = null;
+
+        // دالة تطبيع النصوص لإزالة فروق الهمزات والألفات والتشكيل (مثل توحيد أ، إ، آ إلى أ، والهاء والتاء المربوطة إلخ)
+        function normalizeArabic(text) {
+            if (!text) return "";
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/[\u064b-\u065f]/g, '') // إزالة التشكيل
+                .replace(/[أإآا]/g, 'ا')        // توحيد الألفات والهمزات
+                .replace(/ة/g, 'ه')            // توحيد التاء المربوطة والهاء إذا رغبت، أو تركها حسب الحاجة
+                .replace(/ؤ/g, 'و')
+                .replace(/ئ/g, 'ي')
+                .replace(/ى/g, 'ي');
+        }
+
+        // دالة البحث المباشر الذكية (لا تفرق بين الهمزات والعلامات البسيطة)
+        function filterTableRows() {
+            let input = document.getElementById('tableSearchInput');
+            let filter = normalizeArabic(input.value.trim());
+            let tables = document.querySelectorAll('.dynamicTable');
+
+            tables.forEach(table => {
+                let rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    let match = false;
+                    let cells = row.querySelectorAll('td');
+                    cells.forEach((cell, idx) => {
+                        if (idx > 0 && normalizeArabic(cell.innerText).includes(filter)) {
+                            match = true;
+                        }
+                    });
+
+                    if (filter === "" || match) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
 
         // دالة حفظ العمل الحالي كنسخة جديدة داخل الأرشيف والحافظة
         function saveToArchive() {
