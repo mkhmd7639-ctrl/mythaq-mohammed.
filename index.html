@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>قالب الكشوفات الرسمية - مربوط بتيليجرام</title>
+    <title>قالب الكشوفات الرسمية - حافظة الأعمال والأرشيف</title>
     <!-- استيراد مكتبة خطوط عربية ضخمة -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
     
@@ -19,6 +19,7 @@
             direction: rtl;
             background-color: #eef2f5;
         }
+        /* لوحة تحكم علوية متكاملة */
         .control-panel {
             text-align: center;
             margin: 10px auto;
@@ -59,12 +60,16 @@
         .btn-blue:hover { background: #0d47a1; }
         .btn-red { background: #c62828; }
         .btn-red:hover { background: #8e0000; }
-        .btn-telegram { background: #0088cc; color: #fff; }
-        .btn-telegram:hover { background: #006699; }
+        .btn-amber { background: #d97706; color: #fff; }
+        .btn-amber:hover { background: #b45309; }
+        .btn-whatsapp { background: #25d366; color: #fff; }
+        .btn-whatsapp:hover { background: #1ebe57; }
         .btn-save { background: #7b1fa2; color: #fff; }
         .btn-save:hover { background: #4a148c; }
         .btn-archive { background: #0277bd; color: #fff; }
         .btn-archive:hover { background: #01579b; }
+        .btn-telegram { background: #0088cc; color: #fff; }
+        .btn-telegram:hover { background: #006699; }
         
         .control-group {
             display: flex;
@@ -95,7 +100,7 @@
             background: none;
         }
         .search-input {
-            width: 160px;
+            width: 180px;
             cursor: text !important;
         }
 
@@ -129,8 +134,14 @@
             padding: 2px 5px;
             border-radius: 3px;
         }
-        .editable-header:hover { border-color: #00695c; background: #f9f9f9; }
-        .editable-header:focus { outline: 2px solid #00695c; background: #fffde7; }
+        .editable-header:hover {
+            border-color: #00695c;
+            background: #f9f9f9;
+        }
+        .editable-header:focus {
+            outline: 2px solid #00695c;
+            background: #fffde7;
+        }
 
         .table-wrapper {
             width: 100%;
@@ -174,8 +185,12 @@
             outline: 2px solid #00695c;
         }
 
-        .active-column { background-color: #e8f8f5 !important; }
-        .active-row { background-color: #fff3e0 !important; }
+        .active-column {
+            background-color: #e8f8f5 !important;
+        }
+        .active-row {
+            background-color: #fff3e0 !important;
+        }
 
         .footer-bottom {
             display: flex;
@@ -187,7 +202,8 @@
             margin-top: auto;
         }
 
-        #archiveModal {
+        /* نافذة عامة (للأرشيف وإعدادات البوت) */
+        .custom-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -199,16 +215,16 @@
             justify-content: center;
             align-items: center;
         }
-        .archive-content {
+        .modal-content {
             background: #fff;
             width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
+            max-width: 600px;
             border-radius: 8px;
             padding: 20px;
             display: flex;
             flex-direction: column;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-height: 85vh;
             overflow-y: auto;
         }
         .archive-item {
@@ -221,56 +237,145 @@
             justify-content: space-between;
             align-items: center;
         }
-        .archive-item-info { font-size: 10pt; font-weight: bold; color: #333; }
+        .archive-item-info {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #333;
+        }
 
         @media print {
             body { background: #fff; }
-            .control-panel, #archiveModal { display: none !important; }
-            .sheet-container { box-shadow: none !important; margin: 0 !important; width: 100% !important; height: 198mm !important; padding: 4mm !important; }
+            .control-panel, .custom-modal { display: none !important; }
+            .sheet-container { 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                width: 100% !important; 
+                height: 198mm !important; 
+                padding: 4mm !important; 
+                page-break-before: always; 
+            }
         }
     </style>
 </head>
 <body>
 
+    <!-- لوحة التحكم العلوية الشاملة -->
     <div class="control-panel">
         <button class="btn" onclick="window.print()">🖨️ طباعة / PDF</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
         
-        <!-- زر إرسال البيانات إلى تيليجرام للبوت الخاص بك -->
-        <button class="btn btn-telegram" onclick="sendDataToTelegram()">📤 إرسال لتليجرام</button>
+        <!-- زر الحفظ في الأرشيف -->
+        <button class="btn btn-save" onclick="saveToArchive()" title="حفظ نسخة من العمل الحالي في حافظة الأرشيف الداخلية">💾 حفظ في الأرشيف</button>
         
-        <button class="btn btn-save" onclick="saveToArchive()">💾 حفظ بالأرشيف</button>
-        <button class="btn btn-archive" onclick="openArchiveModal()">📁 الحافظة</button>
+        <!-- زر فتح حافظة الأعمال والأرشيف -->
+        <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
+
+        <!-- زر إرسال الكشف إلى التليجرام -->
+        <button class="btn btn-telegram" onclick="handleTelegramSend()">🚀 إرسال إلى التليجرام</button>
         
+        <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;">🗑️ مسح الكل</button>
+        
+        <!-- حقل البحث السريع في الجداول -->
         <div class="control-group" style="background: #e0f2f1;">
             <span>🔍 بحث:</span>
-            <input type="text" id="tableSearchInput" class="search-input" placeholder="بحث بلا همزات..." onkeyup="filterTableRows()">
+            <input type="text" id="tableSearchInput" class="search-input" placeholder="ابحث (لا تفرق بين الهمزات)..." onkeyup="filterTableRows()">
         </div>
         
-        <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;">🗑️ مسح</button>
+        <a href="https://wa.me/967784327056?text=مرحبا%20ميثاق%20محمد%20تواصلت%20بك" target="_blank" class="btn btn-whatsapp">
+            💬 التواصل مع المطور
+        </a>
         
-        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ صف</button>
-        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ عمود</button>
-        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف صف</button>
-        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف عمود</button>
+        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
+
+        <div class="control-group" title="تنسيق الخلية المحددة">
+            <span>التنبيهات:</span>
+            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt;" onclick="formatCell('color', '#c62828')">🔴 نص أحمر</button>
+            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt; background: #b71c1c;" onclick="formatCell('red-underline', '')">🛑 خط أحمر</button>
+            <button class="btn" style="padding: 4px 8px; font-size: 8.5pt; background: #555;" onclick="formatCell('reset', '')">🔄 إزالة</button>
+        </div>
+
+        <span style="border-left: 1px solid #ccc; height: 20px; margin: 0 2px;"></span>
+
+        <div class="control-group">
+            <span>العمود:</span>
+            <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
+            <button class="btn btn-amber" style="padding: 3px 8px; font-size: 8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
+        </div>
+
+        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ إضافة صف</button>
+        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ إضافة عمود</button>
+        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف الصف</button>
+        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
+        <button class="btn btn-red" onclick="deleteActivePage()" style="background: #b71c1c;">🗑️ حذف الصفحة</button>
+
+        <!-- قائمة الخطوط الضخمة -->
+        <div class="control-group">
+            <span>✨ الخطوط:</span>
+            <select id="fontSelector" onchange="changeFontFamily(this.value)">
+                <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900)</option>
+                <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
+                <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
+                <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
+                <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
+                <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
+                <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
+                <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <span>اللون العام:</span>
+            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)">
+        </div>
     </div>
 
-    <div id="archiveModal">
-        <div class="archive-content">
+    <!-- نافذة إعدادات بوت التليجرام (تظهر أول مرة فقط أو عند الحاجة للتعديل) -->
+    <div id="telegramSettingsModal" class="custom-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0088cc; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #0088cc;">🤖 إعدادات بوت التليجرام</h3>
+                <button class="btn btn-red" onclick="closeTelegramModal()">✖ إغلاق</button>
+            </div>
+            <p style="font-size: 9pt; color: #555; margin-top: 0;">أدخل بيانات بوتك مرة واحدة فقط، وستبقى مخزنة داخل متصفحك بشكل آمن للاستخدام المباشر:</p>
+            
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 9pt; font-weight: bold; margin-bottom: 4px;">توكن البوت (Bot Token):</label>
+                <input type="text" id="inputBotToken" placeholder="مثال: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" style="width: 100%;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 9pt; font-weight: bold; margin-bottom: 4px;">معرف الدردشة (Chat ID):</label>
+                <input type="text" id="inputChatId" placeholder="مثال: 7962257606" style="width: 100%;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-telegram" onclick="saveTelegramSettingsAndSend()">💾 حفظ وإرسال الآن</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة حافظة الأعمال والأرشيف -->
+    <div id="archiveModal" class="custom-modal">
+        <div class="modal-content" style="max-width: 800px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00695c; padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: #00695c;">📁 حافظة الأعمال والأرشيف المركزي</h3>
-                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق</button>
+                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق الحافظة</button>
             </div>
-            <div id="archiveListContainer"></div>
+            <p style="font-size: 9pt; color: #666; margin-top: 0;">هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً. يمكنك استرجاع أي عمل لتعديله أو حذفه من الأرشيف.</p>
+            
+            <div id="archiveListContainer">
+                <!-- سيتم تعبئة الأرشيف هنا تلقائياً -->
+            </div>
         </div>
     </div>
 
+    <!-- حاوية الصفحات -->
     <div id="pagesWrapper">
         <div class="sheet-container" onclick="setActiveContext(this, event)">
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
                 <div class="editable-header" contenteditable="true" style="font-size: 11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
-                <div class="editable-header" contenteditable="true">التاريخ: 2026/09/22</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/07</div>
             </div>
 
             <div class="table-wrapper">
@@ -308,19 +413,12 @@
 
             <div class="footer-bottom">
                 <div class="editable-header" contenteditable="true">البريد الإلكتروني / جهة الإصدار</div>
-                <div class="editable-header" contenteditable="true">الإصدار: 2026.09</div>
+                <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // بيانات بوتك وتيليجرام مدمجة بالكامل:
-        // ==========================================
-        const TELEGRAM_BOT_TOKEN = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-WJjc0"; 
-        const TELEGRAM_CHAT_ID = "7962257606";
-        // ==========================================
-
         let activeSheet = null;
         let activeTable = null;
         let activeColumnIndex = 0;
@@ -328,50 +426,88 @@
         let activeThElement = null;
         let activeCellElement = null;
 
-        async function sendDataToTelegram() {
-            if (!activeRowElement) {
-                alert("الرجاء النقر واختيار (الصف) الخاص بالشخص الذي تريد إرسال بياناته أولاً!");
+        // دالة التعامل مع زر الإرسال للتليجرام
+        function handleTelegramSend() {
+            let savedToken = localStorage.getItem('saved_telegram_bot_token');
+            let savedChatId = localStorage.getItem('saved_telegram_chat_id');
+
+            if (!savedToken || !savedChatId) {
+                // إذا لم تقم بإدخالها من قبل، تظهر لك نافذة إدخال البيانات لمرة واحدة
+                document.getElementById('telegramSettingsModal').style.display = 'flex';
+            } else {
+                executeTelegramSend(savedToken, savedChatId);
+            }
+        }
+
+        function closeTelegramModal() {
+            document.getElementById('telegramSettingsModal').style.display = 'none';
+        }
+
+        function saveTelegramSettingsAndSend() {
+            let token = document.getElementById('inputBotToken').value.trim();
+            let chatId = document.getElementById('inputChatId').value.trim();
+
+            if (!token || !chatId) {
+                alert("الرجاء إدخال التوكن ومعرف الدردشة بشكل صحيح!");
                 return;
             }
 
-            let headers = [];
-            let activeTableEl = activeRowElement.closest('table');
-            activeTableEl.querySelectorAll('thead th span').forEach(thSpan => {
-                headers.push(thSpan.innerText.trim());
-            });
+            localStorage.setItem('saved_telegram_bot_token', token);
+            localStorage.setItem('saved_telegram_chat_id', chatId);
+            closeTelegramModal();
+            executeTelegramSend(token, chatId);
+        }
 
-            let cells = activeRowElement.querySelectorAll('td');
-            let rowDataText = "📋 **بيانات مُسجلة جديدة (عبر المنظومة):**\n\n";
+        function executeTelegramSend(botToken, chatId) {
+            let reportText = "📋 *كشف البيانات والترتيبات الرسمية*\n\n";
             
-            cells.forEach((cell, idx) => {
-                let headerName = headers[idx] || `عمود ${idx+1}`;
-                let cellValue = cell.innerText.trim() || "فارغ";
-                rowDataText += `🔹 *${headerName}:* ${cellValue}\n`;
-            });
-
-            let url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-            
-            try {
-                let response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: rowDataText,
-                        parse_mode: 'Markdown'
-                    })
+            let tables = document.querySelectorAll('.dynamicTable');
+            tables.forEach((table, tIdx) => {
+                reportText += `📄 *جدول رقم (${tIdx + 1})*\n`;
+                let rows = table.querySelectorAll('tbody tr');
+                rows.forEach((row, rIdx) => {
+                    let cells = row.querySelectorAll('td');
+                    let rowData = [];
+                    cells.forEach((cell, cIdx) => {
+                        let text = cell.innerText.trim();
+                        if (cIdx > 0 && text !== "") {
+                            rowData.push(text);
+                        }
+                    });
+                    if (rowData.length > 0) {
+                        reportText += `${rIdx + 1}. ${rowData.join(' - ')}\n`;
+                    }
                 });
+                reportText += "\n";
+            });
 
-                let result = await response.json();
-                if (result.ok) {
-                    alert("✅ تم إرسال البيانات إلى بوت تيليجرام بنجاح!");
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: reportText,
+                    parse_mode: 'Markdown'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    alert("✅ تم إرسال كافة بيانات الكشف إلى بوت تليجرام بنجاح!");
                 } else {
-                    alert("❌ فشل الإرسال: " + result.description);
+                    alert("❌ حدث خطأ أثناء الإرسال، تأكد من صحة التوكن ومعرف الدردشة المخزن.");
+                    // تفعيل نافذة الإعدادات لتعديل البيانات الخاطئة
+                    document.getElementById('telegramSettingsModal').style.display = 'flex';
                 }
-            } catch (error) {
-                console.error(error);
-                alert("❌ حدث خطأ في الاتصال بالشبكة.");
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("❌ تعذر الاتصال بخادم تليجرام.");
+            });
         }
 
         function normalizeArabic(text) {
@@ -402,47 +538,70 @@
                             match = true;
                         }
                     });
-                    row.style.display = (filter === "" || match) ? "" : "none";
+
+                    if (filter === "" || match) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
                 });
             });
         }
 
         function saveToArchive() {
             document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                if (el.innerText.trim() !== "") el.setAttribute('textContent', el.innerText);
+                if (el.innerText.trim() !== "") {
+                    el.setAttribute('textContent', el.innerText);
+                }
             });
+
             let wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
             let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            let timeString = new Date().toLocaleDateString('ar-YE') + ' - ' + new Date().toLocaleTimeString('ar-YE', {hour: '2-digit', minute:'2-digit'});
-            archives.push({ id: Date.now(), title: 'عمل محفوظ: ' + timeString, html: wrapperHtml });
+            
+            let now = new Date();
+            let timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', {hour: '2-digit', minute:'2-digit'});
+            
+            archives.push({
+                id: Date.now(),
+                title: 'عمل محفوظ بتاريخ: ' + timeString,
+                html: wrapperHtml
+            });
+
             localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-            alert("✅ تم الحفظ في الأرشيف!");
+            alert("✅ تم حفظ العمل بنجاح داخل [حافظة الأعمال والأرشيف المركزي] للموقع!");
         }
 
         function openArchiveModal() {
             let container = document.getElementById('archiveListContainer');
             container.innerHTML = '';
+            
             let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            
             if (archives.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #888; padding: 20px;">لا توجد أعمال محفوظة.</p>`;
+                container.innerHTML = `<p style="text-align: center; color: #888; padding: 20px;">لا توجد أعمال محفوظة في الأرشيف حتى الآن. اضغط على زر [حفظ في الأرشيف] لحفظ عملك الحالي.</p>`;
             } else {
                 archives.forEach((item, index) => {
                     let div = document.createElement('div');
                     div.className = 'archive-item';
                     div.innerHTML = `
-                        <div class="archive-item-info"><span>📄 ${index + 1}. ${item.title}</span></div>
+                        <div class="archive-item-info">
+                            <span>📄 ${index + 1}. ${item.title}</span>
+                        </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-green" style="padding: 4px 8px; font-size: 8.5pt;" onclick="loadArchiveItem(${item.id})">📂 استرجاع</button>
-                            <button class="btn btn-red" style="padding: 4px 8px; font-size: 8.5pt;" onclick="deleteArchiveItem(${item.id})">🗑️ حذف</button>
+                            <button class="btn btn-green" style="padding: 4px 10px; font-size: 8.5pt;" onclick="loadArchiveItem(${item.id})">📂 استرجاع وتعديل</button>
+                            <button class="btn btn-red" style="padding: 4px 10px; font-size: 8.5pt;" onclick="deleteArchiveItem(${item.id})">🗑️ حذف</button>
                         </div>
                     `;
                     container.appendChild(div);
                 });
             }
+            
             document.getElementById('archiveModal').style.display = 'flex';
         }
 
-        function closeArchiveModal() { document.getElementById('archiveModal').style.display = 'none'; }
+        function closeArchiveModal() {
+            document.getElementById('archiveModal').style.display = 'none';
+        }
 
         function loadArchiveItem(id) {
             let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
@@ -450,12 +609,14 @@
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
                 closeArchiveModal();
-                alert("📂 تم الاسترجاع بنجاح!");
+                alert("📂 تم استرجاع العمل بنجاح! يمكنك الآن التعديل عليه كما تريد.");
+                let firstSheet = document.querySelector('.sheet-container');
+                if (firstSheet) setActiveContext(firstSheet, { target: firstSheet });
             }
         }
 
         function deleteArchiveItem(id) {
-            if (confirm("هل تريد الحذف؟")) {
+            if (confirm("هل أنت متأكد من حذف هذا العمل من الأرشيف؟")) {
                 let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
                 archives = archives.filter(item => item.id !== id);
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
@@ -463,17 +624,24 @@
             }
         }
 
-        function resetAllData() { if (confirm("مسح الصفحة؟")) location.reload(); }
+        function resetAllData() {
+            if (confirm("هل أنت متأكد من مسح الصفحة الحالية والبدء من جديد؟")) {
+                location.reload();
+            }
+        }
 
         function setActiveContext(sheetContainer, event) {
             activeSheet = sheetContainer;
             activeTable = sheetContainer.querySelector('table');
+            
             if (event && event.target) {
                 let th = event.target.closest('th');
                 let td = event.target.closest('td');
                 let tr = event.target.closest('tr');
-                if (th) selectColumn(th, event);
-                else if (td && tr && tr.parentElement.tagName === 'TBODY') {
+                
+                if (th) {
+                    selectColumn(th, event);
+                } else if (td && tr && tr.parentElement.tagName === 'TBODY') {
                     selectRow(tr, event);
                     activeCellElement = td;
                 }
@@ -485,11 +653,18 @@
             let row = thElement.parentElement;
             let colIdx = Array.from(row.children).indexOf(thElement);
             let table = thElement.closest('table');
+            
             activeTable = table;
             activeColumnIndex = colIdx;
             activeThElement = thElement;
+            
             table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
-            table.querySelectorAll('tr').forEach(r => { if (r.children[colIdx]) r.children[colIdx].classList.add('active-column'); });
+            let rows = table.querySelectorAll('tr');
+            rows.forEach(r => {
+                if (r.children[colIdx]) {
+                    r.children[colIdx].classList.add('active-column');
+                }
+            });
         }
 
         function selectRow(trElement, event) {
@@ -497,96 +672,239 @@
             if (trElement.parentElement.tagName !== 'TBODY') return;
             let table = trElement.closest('table');
             activeTable = table;
+            
             table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
             trElement.classList.add('active-row');
             activeRowElement = trElement;
+
+            let td = event.target.closest('td');
+            if (td) {
+                activeCellElement = td;
+                let colIdx = Array.from(trElement.children).indexOf(td);
+                activeColumnIndex = colIdx;
+                activeThElement = table.querySelector('thead tr').children[colIdx];
+                table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
+                table.querySelectorAll('tr').forEach(r => {
+                    if (r.children[colIdx]) r.children[colIdx].classList.add('active-column');
+                });
+            }
+        }
+
+        function formatCell(action, value) {
+            if (!activeCellElement) {
+                alert("الرجاء النقر أولاً على الخلية أو الاسم الذي تريد تعديله!");
+                return;
+            }
+            if (action === 'color') {
+                activeCellElement.style.color = value;
+                activeCellElement.style.fontWeight = 'bold';
+            } else if (action === 'red-underline') {
+                activeCellElement.style.textDecoration = 'underline';
+                activeCellElement.style.textDecorationColor = '#e53935'; 
+                activeCellElement.style.textDecorationThickness = '3px';   
+                activeCellElement.style.fontWeight = 'bold';
+            } else if (action === 'reset') {
+                activeCellElement.style.color = '';
+                activeCellElement.style.fontWeight = '';
+                activeCellElement.style.textDecoration = '';
+            }
+        }
+
+        function adjustActiveColWidth(amount) {
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeThElement) {
+                activeThElement = activeTable.querySelector('thead tr th');
+            }
+            if (!activeThElement) return;
+
+            let currentWidth = parseInt(activeThElement.style.width) || activeThElement.offsetWidth;
+            let newWidth = currentWidth + amount;
+            if (newWidth < 15) newWidth = 15;
+            
+            activeThElement.style.width = newWidth + 'px';
+            activeThElement.style.minWidth = newWidth + 'px';
+            activeThElement.style.maxWidth = newWidth + 'px';
         }
 
         function addRowToActiveTable() {
-            if (!activeTable) { let firstSheet = document.querySelector('.sheet-container'); setActiveContext(firstSheet, { target: firstSheet }); }
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeTable) return;
+
             let tbody = activeTable.querySelector('tbody');
+            let headerRow = activeTable.querySelector('thead tr');
+            let colCount = headerRow.cells.length;
             let newRow = tbody.insertRow();
             newRow.setAttribute('onclick', 'selectRow(this, event)');
-            for (let c = 0; c < activeTable.querySelector('thead tr').cells.length; c++) {
-                let cell = newRow.insertCell();
-                cell.contentEditable = "true";
-                if (c === 0) cell.innerText = tbody.rows.length;
-                else { cell.style.textAlign = "right"; cell.style.paddingRight = "5px"; }
+            
+            for (let c = 0; c < colCount; c++) {
+                let newCell = newRow.insertCell();
+                newCell.contentEditable = "true";
+                if (c === 0) {
+                    newCell.innerText = tbody.rows.length; 
+                } else {
+                    newCell.style.textAlign = "right";
+                    newCell.style.paddingRight = "5px";
+                }
             }
             selectRow(newRow, { stopPropagation: () => {} });
         }
 
         function addColumnToActiveTable() {
-            if (!activeTable) { let firstSheet = document.querySelector('.sheet-container'); setActiveContext(firstSheet, { target: firstSheet }); }
+            if (!activeTable) {
+                let firstSheet = document.querySelector('.sheet-container');
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+            if (!activeTable) return;
+
             let headerRow = activeTable.querySelector('thead tr');
             let th = document.createElement('th');
             th.style.width = "80px";
             th.setAttribute('onclick', 'selectColumn(this, event)');
             th.innerHTML = `<span contenteditable="true">جديد</span>`;
             headerRow.appendChild(th);
-            activeTable.querySelectorAll('tbody tr').forEach(row => {
+
+            let tbody = activeTable.querySelector('tbody');
+            for (let row of tbody.rows) {
                 let td = row.insertCell();
                 td.setAttribute("contenteditable", "true");
                 td.style.textAlign = "right";
                 td.style.paddingRight = "5px";
-            });
+            }
+            selectColumn(th, { stopPropagation: () => {} });
         }
 
         function deleteSelectedRow() {
-            if (!activeRowElement) { alert("اختر الصف أولاً!"); return; }
+            if (!activeRowElement) {
+                alert("الرجاء النقر على الصف الذي تريد حذفه أولاً!");
+                return;
+            }
             let tbody = activeRowElement.parentElement;
             if (tbody.rows.length > 1) {
                 activeRowElement.remove();
                 activeRowElement = null;
-                Array.from(tbody.rows).forEach((row, idx) => { if (row.cells[0]) row.cells[0].innerText = idx + 1; });
-            } else { alert("لا يمكن حذف الصف الأخير!"); }
+                Array.from(tbody.rows).forEach((row, idx) => {
+                    if (row.cells[0]) row.cells[0].innerText = idx + 1;
+                });
+            } else {
+                alert("لا يمكنك حذف الصف الأخير المتبقي!");
+            }
         }
 
         function deleteSelectedColumn() {
+            if (!activeTable) return;
             let headerRow = activeTable.querySelector('thead tr');
             if (headerRow.cells.length > 1) {
                 headerRow.deleteCell(activeColumnIndex);
-                activeTable.querySelectorAll('tbody tr').forEach(row => { if (row.cells.length > activeColumnIndex) row.deleteCell(activeColumnIndex); });
-            } else { alert("لا يمكن حذف العمود الوحيد!"); }
+                let tbody = activeTable.querySelector('tbody');
+                for (let row of tbody.rows) {
+                    if (row.cells.length > activeColumnIndex) {
+                        row.deleteCell(activeColumnIndex);
+                    }
+                }
+                activeColumnIndex = Math.max(0, activeColumnIndex - 1);
+                activeThElement = headerRow.cells[activeColumnIndex];
+            } else {
+                alert("لا يمكنك حذف العمود الوحيد المتبقي!");
+            }
+        }
+
+        function deleteActivePage() {
+            let pages = document.querySelectorAll('.sheet-container');
+            if (pages.length > 1) {
+                if (activeSheet) {
+                    activeSheet.remove();
+                } else {
+                    pages[pages.length - 1].remove();
+                }
+                let remainingPages = document.querySelectorAll('.sheet-container');
+                setActiveContext(remainingPages[0], { target: remainingPages[0] });
+            } else {
+                alert("لا يمكنك حذف الصفحة الوحيدة المتبقية!");
+            }
         }
 
         function addNewPage() {
             let wrapper = document.getElementById('pagesWrapper');
             let pageCount = wrapper.querySelectorAll('.sheet-container').length + 1;
+
             let newPage = document.createElement('div');
             newPage.className = 'sheet-container';
             newPage.setAttribute('onclick', 'setActiveContext(this, event)');
             newPage.innerHTML = `
                 <div class="header-top">
-                    <div class="editable-header" contenteditable="true">عنوان الكشف</div>
-                    <div class="editable-header" contenteditable="true" style="font-size: 11pt;">صفحة جديدة (${pageCount})</div>
+                    <div class="editable-header" contenteditable="true">عنوان قابل للتعديل</div>
+                    <div class="editable-header" contenteditable="true" style="font-size: 11pt;">كشف إضافي (الصفحة ${pageCount})</div>
                     <div class="editable-header" contenteditable="true">التاريخ: ---</div>
                 </div>
+
                 <div class="table-wrapper">
                     <table class="dynamicTable">
                         <thead>
                             <tr>
-                                ${Array.from({length: 7}, (_, i) => `<th style="width: 90px;" onclick="selectColumn(this, event)"><span contenteditable="true">العمود ${i+1}</span></th>`).join('')}
+                                ${Array.from({length: 7}, (_, i) => `
+                                    <th style="width: 90px;" onclick="selectColumn(this, event)">
+                                        <span contenteditable="true">العمود ${i+1}</span>
+                                    </th>
+                                `).join('')}
                             </tr>
                         </thead>
                         <tbody>
-                            ${Array.from({length: 12}, (_, r) => `<tr onclick="selectRow(this, event)"><td contenteditable="true">${r+1}</td>${'<td contenteditable="true"></td>'.repeat(6)}</tr>`).join('')}
+                            ${
+                                Array.from({length: 12}, (_, rIdx) => `
+                                    <tr onclick="selectRow(this, event)">
+                                        <td contenteditable="true">${rIdx+1}</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+                                `).join('')
+                            }
                         </tbody>
                     </table>
                 </div>
+
                 <div class="footer-bottom">
-                    <div class="editable-header" contenteditable="true">ملاحظات</div>
-                    <div class="editable-header" contenteditable="true">التوقيع: ---</div>
+                    <div class="editable-header" contenteditable="true">ملاحظات الصفحة</div>
+                    <div class="editable-header" contenteditable="true">توقيع المختص: --------</div>
                 </div>
             `;
             wrapper.appendChild(newPage);
             setActiveContext(newPage, { target: newPage });
+            let currentFont = document.getElementById('fontSelector').value;
+            changeFontFamily(currentFont);
+        }
+
+        function changeFontFamily(fontValue) {
+            document.body.style.fontFamily = fontValue;
+            let btns = document.querySelectorAll('.btn, select');
+            btns.forEach(el => el.style.fontFamily = fontValue);
+        }
+
+        function changeTextColor(colorValue) {
+            document.body.style.color = colorValue;
+            let elements = document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header');
+            elements.forEach(el => {
+                el.style.color = colorValue;
+            });
         }
 
         window.onload = function() {
             let firstSheet = document.querySelector('.sheet-container');
-            if (firstSheet) setActiveContext(firstSheet, { target: firstSheet });
+            if (firstSheet) {
+                setActiveContext(firstSheet, { target: firstSheet });
+                activeThElement = firstSheet.querySelector('thead tr th');
+            }
         };
     </script>
+
 </body>
 </html>
