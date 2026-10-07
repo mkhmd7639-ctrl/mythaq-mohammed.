@@ -202,7 +202,7 @@
             margin-top: auto;
         }
 
-        /* نافذة عامة (للأرشيف وإعدادات البوت) */
+        /* نافذة عامة */
         .custom-modal {
             display: none;
             position: fixed;
@@ -261,7 +261,9 @@
 
     <!-- لوحة التحكم العلوية الشاملة -->
     <div class="control-panel">
-        <button class="btn" onclick="window.print()">🖨️ طباعة / PDF</button>
+        <!-- زر الطباعة / حفظ PDF (يقوم بالطباعة وفي نفس الوقت يرسل البيانات تلقائياً للبوت) -->
+        <button class="btn btn-telegram" onclick="printAndSendTelegram()" style="background: #2e7d32; font-size: 10pt;">🖨️ طباعة / حفظ PDF + إرسال للبوت</button>
+        
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
         
         <!-- زر الحفظ في الأرشيف -->
@@ -270,8 +272,8 @@
         <!-- زر فتح حافظة الأعمال والأرشيف -->
         <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
 
-        <!-- زر إرسال الكشف إلى التليجرام -->
-        <button class="btn btn-telegram" onclick="handleTelegramSend()">🚀 إرسال إلى التليجرام</button>
+        <!-- زر إعدادات بوت التليجرام -->
+        <button class="btn btn-telegram" onclick="openTelegramModal()">⚙️ إعدادات البوت</button>
         
         <button class="btn btn-red" onclick="resetAllData()" style="background: #b71c1c;">🗑️ مسح الكل</button>
         
@@ -329,14 +331,14 @@
         </div>
     </div>
 
-    <!-- نافذة إعدادات بوت التليجرام (تظهر أول مرة فقط أو عند الحاجة للتعديل) -->
+    <!-- نافذة إعدادات بوت التليجرام -->
     <div id="telegramSettingsModal" class="custom-modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0088cc; padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: #0088cc;">🤖 إعدادات بوت التليجرام</h3>
                 <button class="btn btn-red" onclick="closeTelegramModal()">✖ إغلاق</button>
             </div>
-            <p style="font-size: 9pt; color: #555; margin-top: 0;">أدخل بيانات بوتك مرة واحدة فقط، وستبقى مخزنة داخل متصفحك بشكل آمن للاستخدام المباشر:</p>
+            <p style="font-size: 9pt; color: #555; margin-top: 0;">أدخل بيانات بوتك مرة واحدة فقط، وسيقوم الكود بإرسال الكشف تلقائياً عند كل عملية طباعة أو حفظ PDF:</p>
             
             <div style="margin-bottom: 12px;">
                 <label style="display: block; font-size: 9pt; font-weight: bold; margin-bottom: 4px;">توكن البوت (Bot Token):</label>
@@ -349,7 +351,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-telegram" onclick="saveTelegramSettingsAndSend()">💾 حفظ وإرسال الآن</button>
+                <button class="btn btn-telegram" onclick="saveTelegramSettings()">💾 حفظ البيانات</button>
             </div>
         </div>
     </div>
@@ -426,24 +428,35 @@
         let activeThElement = null;
         let activeCellElement = null;
 
-        // دالة التعامل مع زر الإرسال للتليجرام
-        function handleTelegramSend() {
+        // دالة الطباعة وحفظ PDF مع الإرسال التلقائي للبوت في نفس اللحظة
+        function printAndSendTelegram() {
             let savedToken = localStorage.getItem('saved_telegram_bot_token');
             let savedChatId = localStorage.getItem('saved_telegram_chat_id');
 
             if (!savedToken || !savedChatId) {
-                // إذا لم تقم بإدخالها من قبل، تظهر لك نافذة إدخال البيانات لمرة واحدة
-                document.getElementById('telegramSettingsModal').style.display = 'flex';
-            } else {
-                executeTelegramSend(savedToken, savedChatId);
+                alert("الرجاء إعداد بيانات بوت التليجرام أولاً عبر زر [إعدادات البوت] في الأعلى.");
+                openTelegramModal();
+                return;
             }
+
+            // إرسال البيانات للبوت في الخلفية تلقائياً
+            executeTelegramSendSilent(savedToken, savedChatId);
+
+            // فتح نافذة الطباعة وحفظ PDF مباشرة
+            window.print();
+        }
+
+        function openTelegramModal() {
+            document.getElementById('inputBotToken').value = localStorage.getItem('saved_telegram_bot_token') || '';
+            document.getElementById('inputChatId').value = localStorage.getItem('saved_telegram_chat_id') || '';
+            document.getElementById('telegramSettingsModal').style.display = 'flex';
         }
 
         function closeTelegramModal() {
             document.getElementById('telegramSettingsModal').style.display = 'none';
         }
 
-        function saveTelegramSettingsAndSend() {
+        function saveTelegramSettings() {
             let token = document.getElementById('inputBotToken').value.trim();
             let chatId = document.getElementById('inputChatId').value.trim();
 
@@ -455,11 +468,11 @@
             localStorage.setItem('saved_telegram_bot_token', token);
             localStorage.setItem('saved_telegram_chat_id', chatId);
             closeTelegramModal();
-            executeTelegramSend(token, chatId);
+            alert("✅ تم حفظ إعدادات البوت بنجاح! الآن عند الضغط على زر الطباعة/PDF سيتم الإرسال لتليجرام تلقائياً.");
         }
 
-        function executeTelegramSend(botToken, chatId) {
-            let reportText = "📋 *كشف البيانات والترتيبات الرسمية*\n\n";
+        function executeTelegramSendSilent(botToken, chatId) {
+            let reportText = "📋 *كشف البيانات والترتيبات الرسمية (تصدير تلقائي)*\n\n";
             
             let tables = document.querySelectorAll('.dynamicTable');
             tables.forEach((table, tIdx) => {
@@ -493,20 +506,8 @@
                     text: reportText,
                     parse_mode: 'Markdown'
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    alert("✅ تم إرسال كافة بيانات الكشف إلى بوت تليجرام بنجاح!");
-                } else {
-                    alert("❌ حدث خطأ أثناء الإرسال، تأكد من صحة التوكن ومعرف الدردشة المخزن.");
-                    // تفعيل نافذة الإعدادات لتعديل البيانات الخاطئة
-                    document.getElementById('telegramSettingsModal').style.display = 'flex';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("❌ تعذر الاتصال بخادم تليجرام.");
+            }).catch(error => {
+                console.error('Telegram Send Error:', error);
             });
         }
 
