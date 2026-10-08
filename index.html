@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قالب الكشوفات الرسمية - حافظة الأعمال والأرشيف</title>
 
+    <!-- تضمين مكتبة قراءة ملفات PDF من خلال CDN رسمي آمن وسريع -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // إعداد مسار العامل (Worker) الخاص بمكتبة PDF.js لتعمل بكفاءة عالية
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -74,6 +81,7 @@
         .btn-archive { background: #0277bd; color: #fff; }
         .btn-purple { background: #6a1b9a; color: #fff; }
         .btn-teal { background: #00838f; color: #fff; }
+        .btn-indigo { background: #3f51b5; color: #fff; }
 
         .control-group {
             display: flex;
@@ -331,6 +339,12 @@
             📥 إدخال جماعي للأسماء
         </button>
 
+        <button class="btn btn-indigo"
+                onclick="openPdfModal()"
+                title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">
+            📂 استخراج من PDF
+        </button>
+
         <button class="btn btn-save"
                 onclick="saveToArchive()"
                 title="حفظ نسخة من العمل الحالي في الأرشيف">
@@ -460,6 +474,34 @@
                    id="textColorPicker"
                    value="#000000"
                    onchange="changeTextColor(this.value)">
+        </div>
+    </div>
+
+    <!-- نافذة رفع وقراءة ملفات PDF -->
+    <div id="pdfModal" class="custom-modal">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3f51b5;padding-bottom:10px;margin-bottom:15px;gap:10px;">
+                <h3 style="margin:0;color:#3f51b5;">
+                    📂 رفع واستخراج البيانات من ملف PDF
+                </h3>
+                <button class="btn btn-red" onclick="closePdfModal()">✖ إغلاق</button>
+            </div>
+
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">
+                اختر ملف PDF من جهازك. سيقوم النظام بقراءة كافة النصوص المستخرجة منه وتعبئتها في الجدول تلقائياً، مع توليد الصفحات اللازمة بحسب كمية البيانات لتتمكن من مراجعتها وتعديلها بحرية.
+            </p>
+
+            <div style="margin:15px 0; border:2px dashed #b0bec5; padding:20px; text-align:center; border-radius:8px; background:#fafafa;">
+                <input type="file" id="pdfFileInput" accept=".pdf" style="font-size:10pt; cursor:pointer;" />
+            </div>
+
+            <div id="pdfStatusMsg" style="font-size:9pt; font-weight:bold; color:#1565c0; text-align:center; margin-bottom:10px;"></div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+                <button class="btn btn-indigo" onclick="processUploadedPdf()" style="padding:8px 20px;font-size:10pt;">
+                    ⚙️ استخراج وإدراج في الجدول
+                </button>
+            </div>
         </div>
     </div>
 
@@ -673,35 +715,72 @@
             });
         }
 
-        // إدراج جماعي للأسماء في عمود "الاسم الرباعي" (العمود رقم 1) مع توليد الصفحات تلقائياً
-        function openBulkImportModal() {
-            document.getElementById('bulkNamesTextarea').value = '';
-            document.getElementById('bulkImportModal').style.display = 'flex';
+        // نافذة PDF
+        function openPdfModal() {
+            document.getElementById('pdfFileInput').value = '';
+            document.getElementById('pdfStatusMsg').textContent = '';
+            document.getElementById('pdfModal').style.display = 'flex';
         }
 
-        function closeBulkImportModal() {
-            document.getElementById('bulkImportModal').style.display = 'none';
+        function closePdfModal() {
+            document.getElementById('pdfModal').style.display = 'none';
         }
 
-        function processBulkImport() {
-            const rawText = document.getElementById('bulkNamesTextarea').value;
-            // فصل السطور وتصفيتها من الأسطر الفارغة
-            const namesList = rawText.split('\n')
-                .map(n => n.trim())
-                .filter(n => n.length > 0);
+        // قراءة ومعالجة ملف PDF المرفوع
+        async function processUploadedPdf() {
+            const fileInput = document.getElementById('pdfFileInput');
+            const statusMsg = document.getElementById('pdfStatusMsg');
 
-            if (namesList.length === 0) {
-                alert('الرجاء إدخال أو لصق قائمة أسماء صحيحة أولاً!');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('الرجاء اختيار ملف PDF أولاً!');
                 return;
             }
 
-            // تصفير الصفحات وجعلها صفحة واحدة رئيسية نظيفة أو استخدام الموجودة
-            const wrapper = document.getElementById('pagesWrapper');
-            wrapper.innerHTML = ''; // تفريغ الحاوية لإنشاء الصفحات بدقة
+            const file = fileInput.files[0];
+            statusMsg.textContent = '⏳ جاري قراءة وتحليل ملف الـ PDF...';
 
-            const rowsPerPage = 15; // عدد الصفوف في كل صفحة
-            const totalPages = Math.ceil(namesList.length / rowsPerPage);
-            let nameIndex = 0;
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdfDoc = await loadingTask.promise;
+                
+                let extractedLines = [];
+
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    statusMsg.textContent = `⏳ جاري استخراج النصوص من الصفحة ${i} من ${pdfDoc.numPages}...`;
+                    const page = await pdfDoc.getPage(i);
+                    const textContent = await page.getTextContent();
+                    
+                    // تجميع النصوص وترتيبها حسب السطور أو العناصر
+                    let pageLines = textContent.items.map(item => item.str.trim()).filter(text => text.length > 0);
+                    extractedLines = extractedLines.concat(pageLines);
+                }
+
+                if (extractedLines.length === 0) {
+                    alert('لم يتم العثور على نص قابل للقراءة داخل هذا الملف (قد يكون عبارة عن صور ممسوحة ضوئياً بدون طباعة نصية).');
+                    statusMsg.textContent = '';
+                    return;
+                }
+
+                // تعبئة البيانات المستخرجة في جدول الأسماء
+                populateTableWithData(extractedLines);
+                closePdfModal();
+
+            } catch (error) {
+                console.error(error);
+                statusMsg.textContent = '';
+                alert('حدث خطأ أثناء قراءة ملف الـ PDF. تأكد من أن الملف سليم وغير مدعوم بكلمة مرور.');
+            }
+        }
+
+        // دالة مشتركة لتوزيع القوائم (سواء من نص أو من PDF) على الجداول والصفحات
+        function populateTableWithData(itemsList) {
+            const wrapper = document.getElementById('pagesWrapper');
+            wrapper.innerHTML = ''; // تفريغ الحاوية
+
+            const rowsPerPage = 15;
+            const totalPages = Math.ceil(itemsList.length / rowsPerPage);
+            let itemIndex = 0;
 
             for (let p = 1; p <= totalPages; p++) {
                 const newPage = document.createElement('div');
@@ -739,26 +818,22 @@
                 wrapper.appendChild(newPage);
                 const tbody = newPage.querySelector('tbody');
 
-                // تعبئة الصفوف لهذه الصفحة
                 for (let r = 0; r < rowsPerPage; r++) {
                     const row = tbody.insertRow();
                     row.setAttribute('onclick', 'selectRow(this,event)');
 
-                    // خلية الترقيم
                     const cellM = row.insertCell();
                     cellM.textContent = '-';
 
-                    // خلية الاسم الرباعي (العمود 1)
                     const cellName = row.insertCell();
                     cellName.contentEditable = 'true';
                     cellName.style.textAlign = 'right';
                     cellName.style.paddingRight = '5px';
-                    if (nameIndex < namesList.length) {
-                        cellName.textContent = namesList[nameIndex];
-                        nameIndex++;
+                    if (itemIndex < itemsList.length) {
+                        cellName.textContent = itemsList[itemIndex];
+                        itemIndex++;
                     }
 
-                    // باقي الخلايا الفارغة (5 خلايا أخرى)
                     for (let c = 2; c < 7; c++) {
                         const cell = row.insertCell();
                         cell.contentEditable = 'true';
@@ -770,18 +845,41 @@
                 }
             }
 
-            closeBulkImportModal();
-            renumberAllRows(); // إعادة الترقيم التسلسلي الشامل فوراً
-
+            renumberAllRows();
             const firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
                 setActiveContext(firstSheet, { target: firstSheet });
             }
 
-            alert('✅ تم بنجاح توزيع ' + namesList.length + ' اسماً على ' + totalPages + ' صفحة وترتيبها في الجدول بصورة كاملة!');
+            alert('✅ تم بنجاح استخراج وتوزيع ' + itemsList.length + ' سجلاً من ملف الـ PDF على ' + totalPages + ' صفحة، وأصبحت جاهزة للتعديل الكامل!');
         }
 
-        // اكتشاف أخطاء أرقام الجوال فقط (أقل أو أكثر من 9 أرقام) واستثناء البطاقات
+        // إدراج جماعي للأسماء نصياً
+        function openBulkImportModal() {
+            document.getElementById('bulkNamesTextarea').value = '';
+            document.getElementById('bulkImportModal').style.display = 'flex';
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulkImportModal').style.display = 'none';
+        }
+
+        function processBulkImport() {
+            const rawText = document.getElementById('bulkNamesTextarea').value;
+            const namesList = rawText.split('\n')
+                .map(n => n.trim())
+                .filter(n => n.length > 0);
+
+            if (namesList.length === 0) {
+                alert('الرجاء إدخال أو لصق قائمة أسماء صحيحة أولاً!');
+                return;
+            }
+
+            populateTableWithData(namesList);
+            closeBulkImportModal();
+        }
+
+        // اكتشاف أخطاء أرقام الجوال فقط
         function checkPhoneNumbers() {
             const tables = document.querySelectorAll('.dynamicTable');
             let errorCount = 0;
@@ -848,7 +946,7 @@
             }
         }
 
-        // حفظ نسخة من الصفحات في الأرشيف
+        // حفظ العمل في الأرشيف
         function saveToArchive() {
             try {
                 const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
@@ -870,7 +968,6 @@
             }
         }
 
-        // عرض محتويات الأرشيف
         function openArchiveModal() {
             const container = document.getElementById('archiveListContainer');
             container.innerHTML = '';
