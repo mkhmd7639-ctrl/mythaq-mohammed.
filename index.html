@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -73,6 +72,7 @@
         .btn-whatsapp { background: #25d366; color: #fff; }
         .btn-save { background: #7b1fa2; color: #fff; }
         .btn-archive { background: #0277bd; color: #fff; }
+        .btn-purple { background: #6a1b9a; color: #fff; }
 
         .control-group {
             display: flex;
@@ -332,6 +332,18 @@
 
         <button class="btn btn-archive" onclick="openArchiveModal()">
             📁 حافظة الأعمال (الأرشيف)
+        </button>
+
+        <button class="btn btn-purple"
+                onclick="checkPhoneNumbers()"
+                title="فحص أرقام الجوال وتحديد الأخطاء (غير المكونة من 9 أرقام)">
+            📱 تدقيق أرقام الجوال
+        </button>
+
+        <button class="btn btn-amber"
+                onclick="renumberAllRows()"
+                title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">
+            🔢 ترقيم تسلسلي شامل
         </button>
 
         <button class="btn btn-red"
@@ -613,6 +625,88 @@
             });
         }
 
+        // ترقيم شامل وتلقائي لجميع الصفوف عبر كل الصفحات
+        function renumberAllRows() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let globalIndex = 1;
+
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const firstCell = row.cells[0];
+                    if (firstCell) {
+                        firstCell.textContent = globalIndex;
+                        globalIndex++;
+                    }
+                });
+            });
+
+            alert('🔢 تم إعادة الترقيم التسلسلي بنجاح لجميع الصفوف عبر الصفحات (إجمالي: ' + (globalIndex - 1) + ' صف)!');
+        }
+
+        // اكتشاف أخطاء أرقام الجوال (أقل أو أكثر من 9 أرقام)
+        function checkPhoneNumbers() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let errorCount = 0;
+            let checkedCount = 0;
+
+            tables.forEach(table => {
+                const headers = Array.from(table.querySelectorAll('thead th'));
+                
+                // البحث عن العمود الذي عنوانه يحتوي على كلمة هاتف، جوال، تلفون، اتصال، أو رقم
+                let phoneColIndices = [];
+                headers.forEach((th, idx) => {
+                    let titleText = normalizeArabic(th.innerText);
+                    if (titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال') || (titleText.includes('رقم') && !titleText.includes('بطاقة'))) {
+                        phoneColIndices.push(idx);
+                    }
+                });
+
+                // إذا لم يتم العثور على عمود محدد، نتحقق من العمود رقم 4 افتراضياً (رقم الاتصال)
+                if (phoneColIndices.length === 0 && headers.length > 4) {
+                    phoneColIndices.push(4);
+                }
+
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    phoneColIndices.forEach(colIdx => {
+                        const cell = row.children[colIdx];
+                        if (cell) {
+                            let val = cell.innerText.trim();
+                            // تنظيف النص واستخراج الأرقام فقط
+                            let digitsOnly = val.replace(/\D/g, '');
+
+                            if (val !== "") {
+                                checkedCount++;
+                                // إذا كانت الأرقام أقل أو أكثر من 9 أرقام
+                                if (digitsOnly.length !== 9) {
+                                    errorCount++;
+                                    cell.style.color = '#c62828';
+                                    cell.style.textDecoration = 'underline';
+                                    cell.style.textDecorationColor = '#e53935';
+                                    cell.style.textDecorationThickness = '3px';
+                                    cell.style.fontWeight = 'bold';
+                                } else {
+                                    // إذا كان صحيحاً، نزيل التنبيه الخطأ السابق
+                                    cell.style.color = '';
+                                    cell.style.textDecoration = '';
+                                    cell.style.fontWeight = '';
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            if (errorCount > 0) {
+                alert('⚠️ تم فحص أرقام الجوال. وُجدت ' + errorCount + ' خلية تحتوي على أرقام غير مطابقة للقاعدة (أقل أو أكثر من 9 أرقام)، وتم وضع خط أحمر تحتها.');
+            } else if (checkedCount > 0) {
+                alert('✅ ممتاز! تم فحص ' + checkedCount + ' رقم جوال، جميعها صحيحة ومكونة من 9 أرقام تماماً.');
+            } else {
+                alert('ℹ️ لم يتم العثور على أرقام مدخلة في أعمدة الجوال/الهاتف للفحص.');
+            }
+        }
+
         // حفظ نسخة من الصفحات في الأرشيف
         function saveToArchive() {
             try {
@@ -869,7 +963,6 @@
             trElement.classList.add('active-row');
             activeRowElement = trElement;
 
-            // قد يتم استدعاء الدالة دون حدث عند إضافة صف جديد
             const target = event && event.target ? event.target : null;
             const td = target ? target.closest('td') : null;
 
@@ -952,7 +1045,6 @@
             activeThElement.style.minWidth = newWidth + 'px';
             activeThElement.style.maxWidth = newWidth + 'px';
 
-            // تطبيق العرض نفسه على خلايا العمود
             const colIdx = Array.from(
                 activeThElement.parentElement.children
             ).indexOf(activeThElement);
@@ -990,7 +1082,7 @@
                 const newCell = newRow.insertCell();
 
                 if (c === 0) {
-                    newCell.textContent = tbody.rows.length;
+                    newCell.textContent = '-';
                 } else {
                     newCell.contentEditable = 'true';
                     newCell.style.textAlign = 'right';
@@ -998,7 +1090,6 @@
                 }
             }
 
-            // تحديد الصف الجديد دون الحاجة إلى حدث نقر حقيقي
             selectRow(newRow, null);
         }
 
@@ -1051,12 +1142,6 @@
                 activeRowElement.remove();
                 activeRowElement = null;
                 activeCellElement = null;
-
-                Array.from(tbody.rows).forEach((row, idx) => {
-                    if (row.cells[0]) {
-                        row.cells[0].textContent = idx + 1;
-                    }
-                });
             } else {
                 alert('لا يمكنك حذف الصف الأخير المتبقي!');
             }
@@ -1194,7 +1279,7 @@
                         <tbody>
                             ${Array.from({length:15}, (_, rIdx) => `
                                 <tr onclick="selectRow(this,event)">
-                                    <td>${rIdx + 1}</td>
+                                    <td>-</td>
                                     <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
                                     <td contenteditable="true"></td>
                                     <td contenteditable="true"></td>
@@ -1274,6 +1359,8 @@
                 activeThElement =
                     firstSheet.querySelector('thead tr th');
             }
+            // تشغيل الترقيم التلقائي عند التحميل لأول مرة
+            renumberAllRows();
         };
     </script>
 
