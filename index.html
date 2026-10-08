@@ -73,6 +73,7 @@
         .btn-save { background: #7b1fa2; color: #fff; }
         .btn-archive { background: #0277bd; color: #fff; }
         .btn-purple { background: #6a1b9a; color: #fff; }
+        .btn-teal { background: #00838f; color: #fff; }
 
         .control-group {
             display: flex;
@@ -324,6 +325,12 @@
             📄 صفحة جديدة
         </button>
 
+        <button class="btn btn-teal"
+                onclick="openBulkImportModal()"
+                title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">
+            📥 إدخال جماعي للأسماء
+        </button>
+
         <button class="btn btn-save"
                 onclick="saveToArchive()"
                 title="حفظ نسخة من العمل الحالي في الأرشيف">
@@ -336,7 +343,7 @@
 
         <button class="btn btn-purple"
                 onclick="checkPhoneNumbers()"
-                title="فحص أرقام الجوال وتحديد الأخطاء (غير المكونة من 9 أرقام)">
+                title="فحص أرقام الجوال فقط وتحديد الأخطاء (أقل أو أكثر من 9 أرقام)">
             📱 تدقيق أرقام الجوال
         </button>
 
@@ -456,6 +463,30 @@
         </div>
     </div>
 
+    <!-- نافذة الإدخال الجماعي للأسماء -->
+    <div id="bulkImportModal" class="custom-modal">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00838f;padding-bottom:10px;margin-bottom:15px;gap:10px;">
+                <h3 style="margin:0;color:#00838f;">
+                    📥 إدخال جماعي للأسماء (أو السجلات)
+                </h3>
+                <button class="btn btn-red" onclick="closeBulkImportModal()">✖ إغلاق</button>
+            </div>
+
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">
+                قم بلصق قائمة الأسماء هنا (كل اسم في سطر مستقل). سيقوم النظام تلقائياً بتوزيعها على الصفوف، وإنشاء صفحات جديدة كافية لاستيعاب جميع الأسماء مع الترقيم التلقائي!
+            </p>
+
+            <textarea id="bulkNamesTextarea" rows="12" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:10pt;resize:vertical;" placeholder="انسخ والصق القائمة هنا...&#10;محمد أحمد علي&#10;خالد صالح محسن&#10;..."></textarea>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
+                <button class="btn btn-teal" onclick="processBulkImport()" style="padding:8px 20px;font-size:10pt;">
+                    🚀 توزيع وإدراج في الجدول
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- نافذة الأرشيف -->
     <div id="archiveModal" class="custom-modal">
         <div class="modal-content" style="max-width:800px;">
@@ -496,7 +527,7 @@
                 </div>
 
                 <div class="editable-header" contenteditable="true">
-                    التاريخ: 2026/10/07
+                    التاريخ: 2026/10/08
                 </div>
             </div>
 
@@ -640,11 +671,117 @@
                     }
                 });
             });
-
-            alert('🔢 تم إعادة الترقيم التسلسلي بنجاح لجميع الصفوف عبر الصفحات (إجمالي: ' + (globalIndex - 1) + ' صف)!');
         }
 
-        // اكتشاف أخطاء أرقام الجوال (أقل أو أكثر من 9 أرقام)
+        // إدراج جماعي للأسماء في عمود "الاسم الرباعي" (العمود رقم 1) مع توليد الصفحات تلقائياً
+        function openBulkImportModal() {
+            document.getElementById('bulkNamesTextarea').value = '';
+            document.getElementById('bulkImportModal').style.display = 'flex';
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulkImportModal').style.display = 'none';
+        }
+
+        function processBulkImport() {
+            const rawText = document.getElementById('bulkNamesTextarea').value;
+            // فصل السطور وتصفيتها من الأسطر الفارغة
+            const namesList = rawText.split('\n')
+                .map(n => n.trim())
+                .filter(n => n.length > 0);
+
+            if (namesList.length === 0) {
+                alert('الرجاء إدخال أو لصق قائمة أسماء صحيحة أولاً!');
+                return;
+            }
+
+            // تصفير الصفحات وجعلها صفحة واحدة رئيسية نظيفة أو استخدام الموجودة
+            const wrapper = document.getElementById('pagesWrapper');
+            wrapper.innerHTML = ''; // تفريغ الحاوية لإنشاء الصفحات بدقة
+
+            const rowsPerPage = 15; // عدد الصفوف في كل صفحة
+            const totalPages = Math.ceil(namesList.length / rowsPerPage);
+            let nameIndex = 0;
+
+            for (let p = 1; p <= totalPages; p++) {
+                const newPage = document.createElement('div');
+                newPage.className = 'sheet-container';
+                newPage.setAttribute('onclick', 'setActiveContext(this,event)');
+
+                newPage.innerHTML = `
+                    <div class="header-top">
+                        <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
+                        <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
+                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/08</div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="dynamicTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
+                                    <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
+                                    <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
+                                    <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
+                                    <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
+                                    <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
+                                    <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="footer-bottom">
+                        <div class="editable-header" contenteditable="true">البريد الإلكتروني / جهة الإصدار</div>
+                        <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
+                    </div>
+                `;
+
+                wrapper.appendChild(newPage);
+                const tbody = newPage.querySelector('tbody');
+
+                // تعبئة الصفوف لهذه الصفحة
+                for (let r = 0; r < rowsPerPage; r++) {
+                    const row = tbody.insertRow();
+                    row.setAttribute('onclick', 'selectRow(this,event)');
+
+                    // خلية الترقيم
+                    const cellM = row.insertCell();
+                    cellM.textContent = '-';
+
+                    // خلية الاسم الرباعي (العمود 1)
+                    const cellName = row.insertCell();
+                    cellName.contentEditable = 'true';
+                    cellName.style.textAlign = 'right';
+                    cellName.style.paddingRight = '5px';
+                    if (nameIndex < namesList.length) {
+                        cellName.textContent = namesList[nameIndex];
+                        nameIndex++;
+                    }
+
+                    // باقي الخلايا الفارغة (5 خلايا أخرى)
+                    for (let c = 2; c < 7; c++) {
+                        const cell = row.insertCell();
+                        cell.contentEditable = 'true';
+                        if (c === 5) {
+                            cell.style.textAlign = 'right';
+                            cell.style.paddingRight = '5px';
+                        }
+                    }
+                }
+            }
+
+            closeBulkImportModal();
+            renumberAllRows(); // إعادة الترقيم التسلسلي الشامل فوراً
+
+            const firstSheet = document.querySelector('.sheet-container');
+            if (firstSheet) {
+                setActiveContext(firstSheet, { target: firstSheet });
+            }
+
+            alert('✅ تم بنجاح توزيع ' + namesList.length + ' اسماً على ' + totalPages + ' صفحة وترتيبها في الجدول بصورة كاملة!');
+        }
+
+        // اكتشاف أخطاء أرقام الجوال فقط (أقل أو أكثر من 9 أرقام) واستثناء البطاقات
         function checkPhoneNumbers() {
             const tables = document.querySelectorAll('.dynamicTable');
             let errorCount = 0;
@@ -653,18 +790,25 @@
             tables.forEach(table => {
                 const headers = Array.from(table.querySelectorAll('thead th'));
                 
-                // البحث عن العمود الذي عنوانه يحتوي على كلمة هاتف، جوال، تلفون، اتصال، أو رقم
                 let phoneColIndices = [];
                 headers.forEach((th, idx) => {
                     let titleText = normalizeArabic(th.innerText);
-                    if (titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال') || (titleText.includes('رقم') && !titleText.includes('بطاقة'))) {
+                    if (
+                        (titleText.includes('جوال') || 
+                         titleText.includes('هاتف') || 
+                         titleText.includes('تلفون') || 
+                         titleText.includes('اتصال')) && 
+                        !titleText.includes('بطاقه') && !titleText.includes('بطاقة')
+                    ) {
                         phoneColIndices.push(idx);
                     }
                 });
 
-                // إذا لم يتم العثور على عمود محدد، نتحقق من العمود رقم 4 افتراضياً (رقم الاتصال)
                 if (phoneColIndices.length === 0 && headers.length > 4) {
-                    phoneColIndices.push(4);
+                    let defaultHeader = normalizeArabic(headers[4].innerText);
+                    if (!defaultHeader.includes('بطاقه') && !defaultHeader.includes('بطاقة')) {
+                        phoneColIndices.push(4);
+                    }
                 }
 
                 const rows = table.querySelectorAll('tbody tr');
@@ -673,12 +817,10 @@
                         const cell = row.children[colIdx];
                         if (cell) {
                             let val = cell.innerText.trim();
-                            // تنظيف النص واستخراج الأرقام فقط
                             let digitsOnly = val.replace(/\D/g, '');
 
                             if (val !== "") {
                                 checkedCount++;
-                                // إذا كانت الأرقام أقل أو أكثر من 9 أرقام
                                 if (digitsOnly.length !== 9) {
                                     errorCount++;
                                     cell.style.color = '#c62828';
@@ -687,7 +829,6 @@
                                     cell.style.textDecorationThickness = '3px';
                                     cell.style.fontWeight = 'bold';
                                 } else {
-                                    // إذا كان صحيحاً، نزيل التنبيه الخطأ السابق
                                     cell.style.color = '';
                                     cell.style.textDecoration = '';
                                     cell.style.fontWeight = '';
@@ -699,32 +840,21 @@
             });
 
             if (errorCount > 0) {
-                alert('⚠️ تم فحص أرقام الجوال. وُجدت ' + errorCount + ' خلية تحتوي على أرقام غير مطابقة للقاعدة (أقل أو أكثر من 9 أرقام)، وتم وضع خط أحمر تحتها.');
+                alert('⚠️ تم فحص أرقام الجوال. وُجدت ' + errorCount + ' خلية تحتوي على أرقام جوال غير مطابقة (أقل أو أكثر من 9 أرقام)، وتم وضع خط أحمر تحتها.');
             } else if (checkedCount > 0) {
                 alert('✅ ممتاز! تم فحص ' + checkedCount + ' رقم جوال، جميعها صحيحة ومكونة من 9 أرقام تماماً.');
             } else {
-                alert('ℹ️ لم يتم العثور على أرقام مدخلة في أعمدة الجوال/الهاتف للفحص.');
+                alert('ℹ️ لم يتم العثور على أعمدة أو بيانات جوال/هاتف مطابقة للفحص.');
             }
         }
 
         // حفظ نسخة من الصفحات في الأرشيف
         function saveToArchive() {
             try {
-                const wrapperHtml =
-                    document.getElementById('pagesWrapper').innerHTML;
-
-                const archives = JSON.parse(
-                    localStorage.getItem('toufan_my_works_archive') || '[]'
-                );
-
+                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+                const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
                 const now = new Date();
-
-                const timeString =
-                    now.toLocaleDateString('ar-YE') + ' - ' +
-                    now.toLocaleTimeString('ar-YE', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
 
                 archives.push({
                     id: Date.now(),
@@ -732,42 +862,28 @@
                     html: wrapperHtml
                 });
 
-                localStorage.setItem(
-                    'toufan_my_works_archive',
-                    JSON.stringify(archives)
-                );
-
+                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
                 alert('✅ تم حفظ العمل بنجاح داخل حافظة الأعمال والأرشيف!');
             } catch (error) {
                 console.error(error);
-                alert('تعذر حفظ العمل. قد تكون مساحة التخزين ممتلئة.');
+                alert('تعذر حفظ العمل.');
             }
         }
 
         // عرض محتويات الأرشيف
         function openArchiveModal() {
-            const container =
-                document.getElementById('archiveListContainer');
-
+            const container = document.getElementById('archiveListContainer');
             container.innerHTML = '';
-
             let archives;
 
             try {
-                archives = JSON.parse(
-                    localStorage.getItem('toufan_my_works_archive') || '[]'
-                );
+                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
             } catch (error) {
                 archives = [];
             }
 
             if (archives.length === 0) {
-                container.innerHTML = `
-                    <p style="text-align:center;color:#888;padding:20px;">
-                        لا توجد أعمال محفوظة في الأرشيف حتى الآن.
-                        اضغط على زر حفظ في الأرشيف لحفظ عملك الحالي.
-                    </p>
-                `;
+                container.innerHTML = `<p style="text-align:center;color:#888;padding:20px;">لا توجد أعمال محفوظة في الأرشيف حتى الآن.</p>`;
             } else {
                 archives.slice().reverse().forEach((item) => {
                     const div = document.createElement('div');
@@ -780,23 +896,18 @@
                     const actions = document.createElement('div');
                     actions.style.display = 'flex';
                     actions.style.gap = '8px';
-                    actions.style.flexWrap = 'wrap';
 
                     const loadButton = document.createElement('button');
                     loadButton.className = 'btn btn-green';
                     loadButton.style.padding = '4px 10px';
                     loadButton.textContent = '📂 استرجاع وتعديل';
-                    loadButton.onclick = function () {
-                        loadArchiveItem(item.id);
-                    };
+                    loadButton.onclick = function () { loadArchiveItem(item.id); };
 
                     const deleteButton = document.createElement('button');
                     deleteButton.className = 'btn btn-red';
                     deleteButton.style.padding = '4px 10px';
                     deleteButton.textContent = '🗑️ حذف';
-                    deleteButton.onclick = function () {
-                        deleteArchiveItem(item.id);
-                    };
+                    deleteButton.onclick = function () { deleteArchiveItem(item.id); };
 
                     actions.appendChild(loadButton);
                     actions.appendChild(deleteButton);
@@ -814,80 +925,53 @@
             document.getElementById('archiveModal').style.display = 'none';
         }
 
-        // استرجاع عمل من الأرشيف
         function loadArchiveItem(id) {
             let archives;
-
             try {
-                archives = JSON.parse(
-                    localStorage.getItem('toufan_my_works_archive') || '[]'
-                );
+                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
             } catch (error) {
-                alert('تعذر قراءة الأرشيف.');
                 return;
             }
 
             const found = archives.find(item => item.id === id);
-
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
-
                 closeArchiveModal();
-
                 activeSheet = null;
                 activeTable = null;
                 activeRowElement = null;
                 activeThElement = null;
                 activeCellElement = null;
 
-                const firstSheet =
-                    document.querySelector('.sheet-container');
-
+                const firstSheet = document.querySelector('.sheet-container');
                 if (firstSheet) {
                     setActiveContext(firstSheet, { target: firstSheet });
                 }
-
-                alert('📂 تم استرجاع العمل بنجاح! يمكنك الآن تعديله.');
+                alert('📂 تم استرجاع العمل بنجاح!');
             }
         }
 
-        // حذف عمل من الأرشيف
         function deleteArchiveItem(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا العمل من الأرشيف؟')) {
-                return;
-            }
-
+            if (!confirm('هل أنت متأكد من حذف هذا العمل من الأرشيف؟')) return;
             let archives;
-
             try {
-                archives = JSON.parse(
-                    localStorage.getItem('toufan_my_works_archive') || '[]'
-                );
+                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
             } catch (error) {
                 archives = [];
             }
-
             archives = archives.filter(item => item.id !== id);
-
-            localStorage.setItem(
-                'toufan_my_works_archive',
-                JSON.stringify(archives)
-            );
-
+            localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
             openArchiveModal();
         }
 
-        // إعادة تحميل الصفحة للبدء من جديد
         function resetAllData() {
             if (confirm('هل أنت متأكد من مسح الصفحة الحالية والبدء من جديد؟')) {
                 location.reload();
             }
         }
 
-        // تحديد الصفحة والجدول النشط
         function setActiveContext(sheetContainer, event) {
             if (!sheetContainer) return;
-
             activeSheet = sheetContainer;
             activeTable = sheetContainer.querySelector('table');
 
@@ -898,24 +982,16 @@
 
                 if (th) {
                     selectColumn(th, event);
-                } else if (
-                    td &&
-                    tr &&
-                    tr.parentElement.tagName === 'TBODY'
-                ) {
+                } else if (td && tr && tr.parentElement.tagName === 'TBODY') {
                     selectRow(tr, event);
                     activeCellElement = td;
                 }
             }
         }
 
-        // تحديد العمود
         function selectColumn(thElement, event) {
             if (!thElement) return;
-
-            if (event && typeof event.stopPropagation === 'function') {
-                event.stopPropagation();
-            }
+            if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
 
             const table = thElement.closest('table');
             if (!table) return;
@@ -929,26 +1005,15 @@
             activeThElement = thElement;
             activeCellElement = null;
 
-            table.querySelectorAll('th, td').forEach(el => {
-                el.classList.remove('active-column');
-            });
-
+            table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
             table.querySelectorAll('tr').forEach(tr => {
-                if (tr.children[colIdx]) {
-                    tr.children[colIdx].classList.add('active-column');
-                }
+                if (tr.children[colIdx]) tr.children[colIdx].classList.add('active-column');
             });
         }
 
-        // تحديد الصف والخلية بأمان
         function selectRow(trElement, event) {
-            if (!trElement || trElement.parentElement.tagName !== 'TBODY') {
-                return;
-            }
-
-            if (event && typeof event.stopPropagation === 'function') {
-                event.stopPropagation();
-            }
+            if (!trElement || trElement.parentElement.tagName !== 'TBODY') return;
+            if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
 
             const table = trElement.closest('table');
             if (!table) return;
@@ -956,10 +1021,7 @@
             activeSheet = table.closest('.sheet-container');
             activeTable = table;
 
-            table.querySelectorAll('tbody tr').forEach(row => {
-                row.classList.remove('active-row');
-            });
-
+            table.querySelectorAll('tbody tr').forEach(row => row.classList.remove('active-row'));
             trElement.classList.add('active-row');
             activeRowElement = trElement;
 
@@ -968,30 +1030,18 @@
 
             if (td && td.parentElement === trElement) {
                 activeCellElement = td;
-
-                const colIdx =
-                    Array.from(trElement.children).indexOf(td);
-
+                const colIdx = Array.from(trElement.children).indexOf(td);
                 activeColumnIndex = colIdx;
-
                 const headerRow = table.querySelector('thead tr');
-                activeThElement = headerRow
-                    ? headerRow.children[colIdx]
-                    : null;
+                activeThElement = headerRow ? headerRow.children[colIdx] : null;
 
-                table.querySelectorAll('th, td').forEach(el => {
-                    el.classList.remove('active-column');
-                });
-
+                table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
                 table.querySelectorAll('tr').forEach(row => {
-                    if (row.children[colIdx]) {
-                        row.children[colIdx].classList.add('active-column');
-                    }
+                    if (row.children[colIdx]) row.children[colIdx].classList.add('active-column');
                 });
             }
         }
 
-        // تنسيق الخلية المحددة
         function formatCell(action, value) {
             if (!activeCellElement) {
                 alert('الرجاء النقر على خلية أولاً ثم اختيار التنسيق.');
@@ -1001,13 +1051,11 @@
             if (action === 'color') {
                 activeCellElement.style.color = value;
                 activeCellElement.style.fontWeight = 'bold';
-
             } else if (action === 'red-underline') {
                 activeCellElement.style.textDecoration = 'underline';
                 activeCellElement.style.textDecorationColor = '#e53935';
                 activeCellElement.style.textDecorationThickness = '3px';
                 activeCellElement.style.fontWeight = 'bold';
-
             } else if (action === 'reset') {
                 activeCellElement.style.color = '';
                 activeCellElement.style.fontWeight = '';
@@ -1017,41 +1065,25 @@
             }
         }
 
-        // توسيع أو تضييق العمود المحدد
         function adjustActiveColWidth(amount) {
             if (!activeTable) {
-                const firstSheet =
-                    document.querySelector('.sheet-container');
-
+                const firstSheet = document.querySelector('.sheet-container');
                 setActiveContext(firstSheet, { target: firstSheet });
             }
-
             if (!activeTable) return;
-
-            if (!activeThElement) {
-                activeThElement =
-                    activeTable.querySelector('thead tr th');
-            }
-
+            if (!activeThElement) activeThElement = activeTable.querySelector('thead tr th');
             if (!activeThElement) return;
 
-            const currentWidth =
-                parseInt(activeThElement.style.width, 10) ||
-                activeThElement.offsetWidth;
-
+            const currentWidth = parseInt(activeThElement.style.width, 10) || activeThElement.offsetWidth;
             const newWidth = Math.max(15, currentWidth + amount);
 
             activeThElement.style.width = newWidth + 'px';
             activeThElement.style.minWidth = newWidth + 'px';
             activeThElement.style.maxWidth = newWidth + 'px';
 
-            const colIdx = Array.from(
-                activeThElement.parentElement.children
-            ).indexOf(activeThElement);
-
+            const colIdx = Array.from(activeThElement.parentElement.children).indexOf(activeThElement);
             activeTable.querySelectorAll('tr').forEach(row => {
                 const cell = row.children[colIdx];
-
                 if (cell) {
                     cell.style.width = newWidth + 'px';
                     cell.style.minWidth = newWidth + 'px';
@@ -1060,15 +1092,11 @@
             });
         }
 
-        // إضافة صف جديد
         function addRowToActiveTable() {
             if (!activeTable) {
-                const firstSheet =
-                    document.querySelector('.sheet-container');
-
+                const firstSheet = document.querySelector('.sheet-container');
                 setActiveContext(firstSheet, { target: firstSheet });
             }
-
             if (!activeTable) return;
 
             const tbody = activeTable.querySelector('tbody');
@@ -1080,7 +1108,6 @@
 
             for (let c = 0; c < colCount; c++) {
                 const newCell = newRow.insertCell();
-
                 if (c === 0) {
                     newCell.textContent = '-';
                 } else {
@@ -1089,24 +1116,18 @@
                     newCell.style.paddingRight = '5px';
                 }
             }
-
             selectRow(newRow, null);
         }
 
-        // إضافة عمود جديد
         function addColumnToActiveTable() {
             if (!activeTable) {
-                const firstSheet =
-                    document.querySelector('.sheet-container');
-
+                const firstSheet = document.querySelector('.sheet-container');
                 setActiveContext(firstSheet, { target: firstSheet });
             }
-
             if (!activeTable) return;
 
             const headerRow = activeTable.querySelector('thead tr');
             const th = document.createElement('th');
-
             th.style.width = '80px';
             th.setAttribute('onclick', 'selectColumn(this,event)');
 
@@ -1118,26 +1139,21 @@
             headerRow.appendChild(th);
 
             const tbody = activeTable.querySelector('tbody');
-
             Array.from(tbody.rows).forEach(row => {
                 const td = row.insertCell();
                 td.contentEditable = 'true';
                 td.style.textAlign = 'right';
                 td.style.paddingRight = '5px';
             });
-
             selectColumn(th, null);
         }
 
-        // حذف الصف المحدد
         function deleteSelectedRow() {
             if (!activeRowElement) {
                 alert('الرجاء النقر على الصف الذي تريد حذفه أولاً!');
                 return;
             }
-
             const tbody = activeRowElement.parentElement;
-
             if (tbody.rows.length > 1) {
                 activeRowElement.remove();
                 activeRowElement = null;
@@ -1147,56 +1163,40 @@
             }
         }
 
-        // حذف العمود المحدد
         function deleteSelectedColumn() {
             if (!activeTable) {
                 alert('الرجاء تحديد العمود الذي تريد حذفه أولاً!');
                 return;
             }
-
             const headerRow = activeTable.querySelector('thead tr');
             const colCount = headerRow.cells.length;
-
             if (colCount <= 1) {
                 alert('لا يمكنك حذف العمود الوحيد المتبقي!');
                 return;
             }
 
             let index = activeColumnIndex;
-
-            if (index < 0 || index >= colCount) {
-                index = colCount - 1;
-            }
+            if (index < 0 || index >= colCount) index = colCount - 1;
 
             headerRow.deleteCell(index);
-
             const tbody = activeTable.querySelector('tbody');
-
             Array.from(tbody.rows).forEach(row => {
-                if (row.cells[index]) {
-                    row.deleteCell(index);
-                }
+                if (row.cells[index]) row.deleteCell(index);
             });
 
             activeColumnIndex = Math.min(index, headerRow.cells.length - 1);
             activeThElement = headerRow.cells[activeColumnIndex];
             activeCellElement = null;
-
             selectColumn(activeThElement, null);
         }
 
-        // حذف الصفحة النشطة
         function deleteActivePage() {
             const pages = document.querySelectorAll('.sheet-container');
-
             if (pages.length <= 1) {
                 alert('لا يمكنك حذف الصفحة الوحيدة المتبقية!');
                 return;
             }
-
-            if (!confirm('هل أنت متأكد من حذف الصفحة الحالية؟')) {
-                return;
-            }
+            if (!confirm('هل أنت متأكد من حذف الصفحة الحالية؟')) return;
 
             if (activeSheet && activeSheet.isConnected) {
                 activeSheet.remove();
@@ -1208,76 +1208,41 @@
             activeCellElement = null;
             activeThElement = null;
 
-            const remainingPages =
-                document.querySelectorAll('.sheet-container');
-
+            const remainingPages = document.querySelectorAll('.sheet-container');
             if (remainingPages.length > 0) {
-                setActiveContext(remainingPages[0], {
-                    target: remainingPages[0]
-                });
+                setActiveContext(remainingPages[0], { target: remainingPages[0] });
             }
         }
 
-        // إضافة صفحة جديدة
         function addNewPage() {
             const wrapper = document.getElementById('pagesWrapper');
-            const pageCount =
-                wrapper.querySelectorAll('.sheet-container').length + 1;
+            const pageCount = wrapper.querySelectorAll('.sheet-container').length + 1;
 
             const newPage = document.createElement('div');
             newPage.className = 'sheet-container';
-            newPage.setAttribute(
-                'onclick',
-                'setActiveContext(this,event)'
-            );
+            newPage.setAttribute('onclick', 'setActiveContext(this,event)');
 
             newPage.innerHTML = `
                 <div class="header-top">
-                    <div class="editable-header" contenteditable="true">
-                        الجمهورية اليمنية
-                    </div>
-
-                    <div class="editable-header"
-                         contenteditable="true"
-                         style="font-size:11pt;">
-                        كشف البيانات والمسيرات الرسمية (الصفحة ${pageCount})
-                    </div>
-
-                    <div class="editable-header" contenteditable="true">
-                        التاريخ: ---
-                    </div>
+                    <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
+                    <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${pageCount})</div>
+                    <div class="editable-header" contenteditable="true">التاريخ: ---</div>
                 </div>
-
                 <div class="table-wrapper">
                     <table class="dynamicTable">
                         <thead>
                             <tr>
-                                <th style="width:35px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">م</span>
-                                </th>
-                                <th style="width:160px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">الاسم الرباعي</span>
-                                </th>
-                                <th style="width:80px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">نوع البطاقة</span>
-                                </th>
-                                <th style="width:100px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">رقم البطاقة</span>
-                                </th>
-                                <th style="width:90px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">رقم الاتصال</span>
-                                </th>
-                                <th style="width:160px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">اسم الزوجة / الزوج</span>
-                                </th>
-                                <th style="width:70px;" onclick="selectColumn(this,event)">
-                                    <span contenteditable="true">الحالة</span>
-                                </th>
+                                <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
+                                <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
+                                <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
+                                <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
+                                <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
+                                <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
+                                <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
                             </tr>
                         </thead>
-
                         <tbody>
-                            ${Array.from({length:15}, (_, rIdx) => `
+                            ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
                                     <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
@@ -1291,75 +1256,42 @@
                         </tbody>
                     </table>
                 </div>
-
                 <div class="footer-bottom">
-                    <div class="editable-header" contenteditable="true">
-                        البريد الإلكتروني / جهة الإصدار
-                    </div>
-                    <div class="editable-header" contenteditable="true">
-                        الإصدار: 2026.10
-                    </div>
+                    <div class="editable-header" contenteditable="true">البريد الإلكتروني / جهة الإصدار</div>
+                    <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
                 </div>
             `;
 
             wrapper.appendChild(newPage);
-
             activeRowElement = null;
             activeCellElement = null;
             activeThElement = null;
-
             setActiveContext(newPage, { target: newPage });
-
-            const currentFont =
-                document.getElementById('fontSelector').value;
-
-            changeFontFamily(currentFont);
+            changeFontFamily(document.getElementById('fontSelector').value);
         }
 
-        // تغيير الخط
         function changeFontFamily(fontValue) {
             document.body.style.fontFamily = fontValue;
-
-            document.querySelectorAll('.btn, select, input').forEach(el => {
-                el.style.fontFamily = fontValue;
-            });
-
-            document.querySelectorAll(
-                '.sheet-container, .sheet-container th, .sheet-container td, .editable-header'
-            ).forEach(el => {
-                el.style.fontFamily = fontValue;
-            });
+            document.querySelectorAll('.btn, select, input').forEach(el => { el.style.fontFamily = fontValue; });
+            document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header').forEach(el => { el.style.fontFamily = fontValue; });
         }
 
-        // تغيير لون النص في صفحات الكشف
         function changeTextColor(colorValue) {
-            document.querySelectorAll(
-                '.sheet-container, .sheet-container th, .sheet-container td, .editable-header'
-            ).forEach(el => {
-                el.style.color = colorValue;
-            });
+            document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header').forEach(el => { el.style.color = colorValue; });
         }
 
-        // إغلاق النافذة عند النقر خارج محتواها
         document.querySelectorAll('.custom-modal').forEach(modal => {
             modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
+                if (event.target === modal) modal.style.display = 'none';
             });
         });
 
-        // تهيئة الصفحة عند الفتح
         window.onload = function() {
-            const firstSheet =
-                document.querySelector('.sheet-container');
-
+            const firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
                 setActiveContext(firstSheet, { target: firstSheet });
-                activeThElement =
-                    firstSheet.querySelector('thead tr th');
+                activeThElement = firstSheet.querySelector('thead tr th');
             }
-            // تشغيل الترقيم التلقائي عند التحميل لأول مرة
             renumberAllRows();
         };
     </script>
