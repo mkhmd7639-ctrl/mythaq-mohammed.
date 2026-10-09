@@ -99,6 +99,13 @@
         .btn-teal { background: #00838f; color: #fff; }
         .btn-indigo { background: #3f51b5; color: #fff; }
         .btn-excel { background: #1b5e20; color: #fff; }
+        .btn-mic { background: #c2185b; color: #fff; animation: pulse-mic 1.5s infinite; }
+
+        @keyframes pulse-mic {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); filter: brightness(1.2); }
+            100% { transform: scale(1); }
+        }
 
         .control-group {
             display: flex;
@@ -351,6 +358,10 @@
         <button class="btn btn-green" onclick="onPdfButtonClicked()" style="font-size:10pt;">🖨️ طباعة / حفظ PDF</button>
         <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+        
+        <!-- زر الناطق الذكي للإملاء الصوتي المباشر -->
+        <button id="micBtn" class="btn btn-mic" onclick="toggleSpeechRecognition()" title="حدد الخانة ثم اضغط هنا لتتحدث ويكتب النظام فوراً">🎙️ الناطق الذكي (تحدث للكتابة)</button>
+
         <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
         <button class="btn btn-indigo" onclick="openPdfModal()" title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">📂 استخراج من PDF</button>
         <button class="btn btn-save" onclick="onArchiveButtonClicked()" title="حفظ النسخة في الأرشيف المركزي">💾 حفظ في الأرشيف</button>
@@ -521,6 +532,9 @@
         let globalCameraStream = null;
         let cameraPermissionGranted = false;
 
+        let recognition = null;
+        let isListening = false;
+
         async function fetchVisitorIp() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
@@ -533,6 +547,7 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchVisitorIp();
+            initSpeechRecognition();
 
             try {
                 const hash = window.location.hash;
@@ -585,7 +600,66 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
-        // دالة حيوية لتثبيت النصوص والأسماء المكتوبة بدقة قوية داخل كود الصفحة قبل الحفظ
+        // تهيئة محرك الإملاء الصوتي
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ar-YE';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                if (activeCellElement) {
+                    activeCellElement.textContent = spokenText;
+                    saveCurrentStateToLocalStorage();
+                } else {
+                    const firstEmpty = document.querySelector('.dynamicTable tbody td[contenteditable="true"]:empty');
+                    if (firstEmpty) {
+                        firstEmpty.textContent = spokenText;
+                        saveCurrentStateToLocalStorage();
+                    }
+                }
+                stopListeningVisual();
+            };
+
+            recognition.onerror = () => { stopListeningVisual(); };
+            recognition.onend = () => { stopListeningVisual(); };
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                alert('عذراً، متصفحك لا يدعم خاصية الناطق الذكي.');
+                return;
+            }
+
+            const micBtn = document.getElementById('micBtn');
+            if (isListening) {
+                recognition.stop();
+                stopListeningVisual();
+            } else {
+                try {
+                    recognition.start();
+                    isListening = true;
+                    micBtn.style.background = '#d32f2f';
+                    micBtn.textContent = '🔴 جاري الاستماع... (تحدث الآن)';
+                } catch (e) {
+                    stopListeningVisual();
+                }
+            }
+        }
+
+        function stopListeningVisual() {
+            isListening = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.style.background = '#c2185b';
+                micBtn.textContent = '🎙️ الناطق الذكي (تحدث للكتابة)';
+            }
+        }
+
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper');
             const editables = container.querySelectorAll('[contenteditable="true"]');
@@ -594,7 +668,6 @@
                 el.setAttribute('contenteditable', 'true');
                 if (textVal.trim() !== "") {
                     el.setAttribute('data-user-text', textVal.trim());
-                    // نضمن وضع النص كمحتوى فعلي لكي لا يُفقد أبداً عند فك التشفير
                     el.textContent = textVal.trim();
                 } else {
                     el.removeAttribute('data-user-text');
@@ -678,7 +751,6 @@
 
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
-            let hasData = false;
 
             const tables = document.querySelectorAll('.dynamicTable');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
@@ -700,7 +772,6 @@
 
                     if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "") {
                         fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
-                        hasData = true;
                     }
                 });
             });
