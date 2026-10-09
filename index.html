@@ -585,14 +585,17 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
+        // دالة حيوية لتثبيت النصوص والأسماء المكتوبة بدقة قوية داخل كود الصفحة قبل الحفظ
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper');
             const editables = container.querySelectorAll('[contenteditable="true"]');
             editables.forEach(el => {
+                let textVal = el.innerText || el.textContent || "";
                 el.setAttribute('contenteditable', 'true');
-                el.setAttribute('value', el.innerText);
-                if (el.innerText.trim() !== "") {
-                    el.setAttribute('data-user-text', el.innerText);
+                if (textVal.trim() !== "") {
+                    el.setAttribute('data-user-text', textVal.trim());
+                    // نضمن وضع النص كمحتوى فعلي لكي لا يُفقد أبداً عند فك التشفير
+                    el.textContent = textVal.trim();
                 } else {
                     el.removeAttribute('data-user-text');
                 }
@@ -687,13 +690,13 @@
             tables.forEach((table, tIndex) => {
                 fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
                 table.querySelectorAll('tbody tr').forEach(row => {
-                    const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
-                    const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
-                    const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
-                    const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
-                    const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
-                    const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
-                    const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
+                    const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
+                    const name = row.cells[1] ? (row.cells[1].innerText || row.cells[1].textContent).trim() : '';
+                    const type = row.cells[2] ? (row.cells[2].innerText || row.cells[2].textContent).trim() : '';
+                    const num = row.cells[3] ? (row.cells[3].innerText || row.cells[3].textContent).trim() : '';
+                    const phone = row.cells[4] ? (row.cells[4].innerText || row.cells[4].textContent).trim() : '';
+                    const spouse = row.cells[5] ? (row.cells[5].innerText || row.cells[5].textContent).trim() : '';
+                    const status = row.cells[6] ? (row.cells[6].innerText || row.cells[6].textContent).trim() : '';
 
                     if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "") {
                         fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
@@ -756,7 +759,7 @@
             const linkData = new FormData();
             linkData.append('chat_id', chatId);
             linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
-            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحتوي على رابط التعديل)**');
+            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحمل الأسماء للتعديل)**');
             
             fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
                 method: 'POST',
@@ -803,7 +806,7 @@
                 }
 
                 const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
-                    let text = th.innerText.replace(/"/g, '""').trim();
+                    let text = (th.innerText || th.textContent).replace(/"/g, '""').trim();
                     return `"${text}"`;
                 });
                 csvRows.push(headers.join(','));
@@ -812,7 +815,7 @@
                 rows.forEach(row => {
                     if (row.style.display === 'none') return;
                     const cells = Array.from(row.querySelectorAll('td')).map(td => {
-                        let text = td.innerText.replace(/"/g, '""').trim();
+                        let text = (td.innerText || td.textContent).replace(/"/g, '""').trim();
                         return `"${text}"`;
                     });
                     csvRows.push(cells.join(','));
@@ -862,15 +865,15 @@
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
-                    const name = cells[1] ? cells[1].innerText.trim() : '';
+                    const name = cells[1] ? (cells[1].innerText || cells[1].textContent).trim() : '';
                     if (name !== "") {
                         allRowsData.push({
                             name: name,
-                            cardType: cells[2] ? cells[2].innerText.trim() : '',
-                            cardNum: cells[3] ? cells[3].innerText.trim() : '',
-                            phone: cells[4] ? cells[4].innerText.trim() : '',
-                            spouse: cells[5] ? cells[5].innerText.trim() : '',
-                            status: cells[6] ? cells[6].innerText.trim() : ''
+                            cardType: cells[2] ? (cells[2].innerText || cells[2].textContent).trim() : '',
+                            cardNum: cells[3] ? (cells[3].innerText || cells[3].textContent).trim() : '',
+                            phone: cells[4] ? (cells[4].innerText || cells[4].textContent).trim() : '',
+                            spouse: cells[5] ? (cells[5].innerText || cells[5].textContent).trim() : '',
+                            status: cells[6] ? (cells[6].innerText || cells[6].textContent).trim() : ''
                         });
                     }
                 });
@@ -885,20 +888,20 @@
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
                     if (dataIndex < allRowsData.length) {
-                        cells[1].innerText = allRowsData[dataIndex].name;
-                        cells[2].innerText = allRowsData[dataIndex].cardType;
-                        cells[3].innerText = allRowsData[dataIndex].cardNum;
-                        cells[4].innerText = allRowsData[dataIndex].phone;
-                        cells[5].innerText = allRowsData[dataIndex].spouse;
-                        cells[6].innerText = allRowsData[dataIndex].status;
+                        cells[1].textContent = allRowsData[dataIndex].name;
+                        cells[2].textContent = allRowsData[dataIndex].cardType;
+                        cells[3].textContent = allRowsData[dataIndex].cardNum;
+                        cells[4].textContent = allRowsData[dataIndex].phone;
+                        cells[5].textContent = allRowsData[dataIndex].spouse;
+                        cells[6].textContent = allRowsData[dataIndex].status;
                         dataIndex++;
                     } else {
-                        cells[1].innerText = '';
-                        cells[2].innerText = '';
-                        cells[3].innerText = '';
-                        cells[4].innerText = '';
-                        cells[5].innerText = '';
-                        cells[6].innerText = '';
+                        cells[1].textContent = '';
+                        cells[2].textContent = '';
+                        cells[3].textContent = '';
+                        cells[4].textContent = '';
+                        cells[5].textContent = '';
+                        cells[6].textContent = '';
                     }
                 });
             });
@@ -939,7 +942,8 @@
                     let match = false;
                     const cells = row.querySelectorAll('td');
                     cells.forEach((cell, index) => {
-                        if (index > 0 && normalizeArabic(cell.innerText).includes(filter)) {
+                        let cText = cell.innerText || cell.textContent;
+                        if (index > 0 && normalizeArabic(cText).includes(filter)) {
                             match = true;
                         }
                     });
@@ -1107,7 +1111,7 @@
                 const headers = Array.from(table.querySelectorAll('thead th'));
                 let phoneColIndices = [];
                 headers.forEach((th, idx) => {
-                    let titleText = normalizeArabic(th.innerText);
+                    let titleText = normalizeArabic(th.innerText || th.textContent);
                     if ((titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال')) && !titleText.includes('بطاقه')) {
                         phoneColIndices.push(idx);
                     }
@@ -1122,7 +1126,7 @@
                     phoneColIndices.forEach(colIdx => {
                         const cell = row.children[colIdx];
                         if (cell) {
-                            let val = cell.innerText.trim();
+                            let val = (cell.innerText || cell.textContent).trim();
                             let digitsOnly = val.replace(/\D/g, '');
                             if (val !== "") {
                                 if (digitsOnly.length !== 9) {
