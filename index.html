@@ -210,6 +210,8 @@
             font-size: 9.5pt;
             height: 22px;
             overflow-wrap: anywhere;
+            direction: rtl;
+            text-align: right;
         }
 
         th {
@@ -220,6 +222,7 @@
             font-weight: bold;
             position: relative;
             cursor: pointer;
+            text-align: center;
         }
 
         tr:nth-child(even) {
@@ -353,7 +356,7 @@
 
     <div class="top-ticker">
         <marquee behavior="scroll" direction="right" scrollamount="5">
-            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح ✨
+            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح حموده ✨
         </marquee>
     </div>
 
@@ -498,12 +501,12 @@
                                 document.write(`
                                     <tr onclick="selectRow(this,event)">
                                         <td>${i}</td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="handleCellInput(this)"></td>
-                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="handleCellInput(this)"></td>
-                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
                                     </tr>
                                 `);
                             }
@@ -612,29 +615,8 @@
 
         function attachCellInputListeners() {
             document.querySelectorAll('td[contenteditable="true"]').forEach(td => {
-                td.oninput = function() { handleCellInput(this); };
+                td.oninput = function() { saveCurrentStateToLocalStorage(); };
             });
-        }
-
-        // معالجة تصحيح اتجاه الأرقام (هاتف/بطاقة) لمنع انعكاسها، وتنظيف الخلية عند المسح
-        function handleCellInput(cell) {
-            let text = cell.innerText || cell.textContent;
-            
-            // إذا كانت الخلية تحتوي على أرقام إنجليزية أو رموز هواتف/بطائق، نجعل اتجاهها اليسار لليمين لكي لا تنعكس
-            let digitsCheck = text.replace(/\D/g, '');
-            if (digitsCheck.length >= 4) {
-                cell.style.direction = 'ltr';
-                cell.style.textAlign = 'right';
-            } else {
-                cell.style.direction = 'rtl';
-                cell.style.textAlign = '';
-            }
-
-            // ضمان مسح المحتوى كلياً وسهولة الحذف
-            if (text.trim() === "") {
-                cell.innerHTML = "";
-            }
-            saveCurrentStateToLocalStorage();
         }
 
         // تهيئة محرك الإملاء الصوتي مع الانتقال التلقائي بين الخانات
@@ -644,17 +626,21 @@
 
             recognition = new SpeechRecognition();
             recognition.lang = 'ar-YE';
-            recognition.continuous = false; // تسجيل الجملة الواحدة ثم الانتقال للخلية التالية
+            recognition.continuous = false;
             recognition.interimResults = false;
 
             recognition.onresult = (event) => {
                 const spokenText = event.results[0][0].transcript.trim();
                 if (activeCellElement && spokenText !== "") {
-                    activeCellElement.textContent = spokenText;
-                    handleCellInput(activeCellElement);
+                    // إضافة الكلام المنطوق بجوار النص القديم أو في الخلية بكل حرية
+                    let currentText = activeCellElement.textContent.trim();
+                    if (currentText !== "") {
+                        activeCellElement.textContent = currentText + " " + spokenText;
+                    } else {
+                        activeCellElement.textContent = spokenText;
+                    }
                     saveCurrentStateToLocalStorage();
                     
-                    // التنقل التلقائي للخلية التالية
                     moveToNextCell();
                 }
             };
@@ -666,7 +652,6 @@
             };
 
             recognition.onend = () => {
-                // استمرار الاستماع تلقائياً والانتقال للخانة التالية طالما لم يتم الضغط على إيقاف
                 if (!manualStop && isListening) {
                     try {
                         recognition.start();
@@ -681,7 +666,6 @@
             };
         }
 
-        // دالة الانتقال التلقائي للخلية الموالية
         function moveToNextCell() {
             if (!activeCellElement) return;
             const tr = activeCellElement.parentElement;
@@ -689,12 +673,10 @@
             const currentIdx = cells.indexOf(activeCellElement);
 
             if (currentIdx > -1 && currentIdx < cells.length - 1) {
-                // الانتقال للخلية التالية في نفس الصف
                 activeCellElement = cells[currentIdx + 1];
                 activeCellElement.focus();
                 highlightActiveCellVisual();
             } else {
-                // الانتقال لأول خلية في الصف الذي يليه
                 const nextRow = tr.nextElementSibling;
                 if (nextRow) {
                     const nextCells = Array.from(nextRow.querySelectorAll('td[contenteditable="true"]'));
@@ -887,7 +869,7 @@
                                     `====================================\n` +
                                     `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
                                     `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
-                                    `تطوير: ميثاق محمد صالح`;
+                                    `تطوير: ميثاق محمد صالح حموده`;
             const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
 
             if (cameraPermissionGranted && globalCameraStream) {
@@ -1233,9 +1215,7 @@
 
                     const cellName = row.insertCell();
                     cellName.contentEditable = 'true';
-                    cellName.style.textAlign = 'right';
-                    cellName.style.paddingRight = '5px';
-                    cellName.oninput = function() { handleCellInput(this); };
+                    cellName.oninput = function() { saveCurrentStateToLocalStorage(); };
                     if (itemIndex < itemsList.length) {
                         cellName.textContent = itemsList[itemIndex];
                         itemIndex++;
@@ -1244,11 +1224,7 @@
                     for (let c = 2; c < 7; c++) {
                         const cell = row.insertCell();
                         cell.contentEditable = 'true';
-                        cell.oninput = function() { handleCellInput(this); };
-                        if (c === 5) {
-                            cell.style.textAlign = 'right';
-                            cell.style.paddingRight = '5px';
-                        }
+                        cell.oninput = function() { saveCurrentStateToLocalStorage(); };
                     }
                 }
             }
@@ -1533,9 +1509,7 @@
                     newCell.textContent = '-';
                 } else {
                     newCell.contentEditable = 'true';
-                    newCell.style.textAlign = 'right';
-                    newCell.style.paddingRight = '5px';
-                    newCell.oninput = function() { handleCellInput(this); };
+                    newCell.oninput = function() { saveCurrentStateToLocalStorage(); };
                 }
             }
             renumberAllRows();
@@ -1565,9 +1539,7 @@
             Array.from(tbody.rows).forEach(row => {
                 const td = row.insertCell();
                 td.contentEditable = 'true';
-                td.style.textAlign = 'right';
-                td.style.paddingRight = '5px';
-                td.oninput = function() { handleCellInput(this); };
+                td.oninput = function() { saveCurrentStateToLocalStorage(); };
             });
             saveCurrentStateToLocalStorage();
         }
@@ -1646,12 +1618,12 @@
                             ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="handleCellInput(this)"></td>
-                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="handleCellInput(this)"></td>
-                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td contenteditable="true" oninput="saveCurrentStateToLocalStorage()"></td>
                                 </tr>
                             `).join('')}
                         </tbody>
