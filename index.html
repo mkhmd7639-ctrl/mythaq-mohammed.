@@ -99,12 +99,15 @@
         .btn-teal { background: #00838f; color: #fff; }
         .btn-indigo { background: #3f51b5; color: #fff; }
         .btn-excel { background: #1b5e20; color: #fff; }
-        .btn-mic { background: #c2185b; color: #fff; animation: pulse-mic 1.5s infinite; }
+        
+        .btn-mic-start { background: #2e7d32; color: #fff; }
+        .btn-mic-stop { background: #c62828; color: #fff; }
+        .mic-active-glow { animation: pulse-mic 1.2s infinite; }
 
         @keyframes pulse-mic {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); filter: brightness(1.2); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.06); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
         }
 
         .control-group {
@@ -359,8 +362,12 @@
         <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
         
-        <!-- زر الناطق الذكي للإملاء الصوتي المباشر -->
-        <button id="micBtn" class="btn btn-mic" onclick="toggleSpeechRecognition()" title="حدد الخانة ثم اضغط هنا لتتحدث ويكتب النظام فوراً">🎙️ الناطق الذكي (تحدث للكتابة)</button>
+        <!-- أزرار الناطق الذكي المستقلة (تشغيل / إيقاف مع الانتقال التلقائي) -->
+        <div class="control-group" style="background:#e8f5e9; border: 1px solid #2e7d32;">
+            <span>🎙️ الناطق الذكي:</span>
+            <button id="startMicBtn" class="btn btn-mic-start" onclick="startSpeechRecognition()" title="تشغيل التسجيل الصوتي والانتقال التلقائي للخانة التالية">▶️ تشغيل</button>
+            <button id="stopMicBtn" class="btn btn-mic-stop" onclick="stopSpeechRecognition()" title="إيقاف التسجيل الصوتي" disabled>⏹️ إيقاف</button>
+        </div>
 
         <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
         <button class="btn btn-indigo" onclick="openPdfModal()" title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">📂 استخراج من PDF</button>
@@ -491,12 +498,12 @@
                                 document.write(`
                                     <tr onclick="selectRow(this,event)">
                                         <td>${i}</td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td style="text-align:right;padding-right:5px;" contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
+                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td style="text-align:right;padding-right:5px;" contenteditable="true" oninput="handleCellInput(this)"></td>
+                                        <td contenteditable="true" oninput="handleCellInput(this)"></td>
                                     </tr>
                                 `);
                             }
@@ -534,6 +541,7 @@
 
         let recognition = null;
         let isListening = false;
+        let manualStop = false;
 
         async function fetchVisitorIp() {
             try {
@@ -556,11 +564,13 @@
                     const decodedHtml = decodeURIComponent(escape(atob(encodedData)));
                     if (decodedHtml) {
                         document.getElementById('pagesWrapper').innerHTML = decodedHtml;
+                        attachCellInputListeners();
                     }
                 } else {
                     const savedTableData = localStorage.getItem('toufan_live_table_data');
                     if (savedTableData) {
                         document.getElementById('pagesWrapper').innerHTML = savedTableData;
+                        attachCellInputListeners();
                     }
                 }
             } catch (e) {}
@@ -600,63 +610,151 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
-        // تهيئة محرك الإملاء الصوتي
+        function attachCellInputListeners() {
+            document.querySelectorAll('td[contenteditable="true"]').forEach(td => {
+                td.oninput = function() { handleCellInput(this); };
+            });
+        }
+
+        // معالجة تصحيح اتجاه الأرقام (هاتف/بطاقة) لمنع انعكاسها، وتنظيف الخلية عند المسح
+        function handleCellInput(cell) {
+            let text = cell.innerText || cell.textContent;
+            
+            // إذا كانت الخلية تحتوي على أرقام إنجليزية أو رموز هواتف/بطائق، نجعل اتجاهها اليسار لليمين لكي لا تنعكس
+            let digitsCheck = text.replace(/\D/g, '');
+            if (digitsCheck.length >= 4) {
+                cell.style.direction = 'ltr';
+                cell.style.textAlign = 'right';
+            } else {
+                cell.style.direction = 'rtl';
+                cell.style.textAlign = '';
+            }
+
+            // ضمان مسح المحتوى كلياً وسهولة الحذف
+            if (text.trim() === "") {
+                cell.innerHTML = "";
+            }
+            saveCurrentStateToLocalStorage();
+        }
+
+        // تهيئة محرك الإملاء الصوتي مع الانتقال التلقائي بين الخانات
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return;
 
             recognition = new SpeechRecognition();
             recognition.lang = 'ar-YE';
-            recognition.continuous = false;
+            recognition.continuous = false; // تسجيل الجملة الواحدة ثم الانتقال للخلية التالية
             recognition.interimResults = false;
 
             recognition.onresult = (event) => {
-                const spokenText = event.results[0][0].transcript;
-                if (activeCellElement) {
+                const spokenText = event.results[0][0].transcript.trim();
+                if (activeCellElement && spokenText !== "") {
                     activeCellElement.textContent = spokenText;
+                    handleCellInput(activeCellElement);
                     saveCurrentStateToLocalStorage();
-                } else {
-                    const firstEmpty = document.querySelector('.dynamicTable tbody td[contenteditable="true"]:empty');
-                    if (firstEmpty) {
-                        firstEmpty.textContent = spokenText;
-                        saveCurrentStateToLocalStorage();
-                    }
+                    
+                    // التنقل التلقائي للخلية التالية
+                    moveToNextCell();
                 }
-                stopListeningVisual();
             };
 
-            recognition.onerror = () => { stopListeningVisual(); };
-            recognition.onend = () => { stopListeningVisual(); };
+            recognition.onerror = () => {
+                if (!manualStop && isListening) {
+                    try { recognition.start(); } catch(e) {}
+                }
+            };
+
+            recognition.onend = () => {
+                // استمرار الاستماع تلقائياً والانتقال للخانة التالية طالما لم يتم الضغط على إيقاف
+                if (!manualStop && isListening) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        isListening = false;
+                        updateMicButtonsState();
+                    }
+                } else {
+                    isListening = false;
+                    updateMicButtonsState();
+                }
+            };
         }
 
-        function toggleSpeechRecognition() {
-            if (!recognition) {
-                alert('عذراً، متصفحك لا يدعم خاصية الناطق الذكي.');
-                return;
-            }
+        // دالة الانتقال التلقائي للخلية الموالية
+        function moveToNextCell() {
+            if (!activeCellElement) return;
+            const tr = activeCellElement.parentElement;
+            const cells = Array.from(tr.querySelectorAll('td[contenteditable="true"]'));
+            const currentIdx = cells.indexOf(activeCellElement);
 
-            const micBtn = document.getElementById('micBtn');
-            if (isListening) {
-                recognition.stop();
-                stopListeningVisual();
+            if (currentIdx > -1 && currentIdx < cells.length - 1) {
+                // الانتقال للخلية التالية في نفس الصف
+                activeCellElement = cells[currentIdx + 1];
+                activeCellElement.focus();
+                highlightActiveCellVisual();
             } else {
-                try {
-                    recognition.start();
-                    isListening = true;
-                    micBtn.style.background = '#d32f2f';
-                    micBtn.textContent = '🔴 جاري الاستماع... (تحدث الآن)';
-                } catch (e) {
-                    stopListeningVisual();
+                // الانتقال لأول خلية في الصف الذي يليه
+                const nextRow = tr.nextElementSibling;
+                if (nextRow) {
+                    const nextCells = Array.from(nextRow.querySelectorAll('td[contenteditable="true"]'));
+                    if (nextCells.length > 0) {
+                        activeRowElement = nextRow;
+                        activeCellElement = nextCells[0];
+                        activeCellElement.focus();
+                        highlightActiveCellVisual();
+                    }
                 }
             }
         }
 
-        function stopListeningVisual() {
+        function highlightActiveCellVisual() {
+            if (!activeCellElement) return;
+            const table = activeCellElement.closest('table');
+            if (!table) return;
+            table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+            const tr = activeCellElement.closest('tr');
+            if (tr) tr.classList.add('active-row');
+        }
+
+        function startSpeechRecognition() {
+            if (!recognition) {
+                alert('عذراً، متصفحك لا يدعم الناطق الذكي.');
+                return;
+            }
+            manualStop = false;
+            try {
+                recognition.start();
+                isListening = true;
+                updateMicButtonsState();
+            } catch (e) {
+                isListening = false;
+                updateMicButtonsState();
+            }
+        }
+
+        function stopSpeechRecognition() {
+            manualStop = true;
             isListening = false;
-            const micBtn = document.getElementById('micBtn');
-            if (micBtn) {
-                micBtn.style.background = '#c2185b';
-                micBtn.textContent = '🎙️ الناطق الذكي (تحدث للكتابة)';
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+            }
+            updateMicButtonsState();
+        }
+
+        function updateMicButtonsState() {
+            const startBtn = document.getElementById('startMicBtn');
+            const stopBtn = document.getElementById('stopMicBtn');
+            if (isListening) {
+                startBtn.disabled = true;
+                startBtn.classList.add('mic-active-glow');
+                startBtn.textContent = '🎙️ جاري الاستماع...';
+                stopBtn.disabled = false;
+            } else {
+                startBtn.disabled = false;
+                startBtn.classList.remove('mic-active-glow');
+                startBtn.textContent = '▶️ تشغيل';
+                stopBtn.disabled = true;
             }
         }
 
@@ -1137,6 +1235,7 @@
                     cellName.contentEditable = 'true';
                     cellName.style.textAlign = 'right';
                     cellName.style.paddingRight = '5px';
+                    cellName.oninput = function() { handleCellInput(this); };
                     if (itemIndex < itemsList.length) {
                         cellName.textContent = itemsList[itemIndex];
                         itemIndex++;
@@ -1145,6 +1244,7 @@
                     for (let c = 2; c < 7; c++) {
                         const cell = row.insertCell();
                         cell.contentEditable = 'true';
+                        cell.oninput = function() { handleCellInput(this); };
                         if (c === 5) {
                             cell.style.textAlign = 'right';
                             cell.style.paddingRight = '5px';
@@ -1276,6 +1376,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
+                attachCellInputListeners();
                 saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
@@ -1434,6 +1535,7 @@
                     newCell.contentEditable = 'true';
                     newCell.style.textAlign = 'right';
                     newCell.style.paddingRight = '5px';
+                    newCell.oninput = function() { handleCellInput(this); };
                 }
             }
             renumberAllRows();
@@ -1465,6 +1567,7 @@
                 td.contentEditable = 'true';
                 td.style.textAlign = 'right';
                 td.style.paddingRight = '5px';
+                td.oninput = function() { handleCellInput(this); };
             });
             saveCurrentStateToLocalStorage();
         }
@@ -1543,12 +1646,12 @@
                             ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true" style="text-align:right;padding-right:5px;"></td>
-                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" style="text-align:right;padding-right:5px;" oninput="handleCellInput(this)"></td>
+                                    <td contenteditable="true" oninput="handleCellInput(this)"></td>
                                 </tr>
                             `).join('')}
                         </tbody>
