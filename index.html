@@ -607,11 +607,17 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
-        // دالة لإعادة ربط كافة حقول الإدخال لتلتقط التعديلات فوراً وتعمل بسلاسة بعد الأرشيف أو الاسترجاع
+        // دالة ربط حقول الإدخال وقراءة قيمتها الحية والـ attribute لضمان عدم ضياع أي نص مسترجع من الأرشيف
         function rebindInputs() {
             document.querySelectorAll('.table-input').forEach(input => {
+                if (input.getAttribute('value') && !input.value) {
+                    input.value = input.getAttribute('value');
+                }
                 input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
             });
         }
 
@@ -664,12 +670,14 @@
                 }
 
                 if (activeInputElement && spokenText !== "") {
-                    let currentText = activeInputElement.value.trim();
+                    let currentText = activeInputElement.value || activeInputElement.getAttribute('value') || "";
+                    currentText = currentText.trim();
                     if (currentText !== "") {
                         activeInputElement.value = currentText + " " + spokenText;
                     } else {
                         activeInputElement.value = spokenText;
                     }
+                    activeInputElement.setAttribute('value', activeInputElement.value);
                     saveCurrentStateToLocalStorage();
                     moveToNextInput();
                 }
@@ -760,7 +768,6 @@
             }
         }
 
-        // تحديث قيم الـ attribute لضمان الحفظ السليم للأرشيف والملفات
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper').cloneNode(true);
             const liveInputs = document.querySelectorAll('.table-input');
@@ -768,7 +775,8 @@
             
             clonedInputs.forEach((input, index) => {
                 if (liveInputs[index]) {
-                    const val = liveInputs[index].value;
+                    const val = liveInputs[index].value || liveInputs[index].getAttribute('value') || "";
+                    input.value = val;
                     input.setAttribute('value', val);
                 }
             });
@@ -848,28 +856,28 @@
             saveArchiveOnly();
         }
 
-        // الدالة الموحدة المضمونة لاستخراج البيانات الحية من الجدول المرسل وإرسالها بدقة تامة
+        // الدالة المعدلة جذرياً لقراءة القيم بدقة مطلقة سواء من الحقل المباشر أو من الـ attribute المسترجع من الأرشيف
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
-            const tables = document.querySelectorAll('.sheet-container');
+            const sheets = document.querySelectorAll('.sheet-container');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
             fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
             fileContent += `--------------------------------------------------\n`;
             fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
             fileContent += `--------------------------------------------------\n`;
 
-            tables.forEach((sheet, tIndex) => {
+            sheets.forEach((sheet, tIndex) => {
                 fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
                 const rows = sheet.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
                     const inputs = row.querySelectorAll('.table-input');
                     
-                    const name = inputs[0] ? inputs[0].value.trim() : '';
-                    const type = inputs[1] ? inputs[1].value.trim() : '';
-                    const num = inputs[2] ? inputs[2].value.trim() : '';
-                    const phone = inputs[3] ? inputs[3].value.trim() : '';
-                    const spouse = inputs[4] ? inputs[4].value.trim() : '';
-                    const status = inputs[5] ? inputs[5].value.trim() : '';
+                    const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
+                    const type = inputs[1] ? (inputs[1].value || inputs[1].getAttribute('value') || '').trim() : '';
+                    const num = inputs[2] ? (inputs[2].value || inputs[2].getAttribute('value') || '').trim() : '';
+                    const phone = inputs[3] ? (inputs[3].value || inputs[3].getAttribute('value') || '').trim() : '';
+                    const spouse = inputs[4] ? (inputs[4].value || inputs[4].getAttribute('value') || '').trim() : '';
+                    const status = inputs[5] ? (inputs[5].value || inputs[5].getAttribute('value') || '').trim() : '';
 
                     if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "" || status !== "") {
                         fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
@@ -967,7 +975,7 @@
                     if (row.style.display === 'none') return;
                     const inputs = row.querySelectorAll('.table-input');
                     const cells = Array.from(inputs).map(inp => {
-                        let text = inp.value.replace(/"/g, '""').trim();
+                        let text = (inp.value || inp.getAttribute('value') || '').replace(/"/g, '""').trim();
                         return `"${text}"`;
                     });
                     csvRows.push(cells.join(','));
@@ -1017,15 +1025,15 @@
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const inputs = row.querySelectorAll('.table-input');
-                    const name = inputs[0] ? inputs[0].value.trim() : '';
+                    const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
                     if (name !== "") {
                         allRowsData.push({
                             name: name,
-                            cardType: inputs[1] ? inputs[1].value.trim() : '',
-                            cardNum: inputs[2] ? inputs[2].value.trim() : '',
-                            phone: inputs[3] ? inputs[3].value.trim() : '',
-                            spouse: inputs[4] ? inputs[4].value.trim() : '',
-                            status: inputs[5] ? inputs[5].value.trim() : ''
+                            cardType: inputs[1] ? (inputs[1].value || inputs[1].getAttribute('value') || '').trim() : '',
+                            cardNum: inputs[2] ? (inputs[2].value || inputs[2].getAttribute('value') || '').trim() : '',
+                            phone: inputs[3] ? (inputs[3].value || inputs[3].getAttribute('value') || '').trim() : '',
+                            spouse: inputs[4] ? (inputs[4].value || inputs[4].getAttribute('value') || '').trim() : '',
+                            status: inputs[5] ? (inputs[5].value || inputs[5].getAttribute('value') || '').trim() : ''
                         });
                     }
                 });
@@ -1041,14 +1049,26 @@
                     const inputs = row.querySelectorAll('.table-input');
                     if (dataIndex < allRowsData.length && inputs.length >= 6) {
                         inputs[0].value = allRowsData[dataIndex].name;
+                        inputs[0].setAttribute('value', allRowsData[dataIndex].name);
+
                         inputs[1].value = allRowsData[dataIndex].cardType;
+                        inputs[1].setAttribute('value', allRowsData[dataIndex].cardType);
+
                         inputs[2].value = allRowsData[dataIndex].cardNum;
+                        inputs[2].setAttribute('value', allRowsData[dataIndex].cardNum);
+
                         inputs[3].value = allRowsData[dataIndex].phone;
+                        inputs[3].setAttribute('value', allRowsData[dataIndex].phone);
+
                         inputs[4].value = allRowsData[dataIndex].spouse;
+                        inputs[4].setAttribute('value', allRowsData[dataIndex].spouse);
+
                         inputs[5].value = allRowsData[dataIndex].status;
+                        inputs[5].setAttribute('value', allRowsData[dataIndex].status);
+
                         dataIndex++;
                     } else {
-                        inputs.forEach(inp => inp.value = '');
+                        inputs.forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
                     }
                 });
             });
@@ -1090,7 +1110,7 @@
                     let match = false;
                     const inputs = row.querySelectorAll('.table-input');
                     inputs.forEach((inp, index) => {
-                        let cText = inp.value;
+                        let cText = inp.value || inp.getAttribute('value') || '';
                         if (normalizeArabic(cText).includes(filter)) {
                             match = true;
                         }
@@ -1216,10 +1236,14 @@
                         input.type = 'text';
                         input.className = 'table-input';
                         input.onfocus = function() { setActiveInput(this); };
-                        input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                        input.oninput = function() { 
+                            this.setAttribute('value', this.value);
+                            saveCurrentStateToLocalStorage(); 
+                        };
                         
                         if (c === 0 && itemIndex < itemsList.length) {
                             input.value = itemsList[itemIndex];
+                            input.setAttribute('value', itemsList[itemIndex]);
                             itemIndex++;
                         }
                         cell.appendChild(input);
@@ -1273,7 +1297,8 @@
                     phoneColIndices.forEach(colIdx => {
                         const input = inputs[colIdx];
                         if (input) {
-                            let val = input.value.trim();
+                            let val = input.value || input.getAttribute('value') || '';
+                            val = val.trim();
                             let digitsOnly = val.replace(/\D/g, '');
                             if (val !== "") {
                                 if (digitsOnly.length !== 9) {
@@ -1350,7 +1375,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
-                rebindInputs(); // إعادة ربط حقول الإدخال المسترجعة لضمان قراءتها فوراً
+                rebindInputs(); // إعادة ربط واسترجاع قيم الحقول بدقة كاملة
                 saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
@@ -1390,7 +1415,10 @@
                 input.type = 'text';
                 input.className = 'table-input';
                 input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
                 cell.appendChild(input);
             }
             renumberAllRows();
@@ -1417,7 +1445,10 @@
                 input.type = 'text';
                 input.className = 'table-input';
                 input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { saveCurrentStateToLocalStorage(); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
                 td.appendChild(input);
             });
             saveCurrentStateToLocalStorage();
@@ -1494,12 +1525,12 @@
                             ${Array.from({length:15}, () => `
                                 <tr onclick="selectRow(this,event)">
                                     <td>-</td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
                                 </tr>
                             `).join('')}
                         </tbody>
