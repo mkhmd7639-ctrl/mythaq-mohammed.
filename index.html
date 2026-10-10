@@ -607,6 +607,7 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
+        // دالة لإعادة ربط كافة حقول الإدخال لتلتقط التعديلات فوراً وتعمل بسلاسة بعد الأرشيف أو الاسترجاع
         function rebindInputs() {
             document.querySelectorAll('.table-input').forEach(input => {
                 input.onfocus = function() { setActiveInput(this); };
@@ -759,12 +760,15 @@
             }
         }
 
+        // تحديث قيم الـ attribute لضمان الحفظ السليم للأرشيف والملفات
         function prepareHtmlForSaving() {
             const container = document.getElementById('pagesWrapper').cloneNode(true);
-            container.querySelectorAll('.table-input').forEach((input, index) => {
-                const originalInput = document.querySelectorAll('.table-input')[index];
-                if (originalInput) {
-                    const val = originalInput.value;
+            const liveInputs = document.querySelectorAll('.table-input');
+            const clonedInputs = container.querySelectorAll('.table-input');
+            
+            clonedInputs.forEach((input, index) => {
+                if (liveInputs[index]) {
+                    const val = liveInputs[index].value;
                     input.setAttribute('value', val);
                 }
             });
@@ -844,20 +848,22 @@
             saveArchiveOnly();
         }
 
-        // دالة استخراج البيانات المحدثة لقراءة قيم الحقول الحية بشكل مباشر وقسري
+        // الدالة الموحدة المضمونة لاستخراج البيانات الحية من الجدول المرسل وإرسالها بدقة تامة
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
-            const tables = document.querySelectorAll('.dynamicTable');
+            const tables = document.querySelectorAll('.sheet-container');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
             fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
             fileContent += `--------------------------------------------------\n`;
             fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
             fileContent += `--------------------------------------------------\n`;
 
-            tables.forEach((table, tIndex) => {
+            tables.forEach((sheet, tIndex) => {
                 fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
-                table.querySelectorAll('tbody tr').forEach(row => {
+                const rows = sheet.querySelectorAll('tbody tr');
+                rows.forEach(row => {
                     const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
                     const inputs = row.querySelectorAll('.table-input');
+                    
                     const name = inputs[0] ? inputs[0].value.trim() : '';
                     const type = inputs[1] ? inputs[1].value.trim() : '';
                     const num = inputs[2] ? inputs[2].value.trim() : '';
@@ -1222,6 +1228,7 @@
             }
 
             renumberAllRows();
+            rebindInputs();
             saveCurrentStateToLocalStorage();
         }
 
@@ -1343,7 +1350,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
-                rebindInputs();
+                rebindInputs(); // إعادة ربط حقول الإدخال المسترجعة لضمان قراءتها فوراً
                 saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
@@ -1506,6 +1513,7 @@
 
             wrapper.appendChild(newPage);
             renumberAllRows();
+            rebindInputs();
             saveCurrentStateToLocalStorage();
         }
 
