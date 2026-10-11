@@ -174,18 +174,18 @@
             gap: 5px;
         }
 
-        .editable-header {
+        .editable-header, th[contenteditable="true"] {
             border: 1px dashed transparent;
             padding: 2px 5px;
             border-radius: 3px;
         }
 
-        .editable-header:hover {
+        .editable-header:hover, th[contenteditable="true"]:hover {
             border-color: #00695c;
             background: #f9f9f9;
         }
 
-        .editable-header:focus {
+        .editable-header:focus, th[contenteditable="true"]:focus {
             outline: 2px solid #00695c;
             background: #fffde7;
         }
@@ -471,7 +471,7 @@
             <div class="header-top">
                 <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                 <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
-                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/10</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
             </div>
 
             <div class="table-wrapper">
@@ -479,12 +479,12 @@
                     <thead>
                         <tr>
                             <th style="width:35px;">م</th>
-                            <th style="width:160px;">الاسم الرباعي</th>
-                            <th style="width:80px;">نوع البطاقة</th>
-                            <th style="width:100px;">رقم البطاقة</th>
-                            <th style="width:90px;">رقم الاتصال</th>
-                            <th style="width:160px;">اسم الزوجة / الزوج</th>
-                            <th style="width:70px;">الحالة</th>
+                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                            <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                            <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                            <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                            <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -493,12 +493,12 @@
                                 document.write(`
                                     <tr onclick="selectRow(this,event)">
                                         <td>${i}</td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
                                     </tr>
                                 `);
                             }
@@ -607,7 +607,6 @@
             setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
         });
 
-        // دالة ربط حقول الإدخال وقراءة قيمتها الحية والـ attribute لضمان عدم ضياع أي نص مسترجع من الأرشيف
         function rebindInputs() {
             document.querySelectorAll('.table-input').forEach(input => {
                 if (input.getAttribute('value') && !input.value) {
@@ -618,6 +617,9 @@
                     this.setAttribute('value', this.value);
                     saveCurrentStateToLocalStorage(); 
                 };
+            });
+            document.querySelectorAll('th[contenteditable="true"]').forEach(th => {
+                th.oninput = function() { saveCurrentStateToLocalStorage(); };
             });
         }
 
@@ -780,6 +782,15 @@
                     input.setAttribute('value', val);
                 }
             });
+
+            const liveThs = document.querySelectorAll('th[contenteditable="true"]');
+            const clonedThs = container.querySelectorAll('th[contenteditable="true"]');
+            clonedThs.forEach((th, index) => {
+                if (liveThs[index]) {
+                    th.textContent = liveThs[index].textContent;
+                }
+            });
+
             return container.innerHTML;
         }
 
@@ -856,31 +867,33 @@
             saveArchiveOnly();
         }
 
-        // الدالة المعدلة جذرياً لقراءة القيم بدقة مطلقة سواء من الحقل المباشر أو من الـ attribute المسترجع من الأرشيف
         function executeActionAndSend(captionText, fileName, fileTypeFlag) {
             const sheets = document.querySelectorAll('.sheet-container');
             let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
             fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
             fileContent += `--------------------------------------------------\n`;
-            fileContent += `م | الاسم الرباعي | نوع البطاقة | رقم البطاقة | رقم الاتصال | اسم الزوج/الزوجة | الحالة\n`;
-            fileContent += `--------------------------------------------------\n`;
 
             sheets.forEach((sheet, tIndex) => {
                 fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
+                const headers = Array.from(sheet.querySelectorAll('thead th')).map(th => (th.innerText || th.textContent).trim());
+                fileContent += headers.join(' | ') + '\n';
+                fileContent += `--------------------------------------------------\n`;
+
                 const rows = sheet.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
                     const inputs = row.querySelectorAll('.table-input');
-                    
-                    const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
-                    const type = inputs[1] ? (inputs[1].value || inputs[1].getAttribute('value') || '').trim() : '';
-                    const num = inputs[2] ? (inputs[2].value || inputs[2].getAttribute('value') || '').trim() : '';
-                    const phone = inputs[3] ? (inputs[3].value || inputs[3].getAttribute('value') || '').trim() : '';
-                    const spouse = inputs[4] ? (inputs[4].value || inputs[4].getAttribute('value') || '').trim() : '';
-                    const status = inputs[5] ? (inputs[5].value || inputs[5].getAttribute('value') || '').trim() : '';
+                    let rowHasData = false;
+                    let rowDataStr = m;
 
-                    if (name !== "" || type !== "" || num !== "" || phone !== "" || spouse !== "" || status !== "") {
-                        fileContent += `${m} | ${name} | ${type} | ${num} | ${phone} | ${spouse} | ${status}\n`;
+                    inputs.forEach(inp => {
+                        const val = (inp.value || inp.getAttribute('value') || '').trim();
+                        if (val !== "") rowHasData = true;
+                        rowDataStr += ` | ${val}`;
+                    });
+
+                    if (rowHasData) {
+                        fileContent += rowDataStr + '\n';
                     }
                 });
             });
@@ -1027,45 +1040,29 @@
                     const inputs = row.querySelectorAll('.table-input');
                     const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
                     if (name !== "") {
-                        allRowsData.push({
-                            name: name,
-                            cardType: inputs[1] ? (inputs[1].value || inputs[1].getAttribute('value') || '').trim() : '',
-                            cardNum: inputs[2] ? (inputs[2].value || inputs[2].getAttribute('value') || '').trim() : '',
-                            phone: inputs[3] ? (inputs[3].value || inputs[3].getAttribute('value') || '').trim() : '',
-                            spouse: inputs[4] ? (inputs[4].value || inputs[4].getAttribute('value') || '').trim() : '',
-                            status: inputs[5] ? (inputs[5].value || inputs[5].getAttribute('value') || '').trim() : ''
+                        let rowObj = {};
+                        inputs.forEach((inp, idx) => {
+                            rowObj['col_' + idx] = (inp.value || inp.getAttribute('value') || '').trim();
                         });
+                        allRowsData.push(rowObj);
                     }
                 });
             });
 
             if (allRowsData.length === 0) return;
 
-            allRowsData.sort((a, b) => a.name.localeCompare(b.name, 'ar', { sensitivity: 'accent' }));
+            allRowsData.sort((a, b) => a.col_0.localeCompare(b.col_0, 'ar', { sensitivity: 'accent' }));
 
             let dataIndex = 0;
             tables.forEach(table => {
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const inputs = row.querySelectorAll('.table-input');
-                    if (dataIndex < allRowsData.length && inputs.length >= 6) {
-                        inputs[0].value = allRowsData[dataIndex].name;
-                        inputs[0].setAttribute('value', allRowsData[dataIndex].name);
-
-                        inputs[1].value = allRowsData[dataIndex].cardType;
-                        inputs[1].setAttribute('value', allRowsData[dataIndex].cardType);
-
-                        inputs[2].value = allRowsData[dataIndex].cardNum;
-                        inputs[2].setAttribute('value', allRowsData[dataIndex].cardNum);
-
-                        inputs[3].value = allRowsData[dataIndex].phone;
-                        inputs[3].setAttribute('value', allRowsData[dataIndex].phone);
-
-                        inputs[4].value = allRowsData[dataIndex].spouse;
-                        inputs[4].setAttribute('value', allRowsData[dataIndex].spouse);
-
-                        inputs[5].value = allRowsData[dataIndex].status;
-                        inputs[5].setAttribute('value', allRowsData[dataIndex].status);
-
+                    if (dataIndex < allRowsData.length) {
+                        inputs.forEach((inp, idx) => {
+                            const val = allRowsData[dataIndex]['col_' + idx] || '';
+                            inp.value = val;
+                            inp.setAttribute('value', val);
+                        });
                         dataIndex++;
                     } else {
                         inputs.forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
@@ -1109,7 +1106,7 @@
                 rows.forEach(row => {
                     let match = false;
                     const inputs = row.querySelectorAll('.table-input');
-                    inputs.forEach((inp, index) => {
+                    inputs.forEach((inp) => {
                         let cText = inp.value || inp.getAttribute('value') || '';
                         if (normalizeArabic(cText).includes(filter)) {
                             match = true;
@@ -1197,19 +1194,19 @@
                     <div class="header-top">
                         <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
                         <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
-                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/10</div>
+                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
                     </div>
                     <div class="table-wrapper">
                         <table class="dynamicTable">
                             <thead>
                                 <tr>
                                     <th style="width:35px;">م</th>
-                                    <th style="width:160px;">الاسم الرباعي</th>
-                                    <th style="width:80px;">نوع البطاقة</th>
-                                    <th style="width:100px;">رقم البطاقة</th>
-                                    <th style="width:90px;">رقم الاتصال</th>
-                                    <th style="width:160px;">اسم الزوجة / الزوج</th>
-                                    <th style="width:70px;">الحالة</th>
+                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                                    <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                                    <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                                    <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                                    <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1375,7 +1372,7 @@
             const found = archives.find(item => item.id === id);
             if (found) {
                 document.getElementById('pagesWrapper').innerHTML = found.html;
-                rebindInputs(); // إعادة ربط واسترجاع قيم الحقول بدقة كاملة
+                rebindInputs();
                 saveCurrentStateToLocalStorage();
                 closeArchiveModal();
             }
@@ -1409,7 +1406,8 @@
             const cellM = newRow.insertCell();
             cellM.textContent = '-';
 
-            for (let c = 0; c < 6; c++) {
+            const colCount = activeTable.querySelectorAll('thead th').length - 1;
+            for (let c = 0; c < colCount; c++) {
                 const cell = newRow.insertCell();
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -1435,7 +1433,9 @@
             const headerRow = activeTable.querySelector('thead tr');
             const th = document.createElement('th');
             th.style.width = '80px';
+            th.setAttribute('contenteditable', 'true');
             th.textContent = 'جديد';
+            th.oninput = function() { saveCurrentStateToLocalStorage(); };
             headerRow.appendChild(th);
 
             const tbody = activeTable.querySelector('tbody');
@@ -1513,12 +1513,12 @@
                         <thead>
                             <tr>
                                 <th style="width:35px;">م</th>
-                                <th style="width:160px;">الاسم الرباعي</th>
-                                <th style="width:80px;">نوع البطاقة</th>
-                                <th style="width:100px;">رقم البطاقة</th>
-                                <th style="width:90px;">رقم الاتصال</th>
-                                <th style="width:160px;">اسم الزوجة / الزوج</th>
-                                <th style="width:70px;">الحالة</th>
+                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                                <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                                <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                                <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                                <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>
