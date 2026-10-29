@@ -59,7 +59,6 @@
     .form-group input, .form-group textarea { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: 14px; font-size: 1.05rem; outline: none; background: #fafafa; }
     .submit-btn { background: var(--accent-gradient); color: white; border: none; padding: 16px; border-radius: 14px; cursor: pointer; font-size: 1.15rem; font-weight: 900; width: 100%; box-shadow: 0 10px 20px rgba(249,115,22,0.3); }
     
-    /* شاشة التحميل الذكية أثناء رفع الكتاب */
     #loadingOverlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.85); color: white; display: none;
@@ -77,10 +76,9 @@
 </head>
 <body>
 
-  <!-- شاشة التحميل المؤقتة أثناء الحفظ -->
   <div id="loadingOverlay">
     <div class="spinner"></div>
-    <div>جاري معالجة وحفظ ملف الـ PDF بأمان، يرجى الانتظار قليلاً...</div>
+    <div>جاري حفظ ملف الكتاب بأمان، يرجى الانتظار...</div>
   </div>
 
   <header>
@@ -184,11 +182,13 @@
     let selectedGrade = "", selectedCategory = "", selectedCategoryName = "";
     let isAdminLoggedIn = sessionStorage.getItem('methaq_admin_session') === 'active';
     
-    let booksData = JSON.parse(localStorage.getItem('methaq_pure_books_v4')) || [];
+    let booksData = JSON.parse(localStorage.getItem('methaq_pure_books_v5')) || [];
     let feedbackData = JSON.parse(localStorage.getItem('methaq_feedback')) || [{ id: 1, name: "محمد أحمد", text: "مكتبة ممتازة يا ميثاق!", date: "2026-10-28" }];
 
     window.onload = () => {
-      renderGrades(); renderCulturalBooks(); renderFeedbacks();
+      renderGrades(); 
+      renderCulturalBooks(); 
+      renderFeedbacks();
       if (isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'block';
     };
 
@@ -205,7 +205,9 @@
         isAdminLoggedIn = true;
         sessionStorage.setItem('methaq_admin_session', 'active');
         document.getElementById('adminAcademicForm').style.display = 'block';
-        renderAcademicBooks(); renderCulturalBooks(); renderFeedbacks();
+        renderAcademicBooks(); 
+        renderCulturalBooks(); 
+        renderFeedbacks();
         alert("تم تفعيل صلاحيات الأدمن بنجاح.");
       } else if (code !== null) alert("الرمز غير صحيح!");
     }
@@ -245,7 +247,7 @@
       if(!isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
     }
 
-    // المعاينة المباشرة الفورية المدعومة بنظام عزل الأزرار لتجنب التعليق
+    // المعاينة المباشرة المستقلة تماماً لكل كتاب
     function openSpecificPdf(bookId) {
       const book = booksData.find(b => b.id === Number(bookId));
       if (book && book.pdfData) {
@@ -293,47 +295,68 @@
             <div class="book-actions">
               <button type="button" onclick="openSpecificPdf(${item.id})" class="btn-action btn-view"><i class="fa-solid fa-eye"></i> معاينة</button>
               <button type="button" onclick="downloadSpecificPdf(${item.id}, '${item.title}')" class="btn-action btn-download"><i class="fa-solid fa-download"></i> تنزيل</button>
-              ${isAdminLoggedIn ? `<button onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
+              ${isAdminLoggedIn ? `<button type="button" onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
             </div>
           </div>
         </div>
       `).join('');
     }
 
+    // تم إصلاح زر الحفظ وربطه بالشكل الصحيح المطلق لضمان الاستجابة الفورية
     function addAcademicItem(e) {
       e.preventDefault();
-      const file = document.getElementById('acadFile').files[0];
-      const cover = document.getElementById('acadCoverFile').files[0];
-      if (!file) return alert('الرجاء اختيار ملف PDF!');
+      
+      const fileInput = document.getElementById('acadFile');
+      const coverInput = document.getElementById('acadCoverFile');
+      const titleInput = document.getElementById('acadTitle');
+      const noteInput = document.getElementById('acadNote');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('الرجاء اختيار ملف PDF!');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const cover = coverInput.files[0];
       
       document.getElementById('loadingOverlay').style.display = 'flex';
 
       setTimeout(() => {
         const reader = new FileReader();
-        reader.onload = evt => {
+        reader.onload = function(evt) {
           const base64Pdf = evt.target.result;
           const bookId = Date.now();
           
           if (cover) {
             const cReader = new FileReader();
-            cReader.onload = cevt => {
+            cReader.onload = function(cevt) {
               saveBookObj({
-                id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
-                title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value,
-                cover: cevt.target.result, pdfData: base64Pdf
+                id: bookId, 
+                type: 'academic', 
+                grade: selectedGrade, 
+                category: selectedCategory,
+                title: titleInput.value, 
+                note: noteInput.value,
+                cover: cevt.target.result, 
+                pdfData: base64Pdf
               }, 'academicForm');
             };
             cReader.readAsDataURL(cover);
           } else {
             saveBookObj({
-              id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
-              title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value,
-              cover: "", pdfData: base64Pdf
+              id: bookId, 
+              type: 'academic', 
+              grade: selectedGrade, 
+              category: selectedCategory,
+              title: titleInput.value, 
+              note: noteInput.value,
+              cover: "", 
+              pdfData: base64Pdf
             }, 'academicForm');
           }
         };
         reader.readAsDataURL(file);
-      }, 100);
+      }, 50);
     }
 
     function renderCulturalBooks() {
@@ -353,7 +376,7 @@
             <div class="book-actions">
               <button type="button" onclick="openSpecificPdf(${item.id})" class="btn-action btn-view"><i class="fa-solid fa-eye"></i> معاينة</button>
               <button type="button" onclick="downloadSpecificPdf(${item.id}, '${item.title}')" class="btn-action btn-download"><i class="fa-solid fa-download"></i> تنزيل</button>
-              ${isAdminLoggedIn ? `<button onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
+              ${isAdminLoggedIn ? `<button type="button" onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
             </div>
           </div>
         </div>
@@ -362,59 +385,83 @@
 
     function addCulturalBook(e) {
       e.preventDefault();
-      const file = document.getElementById('cultFile').files[0];
-      const cover = document.getElementById('cultCoverFile').files[0];
-      if (!file) return alert('الرجاء اختيار ملف PDF!');
+      
+      const fileInput = document.getElementById('cultFile');
+      const coverInput = document.getElementById('cultCoverFile');
+      const titleInput = document.getElementById('cultTitle');
+      const authorInput = document.getElementById('cultAuthor');
+      const descInput = document.getElementById('cultDesc');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('الرجاء اختيار ملف PDF!');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const cover = coverInput.files[0];
 
       document.getElementById('loadingOverlay').style.display = 'flex';
 
       setTimeout(() => {
         const reader = new FileReader();
-        reader.onload = evt => {
+        reader.onload = function(evt) {
           const base64Pdf = evt.target.result;
           const bookId = Date.now();
           
           if (cover) {
             const cReader = new FileReader();
-            cReader.onload = cevt => {
+            cReader.onload = function(cevt) {
               saveBookObj({
-                id: bookId, type: 'cultural',
-                title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value,
-                desc: document.getElementById('cultDesc').value, cover: cevt.target.result, pdfData: base64Pdf
+                id: bookId, 
+                type: 'cultural',
+                title: titleInput.value, 
+                author: authorInput.value,
+                desc: descInput.value, 
+                cover: cevt.target.result, 
+                pdfData: base64Pdf
               }, 'culturalForm');
             };
             cReader.readAsDataURL(cover);
           } else {
             saveBookObj({
-              id: bookId, type: 'cultural',
-              title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value,
-              desc: document.getElementById('cultDesc').value, cover: "", pdfData: base64Pdf
+              id: bookId, 
+              type: 'cultural',
+              title: titleInput.value, 
+              author: authorInput.value,
+              desc: descInput.value, 
+              cover: "", 
+              pdfData: base64Pdf
             }, 'culturalForm');
           }
         };
         reader.readAsDataURL(file);
-      }, 100);
+      }, 50);
     }
 
     function saveBookObj(obj, formId) {
       booksData.unshift(obj);
       try {
-        localStorage.setItem('methaq_pure_books_v4', JSON.stringify(booksData));
+        localStorage.setItem('methaq_pure_books_v5', JSON.stringify(booksData));
       } catch (err) {
-        alert("مساحة التخزين الممتلئة! يرجى حذف بعض الكتب القديمة.");
+        alert("مساحة الذاكرة المحلية ممتلئة! يرجى حذف بعض الكتب القديمة.");
       }
       document.getElementById('loadingOverlay').style.display = 'none';
+      
+      // تحديث واجهة العرض فوراً ل تظهر الكتب الجديدة والزر يرجع طبيعي 100%
       renderAcademicBooks();
       renderCulturalBooks();
+      
       document.getElementById(formId).reset();
-      if(formId === 'academicForm' && !isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
+      if(formId === 'academicForm' && !isAdminLoggedIn) {
+        document.getElementById('adminAcademicForm').style.display = 'none';
+      }
       alert('تم رفع وحفظ الكتاب بنجاح تام والأزرار تعمل بكل قوة!');
     }
 
     function deleteBook(id) {
       if (confirm("هل أنت متأكد من الحذف؟")) {
         booksData = booksData.filter(b => b.id !== Number(id));
-        localStorage.setItem('methaq_pure_books_v4', JSON.stringify(booksData));
+        localStorage.setItem('methaq_pure_books_v5', JSON.stringify(booksData));
         renderAcademicBooks();
         renderCulturalBooks();
         alert("تم الحذف بنجاح.");
@@ -425,7 +472,7 @@
       document.getElementById('feedbackList').innerHTML = feedbackData.map(f => `
         <div class="comment-card">
           <div><div class="comment-author">${f.name}</div><div style="margin: 10px 0;">${f.text}</div><div style="font-size: 0.85rem; color: var(--text-light);">${f.date}</div></div>
-          ${isAdminLoggedIn ? `<button onclick="deleteFeedback(${f.id})" class="btn-action btn-delete" style="flex:unset; padding: 8px 14px; display:flex;"><i class="fa-solid fa-trash"></i></button>` : ''}
+          ${isAdminLoggedIn ? `<button type="button" onclick="deleteFeedback(${f.id})" class="btn-action btn-delete" style="flex:unset; padding: 8px 14px; display:flex;"><i class="fa-solid fa-trash"></i></button>` : ''}
         </div>
       `).join('');
     }
@@ -434,7 +481,9 @@
       e.preventDefault();
       feedbackData.unshift({ id: Date.now(), name: document.getElementById('feedName').value, text: document.getElementById('feedText').value, date: new Date().toISOString().split('T')[0] });
       localStorage.setItem('methaq_feedback', JSON.stringify(feedbackData));
-      renderFeedbacks(); document.getElementById('feedbackForm').reset(); alert('شكراً لك!');
+      renderFeedbacks(); 
+      document.getElementById('feedbackForm').reset(); 
+      alert('شكراً لك!');
     }
 
     function deleteFeedback(id) {
