@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- تحسين محركات البحث SEO لتظهر في جوجل -->
+  <!-- تحسين محركات البحث SEO لتظهر في صدارة جوجل -->
   <title>مكتبة ميثاق محمد الإلكترونية - بوابتك الأكاديمية الأولى للمتبة المدرسية والملخصات</title>
   <meta name="description" content="مكتبة ميثاق محمد الإلكترونية - منصة تعليمية متكاملة لتصفح وتحميل الكتب المدرسية، الملازم، الملخصات، والأجوبة الوافية لجميع الصفوف الدراسية والكتب التاريخية والثقافية.">
   <meta name="keywords" content="مكتبة ميثاق محمد, كتب مدرسية, ملخصات وافية, مناهج تعليمية, كتب تاريخية, مكتبة إلكترونية يمنية">
@@ -486,7 +486,7 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    const request = indexedDB.open("MethaqLibraryDB", 4);
+    const request = indexedDB.open("MethaqLibraryDB", 5);
     
     request.onerror = function(event) {
       console.error("فشل فتح قاعدة البيانات الداخلية");
@@ -597,11 +597,11 @@
       }
     }
 
-    // دالة دقيقة لفتح ومعاينة أو تنزيل الكتاب الصحيح بناءً على الـ ID الخاص به
+    // دالة فتح ومعاينة أو تنزيل الكتاب المستندة حصرياً على الـ ID الحقيقي الخاص بالسجل دون أي خطأ
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
-      const req = store.get(bookId);
+      const req = store.get(Number(bookId));
 
       req.onsuccess = function() {
         const book = req.result;
@@ -618,8 +618,12 @@
           a.click();
           document.body.removeChild(a);
         } else {
-          alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب.");
+          alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب تحديداً.");
         }
+      };
+
+      req.onerror = function() {
+        alert("حدث خطأ أثناء استرجاع ملف الكتاب من الذاكرة.");
       };
     }
 
@@ -667,12 +671,13 @@
       const pdfFile = pdfInput.files[0];
       const title = document.getElementById('acadTitle').value;
       const note = document.getElementById('acadNote').value;
+      const uniqueId = Date.now() + Math.floor(Math.random() * 1000); // معرف فريد تماماً لكل كتاب لضمان عدم التداخل
 
       if (coverInput.files.length > 0) {
         const reader = new FileReader();
         reader.onload = function(event) {
           saveBookToDB({
-            id: Date.now(),
+            id: uniqueId,
             type: 'academic',
             grade: selectedGrade,
             category: selectedCategory,
@@ -685,7 +690,7 @@
         reader.readAsDataURL(coverInput.files[0]);
       } else {
         saveBookToDB({
-          id: Date.now(),
+          id: uniqueId,
           type: 'academic',
           grade: selectedGrade,
           category: selectedCategory,
@@ -739,12 +744,13 @@
       const title = document.getElementById('cultTitle').value;
       const author = document.getElementById('cultAuthor').value;
       const desc = document.getElementById('cultDesc').value;
+      const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
 
       if (coverInput.files.length > 0) {
         const reader = new FileReader();
         reader.onload = function(event) {
           saveBookToDB({
-            id: Date.now(),
+            id: uniqueId,
             type: 'cultural',
             title: title,
             author: author,
@@ -756,7 +762,7 @@
         reader.readAsDataURL(coverInput.files[0]);
       } else {
         saveBookToDB({
-          id: Date.now(),
+          id: uniqueId,
           type: 'cultural',
           title: title,
           author: author,
@@ -778,7 +784,7 @@
         if(formId === 'academicForm' && !isAdminLoggedIn) {
           document.getElementById('adminAcademicForm').style.display = 'none';
         }
-        alert('تم رفع وحفظ الكتاب بنجاح تام!');
+        alert('تم رفع وحفظ الكتاب بنجاح تام وبشكل مستقل!');
       };
 
       request.onerror = function() {
@@ -817,7 +823,7 @@
       if (confirm("هل أنت متأكد من عملية الحذف؟")) {
         const transaction = db.transaction(["books"], "readwrite");
         const store = transaction.objectStore("books");
-        const request = store.delete(id);
+        const request = store.delete(Number(id));
 
         request.onsuccess = function() {
           loadAllBooks();
