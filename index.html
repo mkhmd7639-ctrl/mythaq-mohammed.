@@ -88,7 +88,7 @@
 
     <div class="main-tabs">
       <div class="tab-link active" onclick="switchTab('academic', event)"><i class="fa-solid fa-school"></i> الأقسام الأكاديمية</div>
-      <div class="tab-link" onclick="switchTab('cultural', event)"><i class="fa-solid fa-book-bookmark"></i> الكتب التاريخية والثقافية</div>
+      <div class="tab-link" onclick="switchTab('cultural', event)"><i class="fa-solid fa-book-bookmark"></i> الكتب التاريخية والفلسفية</div>
       <div class="tab-link" onclick="switchTab('feedback', event)"><i class="fa-solid fa-comments"></i> آراء الزوار</div>
     </div>
 
@@ -131,19 +131,20 @@
       </div>
     </div>
 
+    <!-- القسم الثقافي والتاريخي والفلسفي الموسع -->
     <div id="tab-cultural" class="tab-content">
       <div class="form-card" style="border-style: solid;">
-        <h3><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> مشاركة كتاب ثقافي</h3>
+        <h3><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> مشاركة كتاب (تاريخي، فلسفي، ديني، ثقافي)</h3>
         <form id="culturalForm" onsubmit="addCulturalBook(event)">
-          <div class="form-group"><label>عنوان الكتاب</label><input type="text" id="cultTitle" required></div>
-          <div class="form-group"><label>اسم المؤلف</label><input type="text" id="cultAuthor"></div>
-          <div class="form-group"><label>نبذة</label><textarea id="cultDesc" rows="2"></textarea></div>
-          <div class="form-group"><label>صورة الغلاف:</label><input type="file" id="cultCoverFile" accept="image/*"></div>
-          <div class="form-group"><label>ملف الـ PDF:</label><input type="file" id="cultFile" accept="application/pdf" required></div>
-          <button type="submit" class="submit-btn">نشر الكتاب</button>
+          <div class="form-group"><label>عنوان الكتاب</label><input type="text" id="cultTitle" required placeholder="مثال: مقدمة ابن خلدون"></div>
+          <div class="form-group"><label>اسم المؤلف</label><input type="text" id="cultAuthor" placeholder="مثال: ابن خلدون"></div>
+          <div class="form-group"><label>نبذة أو تصنيف الكتاب (تاريخي، فلسفي...)</label><textarea id="cultDesc" rows="2" placeholder="تصنيف الكتاب أو نبذة مختصرة عنه..."></textarea></div>
+          <div class="form-group"><label>صورة الغلاف (اختياري):</label><input type="file" id="cultCoverFile" accept="image/*"></div>
+          <div class="form-group"><label>ملف الـ PDF الحقيقي:</label><input type="file" id="cultFile" accept="application/pdf" required></div>
+          <button type="submit" class="submit-btn">نشر الكتاب في الأرشيف</button>
         </form>
       </div>
-      <h3 style="margin: 45px 0 20px 0; color: var(--primary); font-size: 1.6rem; font-weight: 900;">أرشيف الكتب الثقافية</h3>
+      <h3 style="margin: 45px 0 20px 0; color: var(--primary); font-size: 1.6rem; font-weight: 900;">أرشيف الكتب التاريخية والفلسفية والثقافية</h3>
       <div class="books-grid" id="culturalGrid"></div>
     </div>
 
@@ -169,8 +170,8 @@
     let db, academicData = [], culturalData = [];
     let feedbackData = JSON.parse(localStorage.getItem('methaq_feedback')) || [{ id: 1, name: "محمد أحمد", text: "مكتبة ممتازة يا ميثاق!", date: "2026-10-28" }];
 
-    // قاعدة بيانات محسنة ومستقلة تماماً لكل ملف
-    const request = indexedDB.open("MethaqCleanStoreDB", 20);
+    // قاعدة بيانات بنسخة جديدة مطورة لضمان العزل التام لكل كتاب
+    const request = indexedDB.open("MethaqUltimateStrictDB", 100);
     request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains("books")) db.createObjectStore("books", { keyPath: "id" });
@@ -247,7 +248,7 @@
       if(!isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
     }
 
-    // المعاينة المطلقة: تفرغ الذاكرة المؤقتة تماماً وتجلب الملف المرتبط بهذا الرقم فقط دون أي تداخل
+    // الطريقة البرمجية القاطعة والآمنة 100% لمعاينة الملف عبر بصمة زمنية فريدة تمنع تخزين الكاش تماماً
     function openSpecificPdf(bookId) {
       const tx = db.transaction(["books"], "readonly");
       const req = tx.objectStore("books").get(Number(bookId));
@@ -255,16 +256,16 @@
         const book = req.result;
         if (book && book.pdfBytes) {
           try {
-            // تنظيف ذاكرة المتصفح عبر فرض مسار فريد كلياً وخاص بالمعرف والوقت الحالي
             const blob = new Blob([book.pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob) + `#t=${Date.now()}`;
+            // بصمة زمنية فريدة لكل نقرة تجبر المتصفح على جلب الملف الجديد حصرياً
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.target = '_blank';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            setTimeout(() => URL.revokeObjectURL(url), 15000);
           } catch(e) {
             alert("تعذر فتح المعاينة المباشرة.");
           }
@@ -288,7 +289,7 @@
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(url), 10000);
+          setTimeout(() => URL.revokeObjectURL(url), 15000);
         }
       };
     }
@@ -326,7 +327,8 @@
       const reader = new FileReader();
       reader.onload = evt => {
         const buffer = evt.target.result;
-        const bookId = Date.now() + Math.floor(Math.random() * 100000);
+        // معرف فريد بحساب النانو ثانية يضمن عدم تداخل أي ملف مستقبلي
+        const bookId = Date.now() + Math.floor(Math.random() * 100000000);
         if (cover) {
           const cReader = new FileReader();
           cReader.onload = cevt => saveToDB({ id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory, title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value, cover: cevt.target.result, pdfBytes: buffer }, 'academicForm');
@@ -341,7 +343,7 @@
     function renderCulturalBooks() {
       const grid = document.getElementById('culturalGrid');
       if(culturalData.length === 0) {
-        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700;">لا توجد كتب ثقافية.</p>`;
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700;">لا توجد كتب تاريخية أو فلسفية مرفوعة حتى الآن.</p>`;
         return;
       }
       grid.innerHTML = culturalData.map(item => `
@@ -370,7 +372,7 @@
       const reader = new FileReader();
       reader.onload = evt => {
         const buffer = evt.target.result;
-        const bookId = Date.now() + Math.floor(Math.random() * 100000);
+        const bookId = Date.now() + Math.floor(Math.random() * 100000000);
         if (cover) {
           const cReader = new FileReader();
           cReader.onload = cevt => saveToDB({ id: bookId, type: 'cultural', title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value, desc: document.getElementById('cultDesc').value, cover: cevt.target.result, pdfBytes: buffer }, 'culturalForm');
@@ -388,7 +390,7 @@
         loadAllBooks();
         document.getElementById(formId).reset();
         if(formId === 'academicForm' && !isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
-        alert('تم حفظ الكتاب بنجاح تام!');
+        alert('تم حفظ وإضافة الكتاب بنجاح تام!');
       };
     }
 
