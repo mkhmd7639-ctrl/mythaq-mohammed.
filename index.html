@@ -28,7 +28,7 @@
     .search-bar-wrapper i { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 1.4rem; }
     .main-tabs { display: flex; gap: 15px; margin-bottom: 45px; border-bottom: 3px solid var(--border); overflow-x: auto; padding-bottom: 5px; }
     .tab-link { padding: 16px 32px; cursor: pointer; font-weight: 800; color: var(--text-light); border-bottom: 4.5px solid transparent; white-space: nowrap; font-size: 1.2rem; border-radius: 16px 16px 0 0; display: flex; align-items: center; gap: 10px; }
-    .tab-link.active { color: var(--primary); border-bottom-color: var(--accent); background: white; box-shadow: 0 -6px 20px rgba(0,0,0,0.04); }
+    .tab-link.active { color: var(--primary); border-bottom-color: var(--accent); background: white; box-shadow: -6px 20px rgba(0,0,0,0.04); }
     .tab-content { display: none; } .tab-content.active { display: block; }
     .nav-path { display: flex; align-items: center; justify-content: space-between; margin-bottom: 35px; font-weight: 900; color: var(--primary); font-size: 1.35rem; background: white; padding: 20px 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
     .back-btn { background: var(--secondary); color: white; border: none; padding: 10px 22px; border-radius: 12px; cursor: pointer; font-size: 0.98rem; display: flex; align-items: center; gap: 10px; font-weight: 800; }
@@ -78,7 +78,7 @@
 
   <div id="loadingOverlay">
     <div class="spinner"></div>
-    <div>جاري حفظ ملف الكتاب بأمان، يرجى الانتظار...</div>
+    <div>جاري رفع حفظ الكتاب، يرجى الانتظار...</div>
   </div>
 
   <header>
@@ -182,7 +182,7 @@
     let selectedGrade = "", selectedCategory = "", selectedCategoryName = "";
     let isAdminLoggedIn = sessionStorage.getItem('methaq_admin_session') === 'active';
     
-    let booksData = JSON.parse(localStorage.getItem('methaq_pure_books_v5')) || [];
+    let booksData = JSON.parse(localStorage.getItem('methaq_clean_books_v6')) || [];
     let feedbackData = JSON.parse(localStorage.getItem('methaq_feedback')) || [{ id: 1, name: "محمد أحمد", text: "مكتبة ممتازة يا ميثاق!", date: "2026-10-28" }];
 
     window.onload = () => {
@@ -247,7 +247,7 @@
       if(!isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
     }
 
-    // المعاينة المباشرة المستقلة تماماً لكل كتاب
+    // معاينة دقيقة ومستقلة لكل كتاب
     function openSpecificPdf(bookId) {
       const book = booksData.find(b => b.id === Number(bookId));
       if (book && book.pdfData) {
@@ -302,10 +302,8 @@
       `).join('');
     }
 
-    // تم إصلاح زر الحفظ وربطه بالشكل الصحيح المطلق لضمان الاستجابة الفورية
     function addAcademicItem(e) {
       e.preventDefault();
-      
       const fileInput = document.getElementById('acadFile');
       const coverInput = document.getElementById('acadCoverFile');
       const titleInput = document.getElementById('acadTitle');
@@ -331,27 +329,15 @@
             const cReader = new FileReader();
             cReader.onload = function(cevt) {
               saveBookObj({
-                id: bookId, 
-                type: 'academic', 
-                grade: selectedGrade, 
-                category: selectedCategory,
-                title: titleInput.value, 
-                note: noteInput.value,
-                cover: cevt.target.result, 
-                pdfData: base64Pdf
+                id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
+                title: titleInput.value, note: noteInput.value, cover: cevt.target.result, pdfData: base64Pdf
               }, 'academicForm');
             };
             cReader.readAsDataURL(cover);
           } else {
             saveBookObj({
-              id: bookId, 
-              type: 'academic', 
-              grade: selectedGrade, 
-              category: selectedCategory,
-              title: titleInput.value, 
-              note: noteInput.value,
-              cover: "", 
-              pdfData: base64Pdf
+              id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
+              title: titleInput.value, note: noteInput.value, cover: "", pdfData: base64Pdf
             }, 'academicForm');
           }
         };
@@ -385,7 +371,6 @@
 
     function addCulturalBook(e) {
       e.preventDefault();
-      
       const fileInput = document.getElementById('cultFile');
       const coverInput = document.getElementById('cultCoverFile');
       const titleInput = document.getElementById('cultTitle');
@@ -412,25 +397,17 @@
             const cReader = new FileReader();
             cReader.onload = function(cevt) {
               saveBookObj({
-                id: bookId, 
-                type: 'cultural',
-                title: titleInput.value, 
-                author: authorInput.value,
-                desc: descInput.value, 
-                cover: cevt.target.result, 
-                pdfData: base64Pdf
+                id: bookId, type: 'cultural',
+                title: titleInput.value, author: authorInput.value, desc: descInput.value,
+                cover: cevt.target.result, pdfData: base64Pdf
               }, 'culturalForm');
             };
             cReader.readAsDataURL(cover);
           } else {
             saveBookObj({
-              id: bookId, 
-              type: 'cultural',
-              title: titleInput.value, 
-              author: authorInput.value,
-              desc: descInput.value, 
-              cover: "", 
-              pdfData: base64Pdf
+              id: bookId, type: 'cultural',
+              title: titleInput.value, author: authorInput.value, desc: descInput.value,
+              cover: "", pdfData: base64Pdf
             }, 'culturalForm');
           }
         };
@@ -441,27 +418,24 @@
     function saveBookObj(obj, formId) {
       booksData.unshift(obj);
       try {
-        localStorage.setItem('methaq_pure_books_v5', JSON.stringify(booksData));
+        localStorage.setItem('methaq_clean_books_v6', JSON.stringify(booksData));
       } catch (err) {
-        alert("مساحة الذاكرة المحلية ممتلئة! يرجى حذف بعض الكتب القديمة.");
+        alert("مساحة الذاكرة المحلية ممتلئة!");
       }
       document.getElementById('loadingOverlay').style.display = 'none';
-      
-      // تحديث واجهة العرض فوراً ل تظهر الكتب الجديدة والزر يرجع طبيعي 100%
       renderAcademicBooks();
       renderCulturalBooks();
-      
       document.getElementById(formId).reset();
       if(formId === 'academicForm' && !isAdminLoggedIn) {
         document.getElementById('adminAcademicForm').style.display = 'none';
       }
-      alert('تم رفع وحفظ الكتاب بنجاح تام والأزرار تعمل بكل قوة!');
+      alert('تم رفع وحفظ الكتاب بنجاح تام!');
     }
 
     function deleteBook(id) {
       if (confirm("هل أنت متأكد من الحذف؟")) {
         booksData = booksData.filter(b => b.id !== Number(id));
-        localStorage.setItem('methaq_pure_books_v5', JSON.stringify(booksData));
+        localStorage.setItem('methaq_clean_books_v6', JSON.stringify(booksData));
         renderAcademicBooks();
         renderCulturalBooks();
         alert("تم الحذف بنجاح.");
