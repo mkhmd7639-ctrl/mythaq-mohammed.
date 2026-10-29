@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>مكتبة ميثاق محمد الإلكترونية</title>
+ <title>مكتبة ميثاق محمد - النسخة القوية</title>
  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
  <style>
@@ -84,7 +84,7 @@
 
  <div id="loadingOverlay">
  <div class="spinner"></div>
- <div>جاري معالجة البيانات...</div>
+ <div>جاري معالجة وحفظ الكتاب...</div>
  </div>
 
  <header>
@@ -186,7 +186,7 @@
  <footer>جميع الحقوق محفوظة © 2026 - مكتبة ميثاق محمد الإلكترونية</footer>
 
  <script>
- // IndexedDB Setup
+ // --- IndexedDB Setup ---
  const DB_NAME = 'MethaqLibraryDB';
  const DB_VERSION = 1;
  let db;
@@ -314,8 +314,8 @@
  window.onload = async () => {
  await openDB();
  renderGrades(); 
- await loadAndRenderCulturalBooks(); 
- await loadAndRenderFeedbacks();
+ loadAndRenderCulturalBooks(); 
+ loadAndRenderFeedbacks();
  if (isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'block';
  };
 
