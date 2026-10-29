@@ -486,10 +486,11 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    const request = indexedDB.open("MethaqLibraryDB", 5);
+    // قاعدة بيانات بنسخة جديدة مطورة خصيصاً لمنع التداخل نهائياً
+    const request = indexedDB.open("MethaqLibraryDB_StrictSafe", 1);
     
     request.onerror = function(event) {
-      console.error("فشل فتح قاعدة البيانات الداخلية");
+      console.error("فشل فتح قاعدة البيانات");
     };
 
     request.onupgradeneeded = function(event) {
@@ -597,7 +598,7 @@
       }
     }
 
-    // دالة فتح ومعاينة أو تنزيل الكتاب المستندة حصرياً على الـ ID الحقيقي الخاص بالسجل دون أي خطأ
+    // دالة المعاينة والتنزيل المباشر المعتمدة على جلب الكجل وحفظه بمسار Base64 دقيق خاص بالكتاب وحده
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
@@ -605,8 +606,17 @@
 
       req.onsuccess = function() {
         const book = req.result;
-        if (book && book.pdfBlob) {
-          const fileURL = URL.createObjectURL(book.pdfBlob);
+        if (book && book.pdfBase64) {
+          // تحويل الـ Base64 إلى رابط مؤقت آمن جداً ومخصص لهذا الكتاب فقط
+          const byteCharacters = atob(book.pdfBase64.split(',')[1]);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const fileURL = URL.createObjectURL(blob);
+          
           const a = document.createElement('a');
           a.href = fileURL;
           if (actionType === 'download') {
@@ -618,12 +628,12 @@
           a.click();
           document.body.removeChild(a);
         } else {
-          alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب تحديداً.");
+          alert("عذراً، لم يتم العثور على بيانات الـ PDF الخاصة بهذا الكتاب تحديداً.");
         }
       };
 
       req.onerror = function() {
-        alert("حدث خطأ أثناء استرجاع ملف الكتاب من الذاكرة.");
+        alert("حدث خطأ أثناء قراءة ملف الكتاب من الذاكرة.");
       };
     }
 
@@ -671,11 +681,29 @@
       const pdfFile = pdfInput.files[0];
       const title = document.getElementById('acadTitle').value;
       const note = document.getElementById('acadNote').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 1000); // معرف فريد تماماً لكل كتاب لضمان عدم التداخل
+      const uniqueId = Date.now() + Math.floor(Math.random() * 100000);
 
-      if (coverInput.files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
+      // قراءة ملف الـ PDF كـ Base64 لضمان حفظه بدقة مطلقة دون تلف أو تداخل
+      const pdfReader = new FileReader();
+      pdfReader.onload = function(evt) {
+        const pdfBase64Data = evt.target.result;
+
+        if (coverInput.files.length > 0) {
+          const coverReader = new FileReader();
+          coverReader.onload = function(event) {
+            saveBookToDB({
+              id: uniqueId,
+              type: 'academic',
+              grade: selectedGrade,
+              category: selectedCategory,
+              title: title,
+              note: note,
+              cover: event.target.result,
+              pdfBase64: pdfBase64Data
+            }, 'academicForm');
+          };
+          coverReader.readAsDataURL(coverInput.files[0]);
+        } else {
           saveBookToDB({
             id: uniqueId,
             type: 'academic',
@@ -683,23 +711,12 @@
             category: selectedCategory,
             title: title,
             note: note,
-            cover: event.target.result,
-            pdfBlob: pdfFile
+            cover: "",
+            pdfBase64: pdfBase64Data
           }, 'academicForm');
-        };
-        reader.readAsDataURL(coverInput.files[0]);
-      } else {
-        saveBookToDB({
-          id: uniqueId,
-          type: 'academic',
-          grade: selectedGrade,
-          category: selectedCategory,
-          title: title,
-          note: note,
-          cover: "",
-          pdfBlob: pdfFile
-        }, 'academicForm');
-      }
+        }
+      };
+      pdfReader.readAsDataURL(pdfFile);
     }
 
     function renderCulturalBooks() {
@@ -744,33 +761,39 @@
       const title = document.getElementById('cultTitle').value;
       const author = document.getElementById('cultAuthor').value;
       const desc = document.getElementById('cultDesc').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 100000);
 
-      if (coverInput.files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
+      const pdfReader = new FileReader();
+      pdfReader.onload = function(evt) {
+        const pdfBase64Data = evt.target.result;
+
+        if (coverInput.files.length > 0) {
+          const coverReader = new FileReader();
+          coverReader.onload = function(event) {
+            saveBookToDB({
+              id: uniqueId,
+              type: 'cultural',
+              title: title,
+              author: author,
+              desc: desc,
+              cover: event.target.result,
+              pdfBase64: pdfBase64Data
+            }, 'culturalForm');
+          };
+          coverReader.readAsDataURL(coverInput.files[0]);
+        } else {
           saveBookToDB({
             id: uniqueId,
             type: 'cultural',
             title: title,
             author: author,
             desc: desc,
-            cover: event.target.result,
-            pdfBlob: pdfFile
+            cover: "",
+            pdfBase64: pdfBase64Data
           }, 'culturalForm');
-        };
-        reader.readAsDataURL(coverInput.files[0]);
-      } else {
-        saveBookToDB({
-          id: uniqueId,
-          type: 'cultural',
-          title: title,
-          author: author,
-          desc: desc,
-          cover: "",
-          pdfBlob: pdfFile
-        }, 'culturalForm');
-      }
+        }
+      };
+      pdfReader.readAsDataURL(pdfFile);
     }
 
     function saveBookToDB(bookObj, formId) {
@@ -784,7 +807,7 @@
         if(formId === 'academicForm' && !isAdminLoggedIn) {
           document.getElementById('adminAcademicForm').style.display = 'none';
         }
-        alert('تم رفع وحفظ الكتاب بنجاح تام وبشكل مستقل!');
+        alert('تم رفع وحفظ الكتاب بنجاح تام وبصورة مستقلة وثابتة!');
       };
 
       request.onerror = function() {
