@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- تحسين محركات البحث SEO لتظهر في صدارة جوجل -->
   <title>مكتبة ميثاق محمد الإلكترونية - بوابتك الأكاديمية الأولى للمتبة المدرسية والملخصات</title>
   <meta name="description" content="مكتبة ميثاق محمد الإلكترونية - منصة تعليمية متكاملة لتصفح وتحميل الكتب المدرسية، الملازم، الملخصات، والأجوبة الوافية لجميع الصفوف الدراسية والكتب التاريخية والثقافية.">
   <meta name="keywords" content="مكتبة ميثاق محمد, كتب مدرسية, ملخصات وافية, مناهج تعليمية, كتب تاريخية, مكتبة إلكترونية يمنية">
@@ -486,8 +485,8 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    // قاعدة بيانات بنسخة جديدة كلياً ومفصولة لضمان الاستقرار المطلق
-    const request = indexedDB.open("MethaqLibraryDB_FinalSafe", 1);
+    // قاعدة بيانات منظمة ومستقلة لتخزين محتوى الـ PDF الخام (ArrayBuffer) لضمان الدقة المطلقة
+    const request = indexedDB.open("MethaqLibraryDB_PureBuffer", 1);
     
     request.onerror = function(event) {
       console.error("فشل فتح قاعدة البيانات");
@@ -598,7 +597,7 @@
       }
     }
 
-    // الدالة العبقريّة الجديدة: تحويل الـ Base64 المخزن داخل القاعدة إلى Blob فريد ومستقل تماماً عند كل ضغطة زر
+    // دالة المعاينة والتنزيل الهندسية الدقيقة المعتمدة على الـ ArrayBuffer الخالص لمنع أي تداخل نهائياً
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
@@ -606,20 +605,10 @@
 
       req.onsuccess = function() {
         const book = req.result;
-        if (book && book.pdfBase64) {
+        if (book && book.pdfBuffer) {
           try {
-            // استخراج وتفكيك بيانات Base64 الثنائية بدقة مطلقة
-            const arr = book.pdfBase64.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) {
-              u8arr[n] = bstr.charCodeAt(n);
-            }
-            
-            // إنشاء كائن Blob مستقل بذاته مع بصمة زمنية عشوائية تمنع خلط الذاكرة نهائياً
-            const blob = new Blob([u8arr], { type: mime });
+            // تكوين كائن Blob مباشر من البيانات الثنائية الخالصة للكتاب المحدد فقط
+            const blob = new Blob([book.pdfBuffer], { type: 'application/pdf' });
             const blobUrl = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
@@ -633,21 +622,10 @@
             a.click();
             document.body.removeChild(a);
             
-            // تنظيف الرابط المؤقت بعد الفتح بثوانٍ قليلة للحفاظ على نظافة ذاكرة الهاتف
-            setTimeout(() => { URL.revokeObjectURL(blobUrl); }, 5000);
-
+            // تحرير الذاكرة بعد الاستخدام
+            setTimeout(() => { URL.revokeObjectURL(blobUrl); }, 10000);
           } catch (err) {
-            // في حال فشل التفكيك، يتم فتحه كـ Data URI مباشر كبديل آمن
-            const a = document.createElement('a');
-            a.href = book.pdfBase64;
-            if (actionType === 'download') {
-              a.download = `${book.title}.pdf`;
-            } else {
-              a.target = '_blank';
-            }
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            alert("حدث خطأ أثناء معالجة ملف الـ PDF.");
           }
         } else {
           alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب تحديداً.");
@@ -705,9 +683,10 @@
       const note = document.getElementById('acadNote').value;
       const uniqueId = Date.now() + Math.floor(Math.random() * 100000000);
 
+      // قراءة الملف كـ ArrayBuffer لمنع أي تلف أو اختلاط في مؤشرات الذاكرة
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
-        const pdfBase64Data = evt.target.result;
+        const pdfBufferData = evt.target.result;
 
         if (coverInput.files.length > 0) {
           const coverReader = new FileReader();
@@ -720,7 +699,7 @@
               title: title,
               note: note,
               cover: event.target.result,
-              pdfBase64: pdfBase64Data
+              pdfBuffer: pdfBufferData
             }, 'academicForm');
           };
           coverReader.readAsDataURL(coverInput.files[0]);
@@ -733,11 +712,11 @@
             title: title,
             note: note,
             cover: "",
-            pdfBase64: pdfBase64Data
+            pdfBuffer: pdfBufferData
           }, 'academicForm');
         }
       };
-      pdfReader.readAsDataURL(pdfFile);
+      pdfReader.readAsArrayBuffer(pdfFile);
     }
 
     function renderCulturalBooks() {
@@ -786,7 +765,7 @@
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
-        const pdfBase64Data = evt.target.result;
+        const pdfBufferData = evt.target.result;
 
         if (coverInput.files.length > 0) {
           const coverReader = new FileReader();
@@ -798,7 +777,7 @@
               author: author,
               desc: desc,
               cover: event.target.result,
-              pdfBase64: pdfBase64Data
+              pdfBuffer: pdfBufferData
             }, 'culturalForm');
           };
           coverReader.readAsDataURL(coverInput.files[0]);
@@ -810,11 +789,11 @@
             author: author,
             desc: desc,
             cover: "",
-            pdfBase64: pdfBase64Data
+            pdfBuffer: pdfBufferData
           }, 'culturalForm');
         }
       };
-      pdfReader.readAsDataURL(pdfFile);
+      pdfReader.readAsArrayBuffer(pdfFile);
     }
 
     function saveBookToDB(bookObj, formId) {
@@ -828,7 +807,7 @@
         if(formId === 'academicForm' && !isAdminLoggedIn) {
           document.getElementById('adminAcademicForm').style.display = 'none';
         }
-        alert('تم رفع وحفظ الكتاب بنجاح تام وبصورة مستقلة وثابتة!');
+        alert('تم رفع وحفظ الكتاب بنجاح تام وبشكل مستقر تماماً!');
       };
 
       request.onerror = function() {
@@ -927,7 +906,7 @@
 
     function searchBooks(query) {
       const q = query.toLowerCase();
-      document.querySelectorAll('.book-card').forEach(card => {
+      document.querySelectorAll('.book-card').forEach.call(document.querySelectorAll('.book-card'), card => {
         const title = card.querySelector('.book-title').innerText.toLowerCase();
         card.style.display = title.includes(q) ? 'flex' : 'none';
       });
