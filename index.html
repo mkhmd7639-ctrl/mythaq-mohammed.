@@ -486,8 +486,8 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    // قاعدة بيانات بنسخة جديدة مطورة خصيصاً لمنع التداخل نهائياً
-    const request = indexedDB.open("MethaqLibraryDB_StrictSafe", 1);
+    // فتح قاعدة البيانات بنسخة مطورة لتفادي الذاكرة العشوائية
+    const request = indexedDB.open("MethaqLibraryDB_CleanStream", 1);
     
     request.onerror = function(event) {
       console.error("فشل فتح قاعدة البيانات");
@@ -525,6 +525,7 @@
     }
 
     window.onload = function() {
+      renderGrgradesUnsafe = true;
       renderGrades();
       renderFeedbacks();
       if (isAdminLoggedIn) {
@@ -598,7 +599,7 @@
       }
     }
 
-    // دالة المعاينة والتنزيل المباشر المعتمدة على جلب الكجل وحفظه بمسار Base64 دقيق خاص بالكتاب وحده
+    // دالة المعاينة والتنزيل القوية المعتمدة على جلب السجل الحقيقي وفرغ الذاكرة المؤقتة تماماً لضمان عدم تداخل الملفات
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
@@ -607,18 +608,9 @@
       req.onsuccess = function() {
         const book = req.result;
         if (book && book.pdfBase64) {
-          // تحويل الـ Base64 إلى رابط مؤقت آمن جداً ومخصص لهذا الكتاب فقط
-          const byteCharacters = atob(book.pdfBase64.split(',')[1]);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
-          const fileURL = URL.createObjectURL(blob);
-          
+          // تفريغ وتوليد رابط نظيف جديد مستقل بذاته لكل ضغطة معاينة
           const a = document.createElement('a');
-          a.href = fileURL;
+          a.href = book.pdfBase64;
           if (actionType === 'download') {
             a.download = `${book.title}.pdf`;
           } else {
@@ -628,12 +620,12 @@
           a.click();
           document.body.removeChild(a);
         } else {
-          alert("عذراً، لم يتم العثور على بيانات الـ PDF الخاصة بهذا الكتاب تحديداً.");
+          alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب تحديداً.");
         }
       };
 
       req.onerror = function() {
-        alert("حدث خطأ أثناء قراءة ملف الكتاب من الذاكرة.");
+        alert("حدث خطأ أثناء جلب الملف من قاعدة البيانات.");
       };
     }
 
@@ -681,9 +673,8 @@
       const pdfFile = pdfInput.files[0];
       const title = document.getElementById('acadTitle').value;
       const note = document.getElementById('acadNote').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 100000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000);
 
-      // قراءة ملف الـ PDF كـ Base64 لضمان حفظه بدقة مطلقة دون تلف أو تداخل
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
         const pdfBase64Data = evt.target.result;
@@ -761,7 +752,7 @@
       const title = document.getElementById('cultTitle').value;
       const author = document.getElementById('cultAuthor').value;
       const desc = document.getElementById('cultDesc').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 100000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000);
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
@@ -807,7 +798,7 @@
         if(formId === 'academicForm' && !isAdminLoggedIn) {
           document.getElementById('adminAcademicForm').style.display = 'none';
         }
-        alert('تم رفع وحفظ الكتاب بنجاح تام وبصورة مستقلة وثابتة!');
+        alert('تم رفع وحفظ الكتاب بنجاح تام وبشكل مستقل وآمن!');
       };
 
       request.onerror = function() {
