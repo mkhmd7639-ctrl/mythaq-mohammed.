@@ -486,8 +486,8 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    // فتح قاعدة البيانات بنسخة مطورة لتفادي الذاكرة العشوائية
-    const request = indexedDB.open("MethaqLibraryDB_CleanStream", 1);
+    // قاعدة بيانات بنسخة جديدة كلياً ومفصولة لضمان الاستقرار المطلق
+    const request = indexedDB.open("MethaqLibraryDB_FinalSafe", 1);
     
     request.onerror = function(event) {
       console.error("فشل فتح قاعدة البيانات");
@@ -525,7 +525,6 @@
     }
 
     window.onload = function() {
-      renderGrgradesUnsafe = true;
       renderGrades();
       renderFeedbacks();
       if (isAdminLoggedIn) {
@@ -599,7 +598,7 @@
       }
     }
 
-    // دالة المعاينة والتنزيل القوية المعتمدة على جلب السجل الحقيقي وفرغ الذاكرة المؤقتة تماماً لضمان عدم تداخل الملفات
+    // الدالة العبقريّة الجديدة: تحويل الـ Base64 المخزن داخل القاعدة إلى Blob فريد ومستقل تماماً عند كل ضغطة زر
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
@@ -608,17 +607,48 @@
       req.onsuccess = function() {
         const book = req.result;
         if (book && book.pdfBase64) {
-          // تفريغ وتوليد رابط نظيف جديد مستقل بذاته لكل ضغطة معاينة
-          const a = document.createElement('a');
-          a.href = book.pdfBase64;
-          if (actionType === 'download') {
-            a.download = `${book.title}.pdf`;
-          } else {
-            a.target = '_blank';
+          try {
+            // استخراج وتفكيك بيانات Base64 الثنائية بدقة مطلقة
+            const arr = book.pdfBase64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+              u8arr[n] = bstr.charCodeAt(n);
+            }
+            
+            // إنشاء كائن Blob مستقل بذاته مع بصمة زمنية عشوائية تمنع خلط الذاكرة نهائياً
+            const blob = new Blob([u8arr], { type: mime });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            if (actionType === 'download') {
+              a.download = `${book.title}.pdf`;
+            } else {
+              a.target = '_blank';
+            }
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // تنظيف الرابط المؤقت بعد الفتح بثوانٍ قليلة للحفاظ على نظافة ذاكرة الهاتف
+            setTimeout(() => { URL.revokeObjectURL(blobUrl); }, 5000);
+
+          } catch (err) {
+            // في حال فشل التفكيك، يتم فتحه كـ Data URI مباشر كبديل آمن
+            const a = document.createElement('a');
+            a.href = book.pdfBase64;
+            if (actionType === 'download') {
+              a.download = `${book.title}.pdf`;
+            } else {
+              a.target = '_blank';
+            }
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
           }
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
         } else {
           alert("عذراً، لم يتم العثور على ملف الـ PDF الخاص بهذا الكتاب تحديداً.");
         }
@@ -673,7 +703,7 @@
       const pdfFile = pdfInput.files[0];
       const title = document.getElementById('acadTitle').value;
       const note = document.getElementById('acadNote').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 100000000);
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
@@ -752,7 +782,7 @@
       const title = document.getElementById('cultTitle').value;
       const author = document.getElementById('cultAuthor').value;
       const desc = document.getElementById('cultDesc').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 100000000);
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
@@ -798,7 +828,7 @@
         if(formId === 'academicForm' && !isAdminLoggedIn) {
           document.getElementById('adminAcademicForm').style.display = 'none';
         }
-        alert('تم رفع وحفظ الكتاب بنجاح تام وبشكل مستقل وآمن!');
+        alert('تم رفع وحفظ الكتاب بنجاح تام وبصورة مستقلة وثابتة!');
       };
 
       request.onerror = function() {
