@@ -48,7 +48,7 @@
     .book-meta { font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; font-weight: 700; }
     .book-note { font-size: 0.92rem; color: var(--secondary); background: #eff6ff; padding: 10px 14px; border-radius: 10px; margin-bottom: 18px; border-right: 4px solid var(--secondary); }
     .book-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
-    .btn-action { flex: 1; min-width: 90px; padding: 10px; text-align: center; border: none; border-radius: 12px; text-decoration: none; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-action { flex: 1; min-width: 90px; padding: 12px; text-align: center; border: none; border-radius: 12px; text-decoration: none; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-view { background: #e0f2fe; color: #0284c7; }
     .btn-download { background: #dcfce7; color: #16a34a; }
     .btn-delete { background: #fee2e2; color: var(--danger); display: none; }
@@ -58,6 +58,17 @@
     .form-group label { display: block; margin-bottom: 10px; font-weight: 800; color: var(--primary); }
     .form-group input, .form-group textarea { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: 14px; font-size: 1.05rem; outline: none; background: #fafafa; }
     .submit-btn { background: var(--accent-gradient); color: white; border: none; padding: 16px; border-radius: 14px; cursor: pointer; font-size: 1.15rem; font-weight: 900; width: 100%; box-shadow: 0 10px 20px rgba(249,115,22,0.3); }
+    
+    /* شاشة التحميل الذكية أثناء رفع الكتاب */
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.85); color: white; display: none;
+      flex-direction: column; align-items: center; justify-content: center; z-index: 99999;
+      font-size: 1.5rem; font-weight: 900; gap: 20px;
+    }
+    .spinner { width: 60px; height: 60px; border: 6px solid rgba(255,255,255,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .comments-section { margin-top: 40px; }
     .comment-card { background: white; padding: 25px; border-radius: var(--radius); margin-bottom: 20px; border-right: 6px solid var(--accent); border: 1.5px solid var(--border); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: flex-start; }
     .comment-author { font-weight: 900; color: var(--primary); font-size: 1.2rem; }
@@ -65,6 +76,12 @@
   </style>
 </head>
 <body>
+
+  <!-- شاشة التحميل المؤقتة أثناء الحفظ -->
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div>جاري معالجة وحفظ ملف الـ PDF بأمان، يرجى الانتظار قليلاً...</div>
+  </div>
 
   <header>
     <div class="header-title">
@@ -131,14 +148,13 @@
       </div>
     </div>
 
-    <!-- القسم الثقافي والتاريخي والفلسفي الموسع -->
     <div id="tab-cultural" class="tab-content">
       <div class="form-card" style="border-style: solid;">
-        <h3><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> مشاركة كتاب (تاريخي، فلسفي، ديني، ثقافي)</h3>
+        <h3><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> مشاركة كتاب (تاريخي، فلسفي، ثقافي)</h3>
         <form id="culturalForm" onsubmit="addCulturalBook(event)">
           <div class="form-group"><label>عنوان الكتاب</label><input type="text" id="cultTitle" required placeholder="مثال: مقدمة ابن خلدون"></div>
           <div class="form-group"><label>اسم المؤلف</label><input type="text" id="cultAuthor" placeholder="مثال: ابن خلدون"></div>
-          <div class="form-group"><label>نبذة أو تصنيف الكتاب (تاريخي، فلسفي...)</label><textarea id="cultDesc" rows="2" placeholder="تصنيف الكتاب أو نبذة مختصرة عنه..."></textarea></div>
+          <div class="form-group"><label>نبذة أو تصنيف الكتاب</label><textarea id="cultDesc" rows="2" placeholder="تصنيف الكتاب أو نبذة..."></textarea></div>
           <div class="form-group"><label>صورة الغلاف (اختياري):</label><input type="file" id="cultCoverFile" accept="image/*"></div>
           <div class="form-group"><label>ملف الـ PDF الحقيقي:</label><input type="file" id="cultFile" accept="application/pdf" required></div>
           <button type="submit" class="submit-btn">نشر الكتاب في الأرشيف</button>
@@ -167,31 +183,12 @@
     const grades = ["الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس", "الصف السابع", "الصف الثامن", "الصف التاسع", "أول ثانوي", "ثاني ثانوي", "ثالث ثانوي"];
     let selectedGrade = "", selectedCategory = "", selectedCategoryName = "";
     let isAdminLoggedIn = sessionStorage.getItem('methaq_admin_session') === 'active';
-    let db, academicData = [], culturalData = [];
+    
+    let booksData = JSON.parse(localStorage.getItem('methaq_pure_books_v4')) || [];
     let feedbackData = JSON.parse(localStorage.getItem('methaq_feedback')) || [{ id: 1, name: "محمد أحمد", text: "مكتبة ممتازة يا ميثاق!", date: "2026-10-28" }];
 
-    // قاعدة بيانات بنسخة جديدة مطورة لضمان العزل التام لكل كتاب
-    const request = indexedDB.open("MethaqUltimateStrictDB", 100);
-    request.onupgradeneeded = e => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("books")) db.createObjectStore("books", { keyPath: "id" });
-    };
-    request.onsuccess = e => { db = e.target.result; loadAllBooks(); };
-
-    function loadAllBooks() {
-      const tx = db.transaction(["books"], "readonly");
-      const req = tx.objectStore("books").getAll();
-      req.onsuccess = () => {
-        const all = req.result;
-        academicData = all.filter(b => b.type === 'academic');
-        culturalData = all.filter(b => b.type === 'cultural');
-        renderGrades(); renderCulturalBooks(); renderFeedbacks();
-        if(selectedGrade && selectedCategory) renderAcademicBooks();
-      };
-    }
-
     window.onload = () => {
-      renderGrades(); renderFeedbacks();
+      renderGrades(); renderCulturalBooks(); renderFeedbacks();
       if (isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'block';
     };
 
@@ -248,55 +245,40 @@
       if(!isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
     }
 
-    // الطريقة البرمجية القاطعة والآمنة 100% لمعاينة الملف عبر بصمة زمنية فريدة تمنع تخزين الكاش تماماً
+    // المعاينة المباشرة الفورية المدعومة بنظام عزل الأزرار لتجنب التعليق
     function openSpecificPdf(bookId) {
-      const tx = db.transaction(["books"], "readonly");
-      const req = tx.objectStore("books").get(Number(bookId));
-      req.onsuccess = () => {
-        const book = req.result;
-        if (book && book.pdfBytes) {
-          try {
-            const blob = new Blob([book.pdfBytes], { type: 'application/pdf' });
-            // بصمة زمنية فريدة لكل نقرة تجبر المتصفح على جلب الملف الجديد حصرياً
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 15000);
-          } catch(e) {
-            alert("تعذر فتح المعاينة المباشرة.");
-          }
-        } else {
-          alert("الملف غير موجود في قاعدة البيانات.");
-        }
-      };
-    }
-
-    function downloadSpecificPdf(bookId, title) {
-      const tx = db.transaction(["books"], "readonly");
-      const req = tx.objectStore("books").get(Number(bookId));
-      req.onsuccess = () => {
-        const book = req.result;
-        if (book && book.pdfBytes) {
-          const blob = new Blob([book.pdfBytes], { type: 'application/pdf' });
-          const url = URL.createObjectURL(blob);
+      const book = booksData.find(b => b.id === Number(bookId));
+      if (book && book.pdfData) {
+        try {
           const a = document.createElement('a');
-          a.href = url;
-          a.download = `${title}.pdf`;
+          a.href = book.pdfData;
+          a.target = '_blank';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(url), 15000);
+        } catch(e) {
+          alert("تعذر فتح المعاينة المباشرة.");
         }
-      };
+      } else {
+        alert("عذراً، الملف غير موجود.");
+      }
+    }
+
+    function downloadSpecificPdf(bookId, title) {
+      const book = booksData.find(b => b.id === Number(bookId));
+      if (book && book.pdfData) {
+        const a = document.createElement('a');
+        a.href = book.pdfData;
+        a.download = `${title}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     }
 
     function renderAcademicBooks() {
       const grid = document.getElementById('academicGrid');
-      const filtered = academicData.filter(item => item.grade === selectedGrade && item.category === selectedCategory);
+      const filtered = booksData.filter(item => item.type === 'academic' && item.grade === selectedGrade && item.category === selectedCategory);
       if(filtered.length === 0) {
         grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700;">لا توجد كتب مرفوعة في هذا القسم.</p>`;
         return;
@@ -324,29 +306,44 @@
       const cover = document.getElementById('acadCoverFile').files[0];
       if (!file) return alert('الرجاء اختيار ملف PDF!');
       
-      const reader = new FileReader();
-      reader.onload = evt => {
-        const buffer = evt.target.result;
-        // معرف فريد بحساب النانو ثانية يضمن عدم تداخل أي ملف مستقبلي
-        const bookId = Date.now() + Math.floor(Math.random() * 100000000);
-        if (cover) {
-          const cReader = new FileReader();
-          cReader.onload = cevt => saveToDB({ id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory, title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value, cover: cevt.target.result, pdfBytes: buffer }, 'academicForm');
-          cReader.readAsDataURL(cover);
-        } else {
-          saveToDB({ id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory, title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value, cover: "", pdfBytes: buffer }, 'academicForm');
-        }
-      };
-      reader.readAsArrayBuffer(file);
+      document.getElementById('loadingOverlay').style.display = 'flex';
+
+      setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const base64Pdf = evt.target.result;
+          const bookId = Date.now();
+          
+          if (cover) {
+            const cReader = new FileReader();
+            cReader.onload = cevt => {
+              saveBookObj({
+                id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
+                title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value,
+                cover: cevt.target.result, pdfData: base64Pdf
+              }, 'academicForm');
+            };
+            cReader.readAsDataURL(cover);
+          } else {
+            saveBookObj({
+              id: bookId, type: 'academic', grade: selectedGrade, category: selectedCategory,
+              title: document.getElementById('acadTitle').value, note: document.getElementById('acadNote').value,
+              cover: "", pdfData: base64Pdf
+            }, 'academicForm');
+          }
+        };
+        reader.readAsDataURL(file);
+      }, 100);
     }
 
     function renderCulturalBooks() {
       const grid = document.getElementById('culturalGrid');
-      if(culturalData.length === 0) {
+      const filtered = booksData.filter(item => item.type === 'cultural');
+      if(filtered.length === 0) {
         grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 60px; font-weight: 700;">لا توجد كتب تاريخية أو فلسفية مرفوعة حتى الآن.</p>`;
         return;
       }
-      grid.innerHTML = culturalData.map(item => `
+      grid.innerHTML = filtered.map(item => `
         <div class="book-card">
           ${item.cover ? `<img src="${item.cover}" class="book-cover" alt="غلاف">` : `<div class="book-cover" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: white;"><i class="fa-solid fa-book-bookmark"></i></div>`}
           <div class="book-details">
@@ -369,35 +366,58 @@
       const cover = document.getElementById('cultCoverFile').files[0];
       if (!file) return alert('الرجاء اختيار ملف PDF!');
 
-      const reader = new FileReader();
-      reader.onload = evt => {
-        const buffer = evt.target.result;
-        const bookId = Date.now() + Math.floor(Math.random() * 100000000);
-        if (cover) {
-          const cReader = new FileReader();
-          cReader.onload = cevt => saveToDB({ id: bookId, type: 'cultural', title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value, desc: document.getElementById('cultDesc').value, cover: cevt.target.result, pdfBytes: buffer }, 'culturalForm');
-          cReader.readAsDataURL(cover);
-        } else {
-          saveToDB({ id: bookId, type: 'cultural', title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value, desc: document.getElementById('cultDesc').value, cover: "", pdfBytes: buffer }, 'culturalForm');
-        }
-      };
-      reader.readAsArrayBuffer(file);
+      document.getElementById('loadingOverlay').style.display = 'flex';
+
+      setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const base64Pdf = evt.target.result;
+          const bookId = Date.now();
+          
+          if (cover) {
+            const cReader = new FileReader();
+            cReader.onload = cevt => {
+              saveBookObj({
+                id: bookId, type: 'cultural',
+                title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value,
+                desc: document.getElementById('cultDesc').value, cover: cevt.target.result, pdfData: base64Pdf
+              }, 'culturalForm');
+            };
+            cReader.readAsDataURL(cover);
+          } else {
+            saveBookObj({
+              id: bookId, type: 'cultural',
+              title: document.getElementById('cultTitle').value, author: document.getElementById('cultAuthor').value,
+              desc: document.getElementById('cultDesc').value, cover: "", pdfData: base64Pdf
+            }, 'culturalForm');
+          }
+        };
+        reader.readAsDataURL(file);
+      }, 100);
     }
 
-    function saveToDB(obj, formId) {
-      const tx = db.transaction(["books"], "readwrite");
-      tx.objectStore("books").put(obj).onsuccess = () => {
-        loadAllBooks();
-        document.getElementById(formId).reset();
-        if(formId === 'academicForm' && !isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
-        alert('تم حفظ وإضافة الكتاب بنجاح تام!');
-      };
+    function saveBookObj(obj, formId) {
+      booksData.unshift(obj);
+      try {
+        localStorage.setItem('methaq_pure_books_v4', JSON.stringify(booksData));
+      } catch (err) {
+        alert("مساحة التخزين الممتلئة! يرجى حذف بعض الكتب القديمة.");
+      }
+      document.getElementById('loadingOverlay').style.display = 'none';
+      renderAcademicBooks();
+      renderCulturalBooks();
+      document.getElementById(formId).reset();
+      if(formId === 'academicForm' && !isAdminLoggedIn) document.getElementById('adminAcademicForm').style.display = 'none';
+      alert('تم رفع وحفظ الكتاب بنجاح تام والأزرار تعمل بكل قوة!');
     }
 
     function deleteBook(id) {
       if (confirm("هل أنت متأكد من الحذف؟")) {
-        const tx = db.transaction(["books"], "readwrite");
-        tx.objectStore("books").delete(Number(id)).onsuccess = () => { loadAllBooks(); alert("تم الحذف."); };
+        booksData = booksData.filter(b => b.id !== Number(id));
+        localStorage.setItem('methaq_pure_books_v4', JSON.stringify(booksData));
+        renderAcademicBooks();
+        renderCulturalBooks();
+        alert("تم الحذف بنجاح.");
       }
     }
 
