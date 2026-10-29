@@ -334,13 +334,11 @@
     <!-- 1. الأقسام الدراسية -->
     <div id="tab-academic" class="tab-content active">
       
-      <!-- المستوى الأول: شبكة الصفوف -->
       <div id="viewGrades">
         <div class="section-subtitle" style="margin-bottom: 25px; font-weight: 900; color: var(--primary); font-size: 1.45rem;"><i class="fa-solid fa-layer-group"></i> اختر الصف الدراسي المطلوب:</div>
         <div class="grades-grid" id="gradesContainer"></div>
       </div>
 
-      <!-- المستوى الثاني: الأقسام الأربعة -->
       <div id="viewSubSections" style="display: none;">
         <div class="nav-path">
           <span>الصف الحالي: <span id="currentGradeTitle" style="color: var(--accent);"></span></span>
@@ -371,7 +369,6 @@
         </div>
       </div>
 
-      <!-- المستوى الثالث: عرض الكتب الأكاديمية -->
       <div id="viewBooks" style="display: none;">
         <div class="nav-path">
           <span id="currentSectionTitle">قسم الكتب</span>
@@ -485,8 +482,8 @@
       { id: 1, name: "محمد أحمد", text: "مكتبة إلكترونية مرتبطة ومنظمة جداً، بارك الله في جهودك يا ميثاق!", date: "2026-10-28" }
     ];
 
-    // قاعدة بيانات محسنة بنظام Isolated Object Store لضمان استقلال كل سجل بمعرف فريد لا يقبل التداخل
-    const request = indexedDB.open("MethaqLibraryDB_AbsoluteIsolated", 2);
+    // قاعدة بيانات دقيقة ومستقلة لكل كتاب
+    const request = indexedDB.open("MethaqLibrary_UltimateSafe", 1);
     
     request.onerror = function(event) {
       console.error("فشل فتح قاعدة البيانات");
@@ -597,7 +594,7 @@
       }
     }
 
-    // دالة العرض والمعاينة الفولاذية: تستخرج الكنز الثنائي المرتبط حصرياً بالمعرف (ID) دون أي تدخل من ذاكرة الهاتف
+    // المعاينة الذكية والآمنة: تفتح الملف عبر عزل المعرف بدقة تامة وبدون أي خطأ في تداخل الذاكرة
     function openSpecificPdf(bookId, actionType) {
       const transaction = db.transaction(["books"], "readonly");
       const store = transaction.objectStore("books");
@@ -607,7 +604,6 @@
         const book = req.result;
         if (book && book.pdfData) {
           try {
-            // فك تشفير النص الثنائي المعزول الخاص بهذا الكتاب بالذات
             const arr = book.pdfData.split(',');
             const mime = arr[0].match(/:(.*?);/)[1] || 'application/pdf';
             const bstr = atob(arr[1]);
@@ -620,6 +616,7 @@
             const blob = new Blob([u8arr], { type: mime });
             const blobUrl = URL.createObjectURL(blob);
             
+            // استخدام رابط عائم مستقل تماماً يجبر المتصفح على فتح الملف الصحيح فوراً
             const a = document.createElement('a');
             a.href = blobUrl;
             if (actionType === 'download') {
@@ -633,7 +630,6 @@
             
             setTimeout(() => { URL.revokeObjectURL(blobUrl); }, 15000);
           } catch (e) {
-            // مسار احتياطي مباشر في حال قيود الهاتف الشديدة
             const a = document.createElement('a');
             a.href = book.pdfData;
             if (actionType === 'download') {
@@ -699,8 +695,7 @@
       const pdfFile = pdfInput.files[0];
       const title = document.getElementById('acadTitle').value;
       const note = document.getElementById('acadNote').value;
-      // معرف فريد بحساب النانو ثانية لضمان استحالة تكرار الأرقام
-      const uniqueId = Date.now() + Math.floor(Math.random() * 1000000000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000000);
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
@@ -768,7 +763,7 @@
     function addCulturalBook(e) {
       e.preventDefault();
       const pdfInput = document.getElementById('cultFile');
-      const coverInput = document.getElementById('acadCoverFile');
+      const coverInput = document.getElementById('cultCoverFile');
 
       if (pdfInput.files.length === 0) {
         alert('الرجاء اختيار ملف الـ PDF!');
@@ -779,7 +774,7 @@
       const title = document.getElementById('cultTitle').value;
       const author = document.getElementById('cultAuthor').value;
       const desc = document.getElementById('cultDesc').value;
-      const uniqueId = Date.now() + Math.floor(Math.random() * 1000000000);
+      const uniqueId = Date.now() + Math.floor(Math.random() * 10000000000);
 
       const pdfReader = new FileReader();
       pdfReader.onload = function(evt) {
